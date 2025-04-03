@@ -1,0 +1,402 @@
+
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Pong Game</title>
+    <style>
+        /* Existing CSS styles */
+        body {
+            font-family: "Press Start 2P", system-ui;
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #111;
+            color: rgba(255, 255, 255, 0.9);
+            overflow: hidden;
+        }
+
+        .gameArea {
+            position: absolute;
+            width: 600px;
+            height: 400px;
+            background-color: rgba(7, 26, 49, 0.6);
+            top: 182px;
+            border: #919bbec7 10px solid;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            transform: perspective(1000px) rotateX(33deg) scaleX(0.54) scaleY(0.84);
+        }
+
+        .paddle {
+            height: 100px;
+            width: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            position: absolute;
+            top: 150px;
+        }
+
+        .paddle2 { right: 0px; }
+
+        .ball {
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 2px;
+            left: 290px;
+            top: 190px;
+            box-shadow: 4px 10px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .net {
+            position: absolute;
+            border-right: 8px rgba(255, 255, 255, 0.3) dotted;
+            height: 96%;
+            top: 2%;
+            left: calc(50% - 4px);
+        }
+
+        .title {
+            position: absolute;
+            top: 88px;
+            font-size: 26px;
+        }
+
+        .score {
+            position: absolute;
+            top: 88px;
+            display: flex;
+            width: 60px;
+            height: 60px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player1Score { left: calc(50% - 200px); }
+        .player2Score { right: calc(50% - 200px); }
+
+        /* New mode selection styles */
+        .mode-select {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        .mode-btn {
+            font-family: inherit;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .mode-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">PONG</h1>
+    <div class="score player1Score" id="player1Score">0</div>
+    <div class="score player2Score" id="player2Score">0</div>
+    
+    <!-- Mode Selection Menu -->
+    <div class="mode-select" id="modeSelect">
+        <button class="mode-btn" onclick="startMode('1p')">1 Player (vs AI)</button>
+        <button class="mode-btn" onclick="startMode('2p')">2 Players</button>
+    </div>
+
+    <div class="gameArea">
+        <div class="paddle1 paddle" id="paddle1"></div>
+        <div class="paddle2 paddle" id="paddle2"></div>
+        <div class="ball" id="ball"></div>
+        <div class="net"></div>
+    </div>
+
+    <audio src="paddle.wav" id="paddleSound"></audio>
+    <audio src="wall.wav" id="wallSound"></audio>
+    <audio src="loss.wav" id="lossSound"></audio>
+
+    <script>
+        // Game configuration
+        const GAME_MODES = {
+            NONE: 0,
+            SINGLE_PLAYER: 1,
+            TWO_PLAYER: 2
+        };
+
+        let currentMode = GAME_MODES.NONE;
+        const aiDifficulty = 0.3; // 0.5 (easy) to 1 (hard)
+        const aiReactionTime = 0.2; // seconds
+
+        const aiConfig = {
+            difficulty: 0.7,         // 0.5 (easy) to 1 (hard)
+            reactionTime: 0.3,       // Seconds to delay reaction
+            centerDeadZone: 20,      // Px threshold for center stopping
+            maxPredictionError: 30   // Max error in px
+            };
+        // DOM Elements
+        const modeSelect = document.getElementById('modeSelect');
+        const paddle1 = document.getElementById('paddle1');
+        const paddle2 = document.getElementById('paddle2');
+        const ball = document.getElementById('ball');
+        const player1ScoreElement = document.getElementById('player1Score');
+        const player2ScoreElement = document.getElementById('player2Score');
+        const lossSound = document.getElementById('lossSound');
+        const wallSound = document.getElementById('wallSound');
+        const paddleSound = document.getElementById('paddleSound');
+
+        // Game State Variables
+        let gameRunning = false;
+        let keysPressed = {};
+        let paddle1Speed = 0;
+        let paddle1Y = 150;
+        let paddle2Speed = 0;
+        let paddle2Y = 150;
+        let ballX = 290;
+        let ballSpeedX = 2;
+        let ballY = 190;
+        let ballSpeedY = 2;
+        let player1Score = 0;
+        let player2Score = 0;
+        let lastTime = null;
+
+        // Constants
+        const PADDLE_ACCELERATION = 1;
+        const MAX_PADDLE_SPEED = 5;
+        const GAME_HEIGHT = 400;
+        const GAME_WIDTH = 600;
+        const SPEED_INCREASE = 1.05;
+        const MAX_SPEED = 10;
+
+        /**
+         * Initialize game mode
+         * @param {string} mode - '1p' or '2p'
+         */
+        function startMode(mode) {
+            currentMode = mode === '1p' ? GAME_MODES.SINGLE_PLAYER : GAME_MODES.TWO_PLAYER;
+            modeSelect.style.display = 'none';
+            gameRunning = true;
+            ball.style.display = 'block';
+            resetBall();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Player controls for both modes
+        document.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
+        });
+
+        // Main game loop
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+
+            const deltaTime = (timestamp - lastTime) / 16.67 || 1;
+            lastTime = timestamp;
+
+            updatePaddle1(deltaTime);
+            
+            // Mode-specific paddle2 update
+            if (currentMode === GAME_MODES.SINGLE_PLAYER) {
+                updateAIPaddle(deltaTime);
+            } else {
+                updatePaddle2(deltaTime);
+            }
+
+            moveBall(deltaTime);
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Player 1 controls (W/S)
+        function updatePaddle1(deltaTime) {
+            if (keysPressed['w']) {
+                paddle1Speed = Math.max(paddle1Speed - PADDLE_ACCELERATION * deltaTime, -MAX_PADDLE_SPEED);
+            } else if (keysPressed['s']) {
+                paddle1Speed = Math.min(paddle1Speed + PADDLE_ACCELERATION * deltaTime, MAX_PADDLE_SPEED);
+            } else {
+                paddle1Speed *= 0.9;
+            }
+
+            paddle1Y += paddle1Speed * deltaTime;
+            paddle1Y = Math.max(0, Math.min(GAME_HEIGHT - paddle1.clientHeight, paddle1Y));
+            paddle1.style.top = paddle1Y + 'px';
+        }
+
+        // Player 2 controls (Arrow keys)
+        function updatePaddle2(deltaTime) {
+            if (keysPressed['ArrowUp']) {
+                paddle2Speed = Math.max(paddle2Speed - PADDLE_ACCELERATION * deltaTime, -MAX_PADDLE_SPEED);
+            } else if (keysPressed['ArrowDown']) {
+                paddle2Speed = Math.min(paddle2Speed + PADDLE_ACCELERATION * deltaTime, MAX_PADDLE_SPEED);
+            } else {
+                paddle2Speed *= 0.9;
+            }
+
+            paddle2Y += paddle2Speed * deltaTime;
+            paddle2Y = Math.max(0, Math.min(GAME_HEIGHT - paddle2.clientHeight, paddle2Y));
+            paddle2.style.top = paddle2Y + 'px';
+        }
+
+        // AI logic for single-player mode
+        function updateAIPaddle(deltaTime) {
+  const isBallApproaching = ballSpeedX > 0;
+  const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
+  const gameCenter = GAME_HEIGHT / 2;
+  
+  if (!isBallApproaching) {
+    // Return to center with dead zone [[3]]
+    const deadZone = aiConfig.centerDeadZone;
+    if (paddleCenter < gameCenter - deadZone) {
+      paddle2Speed = Math.min(
+        paddle2Speed + PADDLE_ACCELERATION * deltaTime,
+        MAX_PADDLE_SPEED * aiConfig.difficulty
+      );
+    } else if (paddleCenter > gameCenter + deadZone) {
+      paddle2Speed = Math.max(
+        paddle2Speed - PADDLE_ACCELERATION * deltaTime,
+        -MAX_PADDLE_SPEED * aiConfig.difficulty
+      );
+    } else {
+      paddle2Speed = 0; // Stop in dead zone
+    }
+  } else {
+    // Predictive movement with reaction time [[7]][[9]]
+    const timeToReach = (GAME_WIDTH - paddle2.clientWidth - ballX) / ballSpeedX;
+    const effectiveTime = Math.max(timeToReach - aiConfig.reactionTime, 0);
+    const predictedY = ballY + ballSpeedY * effectiveTime;
+    
+    // Add human-like error [[9]]
+    const error = (Math.random() - 0.5) * aiConfig.maxPredictionError * (1 - aiConfig.difficulty);
+    const targetY = Math.max(0, Math.min(GAME_HEIGHT - paddle2.clientHeight, predictedY + error));
+    
+    // Smooth movement towards target [[2]]
+    const distance = targetY - (paddleCenter - paddle2.clientHeight/2);
+    const direction = distance > 0 ? 1 : -1;
+    
+    paddle2Speed = direction * Math.min(
+      Math.abs(distance) * 0.1, // Proportional control
+      MAX_PADDLE_SPEED * aiConfig.difficulty
+    );
+  }
+
+  // Update position with acceleration/deceleration
+  paddle2Y += paddle2Speed * deltaTime;
+  paddle2Y = Math.max(0, Math.min(GAME_HEIGHT - paddle2.clientHeight, paddle2Y));
+  paddle2.style.top = paddle2Y + 'px';
+}
+
+        // Ball movement and collision
+        function moveBall(deltaTime) {
+            ballX += ballSpeedX * deltaTime;
+            ballY += ballSpeedY * deltaTime;
+
+            // Wall collisions
+            if (ballY <= 0 || ballY >= GAME_HEIGHT - ball.clientHeight) {
+                ballSpeedY *= -1;
+                playSound(wallSound);
+            }
+
+            // Paddle collisions
+            const paddle1Collision = 
+                ballX <= paddle1.clientWidth &&
+                ballY + ball.clientHeight >= paddle1Y &&
+                ballY <= paddle1Y + paddle1.clientHeight;
+
+            const paddle2Collision = 
+                ballX >= GAME_WIDTH - paddle2.clientWidth - ball.clientWidth &&
+                ballY + ball.clientHeight >= paddle2Y &&
+                ballY <= paddle2Y + paddle2.clientHeight;
+
+            if (paddle1Collision || paddle2Collision) {
+                const paddleY = paddle1Collision ? paddle1Y : paddle2Y;
+                adjustBallDirection(paddleY, paddle1.clientHeight, paddle1Collision);
+            }
+
+            // Score detection
+            if (ballX <= 0) {
+                player2Score++;
+                handleScore();
+            } else if (ballX >= GAME_WIDTH - ball.clientWidth) {
+                player1Score++;
+                handleScore();
+            }
+
+            ball.style.left = ballX + 'px';
+            ball.style.top = ballY + 'px';
+        }
+
+        // Ball direction adjustment
+        function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
+            const paddleCenter = paddleY + paddleHeight / 2;
+            const ballCenter = ballY + ball.clientHeight / 2;
+            const relativeY = (ballCenter - paddleCenter) / (paddleHeight / 2);
+            const angle = relativeY * Math.PI / 4;
+
+            const speed = Math.min(
+                Math.sqrt(ballSpeedX**2 + ballSpeedY**2) * SPEED_INCREASE,
+                MAX_SPEED
+            );
+
+            ballSpeedX = (isLeftPaddle ? 1 : -1) * speed * Math.cos(angle);
+            ballSpeedY = speed * Math.sin(angle);
+            playSound(paddleSound);
+        }
+
+        // Score handling
+        function handleScore() {
+            playSound(lossSound);
+            updateScoreboard();
+            resetBall();
+            pauseGame();
+        }
+
+        // Scoreboard update
+        function updateScoreboard() {
+            player1ScoreElement.textContent = player1Score;
+            player2ScoreElement.textContent = player2Score;
+        }
+
+        // Ball reset
+        function resetBall() {
+            ballX = GAME_WIDTH / 2 - ball.clientWidth / 2;
+            ballY = GAME_HEIGHT / 2 - ball.clientHeight / 2;
+            ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 2;
+            ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 2;
+        }
+
+        // Pause game
+        function pauseGame() {
+            gameRunning = false;
+            setTimeout(() => {
+                gameRunning = true;
+                requestAnimationFrame(gameLoop);
+            }, 1000);
+        }
+
+        // Sound effects
+        function playSound(sound) {
+            sound.currentTime = 0;
+            sound.play();
+        }
+    </script>
+</body>
+</html>
