@@ -23,7 +23,7 @@ clean-all:
 	docker image rm -f backend
 	docker volume rm -f backend
 
-fclean:
+fclean: down
 	yes | docker system prune -a
 	yes | docker image prune -a
 	yes | docker volume prune
