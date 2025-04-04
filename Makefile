@@ -30,6 +30,10 @@ fclean:
 	yes | docker network prune
 	yes | docker container prune
 
-re: clean-all build up
+
+logs:
+	docker compose logs -f
+
+re: clean-all all
 
 

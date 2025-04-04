@@ -5,8 +5,8 @@ services:
     build: ./Backend
     image: backend
     container_name: backend
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - backend:/app
     env_file:
@@ -21,8 +21,8 @@ services:
     build: ./Infrastructure/postgres
     image: postgres
     container_name: postgres
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - postgres:/var/lib/postgresql/data
     env_file:
