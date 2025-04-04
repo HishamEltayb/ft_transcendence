@@ -1,0 +1,115 @@
+body {
+    font-family: "Press Start 2P", system-ui;
+    height: 100dvh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #111;
+    color: rgba(255, 255, 255, 0.9);
+    overflow: hidden;
+}
+  
+.gameArea {
+    position: absolute;
+    width: 600px;
+    height: 400px;
+    background-color: rgba(7, 26, 49, 0.6);
+    top: 182px;
+    border: #919bbec7 10px solid;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    transform: perspective(1000px) rotateX(33deg) scaleX(0.54) scaleY(0.84);
+    /* basically we scale the div of our game area which contians all the needed components
+    to match our current picture style and position it in the middle of the screen */
+}
+
+.bg {
+    position: absolute;
+    height: 1000px;
+    z-index: -1;
+}
+
+.paddle {
+    height: 100px;
+    width: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    position: absolute;
+    top: 150px; 
+    /* height = 400px, 400/2 = 200, but start of paddle will be down, 
+    so we subtract from half of height of paddle which is 100/2 = 50 px , 200-50 = 150px*/
+}
+
+.paddle2 {
+    right: 0px;
+}
+
+.ball {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 2px;
+    left: 290px;
+    /* Half of screen width is 400/2 = 200px, subtract from half of the ball width 20/2 = 10px
+    this will put the ball exactly in the center */
+    top: 190px;
+    /* Half of screen height is 600/2 = 300px, subtract from half of the ball height 20/2 = 10px
+    this will put the ball exactly in the center */
+    box-shadow: 4px 10px 4px rgba(0, 0, 0, 0.9);
+}
+
+.net {
+    position: absolute;
+    border-right: 8px rgba(255, 255, 255, 0.3) dotted;
+    height: 96%;
+    top: 2%;
+    left: calc(50% - 4px);
+}
+
+.title {
+    position: absolute;
+    top: 88px;
+    font-size: 26px;
+}
+
+.score {
+    position: absolute;
+    top: 88px;
+    display: flex;
+    width: 60px;
+    height: 60px;
+    justify-content: center;
+    align-items: center;
+}
+
+.player1Score {
+    left: calc(50% - 200px);
+}
+
+.player2Score {
+    right: calc(50% - 200px);
+}
+
+.startText {
+    position: absolute;
+    margin: 0;
+    top: 50%;
+    z-index: 1;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: #222;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.vignett {
+    height: 100dvh;
+    width: 100dvw;
+    background: radial-gradient(
+    circle,    
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 1) 100%
+    );
+}
