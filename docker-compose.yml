@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./Backend
+    image: backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend:/app
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    build: ./Infrastructure/postgres
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Infrastructure/nginx/Dockerfile
+    image: nginx
+    container_name: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+    networks:
+      - transcendence
+#   pgadmin:
+#     image: dpage/pgadmin4
+#     container_name: transcendence_pgadmin
+#     environment:
+#       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+#       - PGADMIN_DEFAULT_PASSWORD=admin
+#     ports:
+#       - "5050:80"
+#     depends_on:
+#       - db
+#     networks:
+#       - transcendence
+
+
+
+
+
+
+
+volumes:
+  backend:
+    name: backend
+  postgres:
+    name: postgres
+  ssl: 
+    name: ssl
+
+
+
+networks:
+  transcendence:
+    name: transcendence
+    driver: bridge
+    
