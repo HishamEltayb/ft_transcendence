@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+    <title>Best Pong Game</title>
+</head>
+<body>
+    <h1 class="title">PING PONG</h1>
+    <span class="score player1Score" id="player1Score">0</span>
+    <span class="score player2Score" id="player2Score">0</span>
+    <h3 class="startText" id="startText">
+        Press any key to Start<br> <br>
+        Player 1: W and S<br> <br>
+        Player 2: Up and Down
+    </h3>
+    <div class="gameArea">
+        <div class="paddle1 paddle" id="paddle1"></div>
+        <div class="paddle2 paddle" id="paddle2"></div>
+        <div class="ball" id="ball"></div>
+        <div class="net"></div>
+    </div>
+    <audio src="/GameV2-Arcade/assets/paddle.wav" id="paddleSound"></audio>
+    <audio src="/GameV2-Arcade/assets/wall.wav" id="wallSound"></audio>
+    <audio src="/GameV2-Arcade/assets/loss.wav" id="lossSound"></audio>
+</body>
+</html>
