@@ -10,6 +10,4 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 chmod 600 /etc/nginx/ssl/nginx.key
 
-rm /usr/share/nginx/html/index.html
-
-exec nginx -g "daemon off;"
+nginx -g "daemon off;"
