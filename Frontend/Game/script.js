@@ -46,9 +46,18 @@ const maxPaddleSpeed = 8; // Maximum paddle speed
 const speedIncreaseFactor = 1.1; // 10% speed increase per paddle hit
 const maxSpeed = 8; // Prevent excessive speed
 
-// Dynamically calculate game dimensions
-let gameHeight = window.innerHeight;
-let gameWidth = window.innerWidth;
+// Fixed game dimensions as per requirements
+const gameWidth = 800;
+const gameHeight = 600;
+
+// Game mode and AI variables
+let isAIMode = false;
+let lastAIUpdateTime = 0; // Track last time AI updated its perception (for 1 sec refresh)
+let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
+let aiPerceptionBallY = 0;
+let aiPerceptionBallSpeedX = 0;
+let aiPerceptionBallSpeedY = 0;
+let aiMistakeChance = 0.3; // 30% chance the AI makes a mistake in prediction
 
 // Initialize paddle and ball positions
 function initializePositions() {
@@ -63,16 +72,37 @@ function initializePositions() {
   ball.style.top = ballY + 'px';
 }
 
-// Call initializePositions on page load and resize
+// Call initializePositions on page load
 window.addEventListener('load', initializePositions);
-window.addEventListener('resize', () => {
-  gameHeight = window.innerHeight;
-  gameWidth = window.innerWidth;
-  initializePositions();
+
+// Setup game mode selection buttons
+const pvpButton = document.getElementById('pvpButton');
+const pveButton = document.getElementById('pveButton');
+const modeSelection = document.getElementById('modeSelection');
+const player2Controls = document.getElementById('player2Controls');
+
+pvpButton.addEventListener('click', () => {
+  isAIMode = false;
+  modeSelection.style.display = 'none';
+  startText.style.display = 'block';
+  player2Controls.textContent = 'Player 2: Up and Down';
+  resetGame();
+});
+
+pveButton.addEventListener('click', () => {
+  isAIMode = true;
+  modeSelection.style.display = 'none';
+  startText.style.display = 'block';
+  player2Controls.textContent = 'AI will control Player 2';
+  resetGame();
 });
 
 // Listeners for game controls
-document.addEventListener('keydown', startGame); // Start the game when any key is pressed initially
+document.addEventListener('keydown', (e) => {
+  if (startText.style.display === 'block') {
+    startGame();
+  }
+});
 document.addEventListener('keydown', handleKeyDown);
 document.addEventListener('keyup', handleKeyUp);
 
@@ -81,7 +111,6 @@ function startGame() {
   gameRunning = true;
   startText.style.display = 'none';
   ball.style.display = 'block';
-  document.removeEventListener('keydown', startGame);
   lastTime = null; // Reset timing
   requestAnimationFrame(gameLoop);
 }
@@ -128,13 +157,103 @@ function updatePaddle1(deltaTime) {
 }
 
 function updatePaddle2(deltaTime) {
-  if (keysPressed['ArrowUp']) {
-    paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
-  } else if (keysPressed['ArrowDown']) {
-    paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+  if (isAIMode) {
+    // AI LOGIC - with limited perception update (once per second)
+    const currentTime = Date.now();
+    
+    // Update AI's perception of the ball only once per second
+    if (currentTime - lastAIUpdateTime > 1000) {
+      // Update AI's perception of the ball
+      aiPerceptionBallX = ballX;
+      aiPerceptionBallY = ballY;
+      aiPerceptionBallSpeedX = ballSpeedX;
+      aiPerceptionBallSpeedY = ballSpeedY;
+      lastAIUpdateTime = currentTime;
+      
+      // Sometimes AI makes a mistake in prediction (adds realism)
+      if (Math.random() < aiMistakeChance) {
+        // Intentionally misjudge ball direction or speed
+        aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4; // Random error in vertical prediction
+      }
+    }
+    
+    // PREDICTION: Calculate where the ball will be when it reaches paddle's x-position
+    let predictedY = aiPerceptionBallY;
+    
+    // Only predict if ball is moving toward AI (right side)
+    if (aiPerceptionBallSpeedX > 0) {
+      // Calculate time until ball reaches paddle (simple physics prediction)
+      const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
+      const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
+      
+      // Predict where ball will be vertically, accounting for bounces
+      predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
+      
+      // Account for potential bounces off top/bottom walls (simplified)
+      // This prediction is intentionally imperfect
+      const effectiveHeight = gameHeight - ball.clientHeight;
+      while (predictedY < 0 || predictedY > effectiveHeight) {
+        if (predictedY < 0) {
+          predictedY = -predictedY; // Bounce off top
+        } else if (predictedY > effectiveHeight) {
+          predictedY = 2 * effectiveHeight - predictedY; // Bounce off bottom
+        }
+      }
+      
+      // Add a significant error margin (makes AI more human-like and beatable)
+      const errorMargin = paddle2.clientHeight * 0.3; // Increased error margin
+      const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
+      const predictedBallCenter = predictedY + ball.clientHeight / 2;
+      const difference = predictedBallCenter - paddleCenter;
+      
+      if (Math.abs(difference) > errorMargin) {
+        // Move towards the predicted position, with human limitations
+        if (difference > 0) {
+          // Ball is predicted below paddle - move down
+          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime * 0.8, maxPaddleSpeed * 0.8);
+        } else {
+          // Ball is predicted above paddle - move up
+          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime * 0.8, -maxPaddleSpeed * 0.8);
+        }
+      } else {
+        // Close enough to prediction, slow down
+        paddle2Speed *= 0.95;
+      }
+    } else {
+      // When ball is moving away, move toward center position slowly and sometimes make mistakes
+      const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
+      const centerDifference = centerPosition - paddle2Y;
+      
+      // Occasionally move in wrong direction (adds human-like mistakes)
+      if (Math.random() < 0.05) { // 5% chance of moving in wrong direction
+        if (centerDifference > 0) {
+          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime/3, -maxPaddleSpeed/3);
+        } else {
+          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime/3, maxPaddleSpeed/3);
+        }
+      } else if (Math.abs(centerDifference) > 20) {
+        // Normal behavior - return to center, but slowly
+        if (centerDifference > 0) {
+          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime/3, maxPaddleSpeed/3);
+        } else {
+          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime/3, -maxPaddleSpeed/3);
+        }
+      } else {
+        // Near center, slow down
+        paddle2Speed *= 0.9;
+      }
+    }
   } else {
-    paddle2Speed *= 0.9; // Gradual slow down
+    // Human player controls
+    if (keysPressed['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (keysPressed['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
   }
+  
   paddle2Y += paddle2Speed * deltaTime;
   if (paddle2Y < 0) paddle2Y = 0;
   if (paddle2Y > gameHeight - paddle2.clientHeight)
@@ -247,7 +366,7 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
 function pauseGame() {
   gameRunning = false;
   ball.style.display = 'none';
-  document.addEventListener('keydown', startGame);
+  startText.style.display = 'block';
 }
 
 function resetBall() {
@@ -267,4 +386,22 @@ function updateScoreboard() {
 function playSound(sound) {
   sound.currentTime = 0;
   sound.play();
+}
+
+// Reset the entire game state
+function resetGame() {
+  // Reset scores
+  player1Score = 0;
+  player2Score = 0;
+  updateScoreboard();
+  
+  // Reset paddles and ball
+  initializePositions();
+  
+  // Reset speeds
+  paddle1Speed = 0;
+  paddle2Speed = 0;
+  
+  // Hide the ball until game starts
+  ball.style.display = 'none';
 }

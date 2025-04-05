@@ -11,20 +11,32 @@
     <title>Best Pong Game</title>
 </head>
 <body>
-    <h1 class="title">PONG</h1>
+    <h1 class="title">PING PONG</h1>
     <span class="score player1Score" id="player1Score">0</span>
     <span class="score player2Score" id="player2Score">0</span>
-    <h3 class="startText" id="startText">Press any key to Start</h3>
+    
+    <!-- Game Mode Selection Menu -->
+    <div class="modeSelection" id="modeSelection">
+        <h3>Select Game Mode:</h3>
+        <button class="modeButton" id="pvpButton">1 vs 1</button>
+        <button class="modeButton" id="pveButton">1 vs AI</button>
+    </div>
+    
+    <!-- Start Game Instructions -->
+    <h3 class="startText" id="startText" style="display: none;">
+        Press any key to Start<br> <br>
+        Player 1: W and S<br> <br>
+        <span id="player2Controls">Player 2: Up and Down</span>
+    </h3>
+    
     <div class="gameArea">
         <div class="paddle1 paddle" id="paddle1"></div>
         <div class="paddle2 paddle" id="paddle2"></div>
         <div class="ball" id="ball"></div>
         <div class="net"></div>
     </div>
-    <img src="/GameV2-Arcade/assets/machine.png" alt="arcade machine" class="bg">
-    <div class="vignett"></div>
-    <audio src="/GameV2-Arcade/assets/paddle.wav" id="paddleSound"></audio>
-    <audio src="/GameV2-Arcade/assets/wall.wav" id="wallSound"></audio>
-    <audio src="/GameV2-Arcade/assets/loss.wav" id="lossSound"></audio>
+    <audio src="assets/paddle.wav" id="paddleSound"></audio>
+    <audio src="assets/wall.wav" id="wallSound"></audio>
+    <audio src="assets/loss.wav" id="lossSound"></audio>
 </body>
 </html>
