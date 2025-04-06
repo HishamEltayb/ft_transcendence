@@ -54,8 +54,8 @@ body {
     position: absolute;
     height: 2%; /* Responsive size */
     width: 2%; /* Responsive size */
-    background: rgba(251, 255, 0, 0.9);
-    border-radius: 0%; /* Make it perfectly circular */
+    background: rgb(255, 255, 255);
+    border-radius: 40%; /* Make it perfectly circular */
     left: 50%; /* Center horizontally */
     top: 50%; /* Center vertically */
     /*transform: translate(-50%, -50%); /* Adjust for ball size */
