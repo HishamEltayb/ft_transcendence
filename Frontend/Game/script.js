@@ -20,6 +20,12 @@ const paddle2 = document.getElementById('paddle2');
 const ball = document.getElementById('ball');
 const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
+const player1NameElement = document.getElementById('player1Name');
+const player2NameElement = document.getElementById('player2Name');
+const winScreen = document.getElementById('winScreen');
+const winnerTextElement = document.getElementById('winnerText');
+const finalScoreElement = document.getElementById('finalScore');
+const restartButton = document.getElementById('restartButton');
 const lossSound = document.getElementById('lossSound');
 const wallSound = document.getElementById('wallSound');
 const paddleSound = document.getElementById('paddleSound');
@@ -37,7 +43,11 @@ let ballY = 0;
 let ballSpeedY = 4;
 let player1Score = 0;
 let player2Score = 0;
+let player1Name = "Player 1";
+let player2Name = "Player 2";
+let pointsToWin = 5;
 let lastTime = null;
+let gameOver = false;
 
 // Game Constants
 const paddleAcceleration = 1;
@@ -73,19 +83,36 @@ function initializePositions() {
 }
 
 // Call initializePositions on page load
-window.addEventListener('load', initializePositions);
+window.addEventListener('load', () => {
+  initializePositions();
+  
+  // Set default player names on initial load
+  player1NameElement.textContent = "Player 1";
+  player2NameElement.textContent = "Player 2";
+});
 
 // Setup game mode selection buttons
 const pvpButton = document.getElementById('pvpButton');
 const pveButton = document.getElementById('pveButton');
 const modeSelection = document.getElementById('modeSelection');
 const player2Controls = document.getElementById('player2Controls');
+const winScoreSelect = document.getElementById('winScore');
+const player1NameInput = document.getElementById('player1NameInput');
+const player2NameInput = document.getElementById('player2NameInput');
 
 pvpButton.addEventListener('click', () => {
   isAIMode = false;
   modeSelection.style.display = 'none';
   startText.style.display = 'block';
   player2Controls.textContent = 'Player 2: Up and Down';
+  
+  // Save player names and score settings
+  pointsToWin = parseInt(winScoreSelect.value);
+  player1Name = player1NameInput.value || "Player 1";
+  player2Name = player2NameInput.value || "Player 2";
+  player1NameElement.textContent = player1Name;
+  player2NameElement.textContent = player2Name;
+  
   resetGame();
 });
 
@@ -94,6 +121,14 @@ pveButton.addEventListener('click', () => {
   modeSelection.style.display = 'none';
   startText.style.display = 'block';
   player2Controls.textContent = 'AI will control Player 2';
+  
+  // Save player names and score settings
+  pointsToWin = parseInt(winScoreSelect.value);
+  player1Name = player1NameInput.value || "Player 1";
+  player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
+  player1NameElement.textContent = player1Name;
+  player2NameElement.textContent = player2Name;
+  
   resetGame();
 });
 
@@ -108,11 +143,14 @@ document.addEventListener('keyup', handleKeyUp);
 
 // Start the game: hide menu text, show ball, and resume game loop
 function startGame() {
-  gameRunning = true;
-  startText.style.display = 'none';
-  ball.style.display = 'block';
-  lastTime = null; // Reset timing
-  requestAnimationFrame(gameLoop);
+  if (!gameOver) {
+    gameRunning = true;
+    startText.style.display = 'none';
+    winScreen.style.display = 'none';
+    ball.style.display = 'block';
+    lastTime = null; // Reset timing
+    requestAnimationFrame(gameLoop);
+  }
 }
 
 function handleKeyDown(e) {
@@ -302,17 +340,29 @@ function moveBall(deltaTime) {
     player2Score++;
     playSound(lossSound);
     updateScoreboard();
-    resetBall();
-    pauseGame();
+    
+    // Check for win condition
+    if (player2Score >= pointsToWin) {
+      showWinScreen(player2Name);
+    } else {
+      resetBall();
+      pauseGame();
+    }
     return;
   }
-  // not sure if it need to be else if ? Out-of-bounds (scoring conditions) 
+  
   if (ballX >= gameWidth - ball.clientWidth) {
     player1Score++;
     playSound(lossSound);
     updateScoreboard();
-    resetBall();
-    pauseGame();
+    
+    // Check for win condition
+    if (player1Score >= pointsToWin) {
+      showWinScreen(player1Name);
+    } else {
+      resetBall();
+      pauseGame();
+    }
     return;
   }
 
@@ -402,6 +452,32 @@ function resetGame() {
   paddle1Speed = 0;
   paddle2Speed = 0;
   
+  // Reset game state
+  gameOver = false;
+  
+  // Update player names display (ensuring they're always visible)
+  player1NameElement.textContent = player1Name || "Player 1";
+  player2NameElement.textContent = player2Name || "Player 2";
+  
   // Hide the ball until game starts
   ball.style.display = 'none';
 }
+
+// Function to display the win screen
+function showWinScreen(winnerName) {
+  gameRunning = false;
+  gameOver = true;
+  ball.style.display = 'none';
+  
+  winnerTextElement.textContent = `${winnerName} Wins!`;
+  finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
+  winScreen.style.display = 'block';
+}
+
+// Event listener for the restart button
+restartButton.addEventListener('click', () => {
+  winScreen.style.display = 'none';
+  resetGame();
+  // Return to the mode selection screen
+  modeSelection.style.display = 'block';
+});

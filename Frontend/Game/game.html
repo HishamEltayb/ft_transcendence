@@ -12,14 +12,32 @@
 </head>
 <body>
     <h1 class="title">PING PONG</h1>
-    <span class="score player1Score" id="player1Score">0</span>
-    <span class="score player2Score" id="player2Score">0</span>
     
     <!-- Game Mode Selection Menu -->
     <div class="modeSelection" id="modeSelection">
         <h3>Select Game Mode:</h3>
         <button class="modeButton" id="pvpButton">1 vs 1</button>
         <button class="modeButton" id="pveButton">1 vs AI</button>
+        <div class="settingsSection">
+            <h4>Game Settings:</h4>
+            <div class="setting">
+                <label for="winScore">Points to Win:</label>
+                <select id="winScore">
+                    <option value="3">3</option>
+                    <option value="5" selected>5</option>
+                    <option value="7">7</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label for="player1NameInput">Player 1 Name:</label>
+                <input type="text" id="player1NameInput" placeholder="Player 1" maxlength="10">
+            </div>
+            <div class="setting">
+                <label for="player2NameInput">Player 2 Name:</label>
+                <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
+            </div>
+        </div>
     </div>
     
     <!-- Start Game Instructions -->
@@ -29,12 +47,35 @@
         <span id="player2Controls">Player 2: Up and Down</span>
     </h3>
     
-    <div class="gameArea">
-        <div class="paddle1 paddle" id="paddle1"></div>
-        <div class="paddle2 paddle" id="paddle2"></div>
-        <div class="ball" id="ball"></div>
-        <div class="net"></div>
+    <div class="gameContainer">
+        <!-- Player 1 info on the left side -->
+        <div class="player1Info">
+            <span class="playerName" id="player1Name">Player 1</span>
+            <span class="score player1Score" id="player1Score">0</span>
+        </div>
+        
+        <!-- Game area in the middle -->
+        <div class="gameArea">
+            <div class="paddle1 paddle" id="paddle1"></div>
+            <div class="paddle2 paddle" id="paddle2"></div>
+            <div class="ball" id="ball"></div>
+            <div class="net"></div>
+        </div>
+        
+        <!-- Player 2 info on the right side -->
+        <div class="player2Info">
+            <span class="playerName" id="player2Name">Player 2</span>
+            <span class="score player2Score" id="player2Score">0</span>
+        </div>
     </div>
+    <!-- Win Screen Overlay -->
+    <div class="winScreen" id="winScreen" style="display: none;">
+        <h2>Game Over!</h2>
+        <h3 id="winnerText">Player 1 Wins!</h3>
+        <p>Final Score: <span id="finalScore">0 - 0</span></p>
+        <button class="modeButton" id="restartButton">Play Again</button>
+    </div>
+
     <audio src="assets/paddle.wav" id="paddleSound"></audio>
     <audio src="assets/wall.wav" id="wallSound"></audio>
     <audio src="assets/loss.wav" id="lossSound"></audio>
