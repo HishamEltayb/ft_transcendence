@@ -38,9 +38,10 @@ let paddle1Y = 0;
 let paddle2Speed = 0;
 let paddle2Y = 0;
 let ballX = 0;
-let ballSpeedX = 4;
+let ballSpeedX = 5; // Default higher speed
 let ballY = 0;
-let ballSpeedY = 4;
+let ballSpeedY = 5; // Default higher speed
+let initialBallSpeed = 5; // Store initial ball speed for resets
 let player1Score = 0;
 let player2Score = 0;
 let player1Name = "Player 1";
@@ -48,13 +49,15 @@ let player2Name = "Player 2";
 let pointsToWin = 5;
 let lastTime = null;
 let gameOver = false;
+let ballLastX = 0; // Track previous position for improved collision
+let ballLastY = 0; // Track previous position for improved collision
 
 // Game Constants
 const paddleAcceleration = 1;
 const paddleDeceleration = 1;
 const maxPaddleSpeed = 8; // Maximum paddle speed
 const speedIncreaseFactor = 1.1; // 10% speed increase per paddle hit
-const maxSpeed = 8; // Prevent excessive speed
+const maxSpeed = 10; // Prevent excessive speed
 
 // Fixed game dimensions as per requirements
 const gameWidth = 800;
@@ -89,66 +92,165 @@ window.addEventListener('load', () => {
   // Set default player names on initial load
   player1NameElement.textContent = "Player 1";
   player2NameElement.textContent = "Player 2";
+  
+  // Hide all screens, don't select any button by default
+  hideAllScreens();
+  clearActiveNavButtons();
 });
+
+// Get navigation elements
+const playButton = document.getElementById('playButton');
+const settingsButton = document.getElementById('settingsButton');
+const howToPlayButton = document.getElementById('howToPlayButton');
+
+// Get screen elements
+const playScreen = document.getElementById('playScreen');
+const settingsScreen = document.getElementById('settingsScreen');
+const howToPlayScreen = document.getElementById('howToPlayScreen');
 
 // Setup game mode selection buttons
 const pvpButton = document.getElementById('pvpButton');
 const pveButton = document.getElementById('pveButton');
-const modeSelection = document.getElementById('modeSelection');
 const player2Controls = document.getElementById('player2Controls');
 const winScoreSelect = document.getElementById('winScore');
+const ballSpeedSelect = document.getElementById('ballSpeedSelect');
 const player1NameInput = document.getElementById('player1NameInput');
 const player2NameInput = document.getElementById('player2NameInput');
+const saveSettingsButton = document.getElementById('saveSettingsButton');
+const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
 
+// Navigation buttons event listeners
+playButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+settingsButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(settingsButton);
+  settingsScreen.style.display = 'block';
+});
+
+howToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(howToPlayButton);
+  howToPlayScreen.style.display = 'block';
+});
+
+// Helper function to hide all screens
+function hideAllScreens() {
+  const screens = [playScreen, settingsScreen, howToPlayScreen, startText, winScreen];
+  screens.forEach(screen => {
+    if (screen) screen.style.display = 'none';
+  });
+}
+
+// Helper function to set active nav button
+function setActiveNavButton(activeButton) {
+  clearActiveNavButtons();
+  activeButton.classList.add('active');
+}
+
+// Helper function to clear all active nav buttons
+function clearActiveNavButtons() {
+  const navButtons = [playButton, settingsButton, howToPlayButton];
+  navButtons.forEach(button => {
+    button.classList.remove('active');
+  });
+}
+
+// Helper function to toggle nav buttons enabled/disabled state
+function setNavButtonsEnabled(enabled) {
+  const navButtons = [playButton, settingsButton, howToPlayButton];
+  navButtons.forEach(button => {
+    button.disabled = !enabled;
+    if (!enabled) {
+      button.classList.add('disabled');
+    } else {
+      button.classList.remove('disabled');
+    }
+  });
+}
+
+// Game Mode buttons
 pvpButton.addEventListener('click', () => {
   isAIMode = false;
-  modeSelection.style.display = 'none';
-  startText.style.display = 'block';
+  playScreen.style.display = 'none';
+//   startText.style.display = 'block';
   player2Controls.textContent = 'Player 2: Up and Down';
   
-  // Save player names and score settings
-  pointsToWin = parseInt(winScoreSelect.value);
-  player1Name = player1NameInput.value || "Player 1";
-  player2Name = player2NameInput.value || "Player 2";
-  player1NameElement.textContent = player1Name;
-  player2NameElement.textContent = player2Name;
+  // Apply current settings
+  applySettings();
   
   resetGame();
 });
 
 pveButton.addEventListener('click', () => {
   isAIMode = true;
-  modeSelection.style.display = 'none';
-  startText.style.display = 'block';
+  playScreen.style.display = 'none';
+//   startText.style.display = 'block';
   player2Controls.textContent = 'AI will control Player 2';
   
-  // Save player names and score settings
-  pointsToWin = parseInt(winScoreSelect.value);
-  player1Name = player1NameInput.value || "Player 1";
-  player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
-  player1NameElement.textContent = player1Name;
-  player2NameElement.textContent = player2Name;
+  // Apply current settings
+  applySettings();
   
   resetGame();
 });
 
+// Settings screen save button
+saveSettingsButton.addEventListener('click', () => {
+  // Save settings but don't start the game yet
+  applySettings();
+  
+  // Go back to play screen
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+// Apply current settings
+function applySettings() {
+  pointsToWin = parseInt(winScoreSelect.value);
+  initialBallSpeed = parseInt(ballSpeedSelect.value);
+  ballSpeedX = Math.sign(ballSpeedX) * initialBallSpeed; // Preserve direction
+  ballSpeedY = Math.sign(ballSpeedY) * initialBallSpeed; // Preserve direction
+  player1Name = player1NameInput.value || "Player 1";
+  player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
+  
+  // Update display
+  player1NameElement.textContent = player1Name;
+  player2NameElement.textContent = player2Name;
+}
+
+// Back button from How to Play screen
+backFromHowToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
 // Listeners for game controls
 document.addEventListener('keydown', (e) => {
-  if (startText.style.display === 'block') {
+  // Resume game with any key if paused but not game over
+  if (!gameRunning && !gameOver && ball.style.display === 'none') {
     startGame();
   }
 });
 document.addEventListener('keydown', handleKeyDown);
 document.addEventListener('keyup', handleKeyUp);
 
-// Start the game: hide menu text, show ball, and resume game loop
+// Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
   if (!gameOver) {
     gameRunning = true;
-    startText.style.display = 'none';
-    winScreen.style.display = 'none';
+    hideAllScreens(); // Hide all screens including startText
     ball.style.display = 'block';
     lastTime = null; // Reset timing
+    
+    // Disable navigation buttons during gameplay
+    setNavButtonsEnabled(false);
+    
     requestAnimationFrame(gameLoop);
   }
 }
@@ -301,6 +403,10 @@ function updatePaddle2(deltaTime) {
 
 /************************************ Move Ball ***********************************/
 function moveBall(deltaTime) {
+  // Store previous position for collision detection
+  ballLastX = ballX;
+  ballLastY = ballY;
+  
   ballX += ballSpeedX * deltaTime;
   ballY += ballSpeedY * deltaTime;
 
@@ -317,22 +423,61 @@ function moveBall(deltaTime) {
     playSound(wallSound);
   }
 
-  // Paddle1 collision with angle adjustment
-  if (
-    ballX <= paddle1.clientWidth &&
-    ballY + ball.clientHeight >= paddle1Y &&
-    ballY <= paddle1Y + paddle1.clientHeight
-  ) {
-    adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
+  // Improved collision detection for Paddle1 using line intersection
+  // This handles fast balls better by checking if the ball's path intersects with paddle
+  if (ballSpeedX < 0) { // Ball moving left
+    const paddleRight = paddle1.clientWidth;
+    
+    // Check if ball crossed the paddle boundary line in this frame
+    if (ballX <= paddleRight && ballLastX > paddleRight) {
+      // Calculate the Y position at intersection point
+      const ratio = (paddleRight - ballLastX) / (ballX - ballLastX);
+      const intersectY = ballLastY + ratio * (ballY - ballLastY);
+      
+      // Check if this Y position is within the paddle height
+      if (intersectY + ball.clientHeight >= paddle1Y && 
+          intersectY <= paddle1Y + paddle1.clientHeight) {
+        // Move ball to paddle edge to prevent going through
+        ballX = paddle1.clientWidth;
+        adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
+      }
+    }
+    // Standard collision (for slow moving balls)
+    else if (
+      ballX <= paddle1.clientWidth &&
+      ballY + ball.clientHeight >= paddle1Y &&
+      ballY <= paddle1Y + paddle1.clientHeight
+    ) {
+      adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
+    }
   }
 
-  // Paddle2 collision with angle adjustment
-  if (
-    ballX >= gameWidth - paddle2.clientWidth - ball.clientWidth &&
-    ballY + ball.clientHeight >= paddle2Y &&
-    ballY <= paddle2Y + paddle2.clientHeight
-  ) {
-    adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
+  // Improved collision detection for Paddle2
+  if (ballSpeedX > 0) { // Ball moving right
+    const paddleLeft = gameWidth - paddle2.clientWidth - ball.clientWidth;
+    
+    // Check if ball crossed the paddle boundary line in this frame
+    if (ballX >= paddleLeft && ballLastX < paddleLeft) {
+      // Calculate the Y position at intersection point
+      const ratio = (paddleLeft - ballLastX) / (ballX - ballLastX);
+      const intersectY = ballLastY + ratio * (ballY - ballLastY);
+      
+      // Check if this Y position is within the paddle height
+      if (intersectY + ball.clientHeight >= paddle2Y && 
+          intersectY <= paddle2Y + paddle2.clientHeight) {
+        // Move ball to paddle edge to prevent going through
+        ballX = paddleLeft;
+        adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
+      }
+    }
+    // Standard collision (for slow moving balls)
+    else if (
+      ballX >= gameWidth - paddle2.clientWidth - ball.clientWidth &&
+      ballY + ball.clientHeight >= paddle2Y &&
+      ballY <= paddle2Y + paddle2.clientHeight
+    ) {
+      adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
+    }
   }
 
   // Out-of-bounds (scoring conditions)
@@ -412,20 +557,28 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
 }
 
 /************************************ Helper Functions ***********************************/
-// Pause the game and show the start menu; also hide the ball
+// Pause the game but don't show any menu; just hide the ball
 function pauseGame() {
   gameRunning = false;
   ball.style.display = 'none';
-  startText.style.display = 'block';
+  // Don't show any menu when paused
 }
 
 function resetBall() {
   ballX = gameWidth / 2 - ball.clientWidth / 2; // Ball in the middle horizontally
   ballY = Math.random() * (gameHeight - ball.clientHeight); // Random Y position within bounds
-  // Randomly choose a left or right initial direction
-  ballSpeedX = Math.random() > 0.5 ? 2 : -2;
-  // Randomly choose an up or down initial direction
-  ballSpeedY = Math.random() > 0.5 ? 2 : -2;
+  
+  // Store previous position for collision detection
+  ballLastX = ballX;
+  ballLastY = ballY;
+  
+  // Use the configured initial ball speed but with random direction
+  ballSpeedX = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
+  // Randomly choose an up or down initial direction with configured speed
+  ballSpeedY = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
+  
+  // Ensure the vertical speed is a bit lower than horizontal for better gameplay
+  ballSpeedY *= 0.7;
 }
 
 function updateScoreboard() {
@@ -472,12 +625,17 @@ function showWinScreen(winnerName) {
   winnerTextElement.textContent = `${winnerName} Wins!`;
   finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
   winScreen.style.display = 'block';
+  
+  // Re-enable navigation buttons when game is over
+  setNavButtonsEnabled(true);
 }
 
 // Event listener for the restart button
 restartButton.addEventListener('click', () => {
   winScreen.style.display = 'none';
   resetGame();
-  // Return to the mode selection screen
-  modeSelection.style.display = 'block';
+  // Return to the play screen
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
 });
