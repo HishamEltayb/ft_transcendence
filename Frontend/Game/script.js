@@ -70,7 +70,24 @@ let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
 let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
-let aiMistakeChance = 0.3; // 30% chance the AI makes a mistake in prediction
+
+// ********** AI DIFFICULTY PARAMETERS (Adjust these to change AI difficulty) **********
+let aiMistakeChance = 0.2;        // Chance AI makes mistake in prediction (higher = easier to beat)
+let aiErrorMargin = 0.3;          // Size of error margin as % of paddle height (higher = easier to beat)
+let aiReactionDelay = 0;          // Frames of delay before AI reacts (higher = easier to beat)
+let aiReturnToMiddleSpeed = 0.05; // How quickly AI returns to middle (higher = faster return)
+let aiCenteringProbability = 0.1; // Probability per frame that AI decides to recenter (higher = more eager to center)
+// ***********************************************************************************
+
+// AI simulated keyboard state (to mimic human keyboard input as required)
+let aiKeyState = {
+  'ArrowUp': false,
+  'ArrowDown': false
+};
+
+// Additional AI tracking variables
+let lastBallHitX = 0;           // Track where ball was last hit
+let shouldReturnToCenter = false; // Flag to indicate if AI should return to center
 
 // Initialize paddle and ball positions
 function initializePositions() {
@@ -298,6 +315,13 @@ function updatePaddle1(deltaTime) {
 
 function updatePaddle2(deltaTime) {
   if (isAIMode) {
+    // Check if ball was just hit (to activate return to center behavior)
+    // This detects when the ball changes direction from left to right (meaning AI just hit it)
+    if (ballSpeedX < 0 && aiPerceptionBallSpeedX > 0) {
+      shouldReturnToCenter = true;
+      lastBallHitX = ballX; // Mark where ball was when it changed direction
+    }
+    
     // AI LOGIC - with limited perception update (once per second)
     const currentTime = Date.now();
     
@@ -317,17 +341,41 @@ function updatePaddle2(deltaTime) {
       }
     }
     
-    // PREDICTION: Calculate where the ball will be when it reaches paddle's x-position
-    let predictedY = aiPerceptionBallY;
+    // Reset key states at the beginning of each frame
+    aiKeyState['ArrowUp'] = false;
+    aiKeyState['ArrowDown'] = false;
     
-    // Only predict if ball is moving toward AI (right side)
-    if (aiPerceptionBallSpeedX > 0) {
+    // BEHAVIOR: RETURN TO CENTER after hitting the ball
+    // This only activates if the shouldReturnToCenter flag is true and ball is moving away
+    if (shouldReturnToCenter && aiPerceptionBallSpeedX < 0) {
+      const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
+      const centerDifference = centerPosition - paddle2Y;
+      
+      // If we're close enough to center, stop centering
+      if (Math.abs(centerDifference) < 15) {
+        shouldReturnToCenter = false;
+      } else {
+        // Only make centering decisions with a certain probability
+        // (this makes movement more human-like with some pauses)
+        if (Math.random() < aiReturnToMiddleSpeed) {
+          if (centerDifference > 0) {
+            // Need to move DOWN toward center
+            aiKeyState['ArrowDown'] = true;
+          } else {
+            // Need to move UP toward center
+            aiKeyState['ArrowUp'] = true;
+          }
+        }
+      }
+    }
+    // BEHAVIOR: INTERCEPT BALL when it's coming toward the AI
+    else if (aiPerceptionBallSpeedX > 0) {
       // Calculate time until ball reaches paddle (simple physics prediction)
       const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
       const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
       
       // Predict where ball will be vertically, accounting for bounces
-      predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
+      let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
       
       // Account for potential bounces off top/bottom walls (simplified)
       // This prediction is intentionally imperfect
@@ -340,51 +388,68 @@ function updatePaddle2(deltaTime) {
         }
       }
       
-      // Add a significant error margin (makes AI more human-like and beatable)
-      const errorMargin = paddle2.clientHeight * 0.3; // Increased error margin
+      // Use configurable error margin (makes AI more human-like and beatable)
+      const errorMargin = paddle2.clientHeight * aiErrorMargin;
       const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
       const predictedBallCenter = predictedY + ball.clientHeight / 2;
       const difference = predictedBallCenter - paddleCenter;
       
+      // Reset the return to center flag when ball is coming toward AI
+      shouldReturnToCenter = false;
+      
+      // Decide which key to press based on prediction
       if (Math.abs(difference) > errorMargin) {
-        // Move towards the predicted position, with human limitations
         if (difference > 0) {
-          // Ball is predicted below paddle - move down
-          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime * 0.8, maxPaddleSpeed * 0.8);
+          // Ball is predicted BELOW paddle - press DOWN key
+          aiKeyState['ArrowDown'] = true;
         } else {
-          // Ball is predicted above paddle - move up
-          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime * 0.8, -maxPaddleSpeed * 0.8);
+          // Ball is predicted ABOVE paddle - press UP key
+          aiKeyState['ArrowUp'] = true;
         }
-      } else {
-        // Close enough to prediction, slow down
-        paddle2Speed *= 0.95;
       }
-    } else {
-      // When ball is moving away, move toward center position slowly and sometimes make mistakes
+      // If within error margin, both keys remain released (paddle will slow down naturally)
+    } 
+    // BEHAVIOR: IDLE CENTERING when ball is moving away and not actively returning to center
+    else if (!shouldReturnToCenter) {
       const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
       const centerDifference = centerPosition - paddle2Y;
       
-      // Occasionally move in wrong direction (adds human-like mistakes)
-      if (Math.random() < 0.05) { // 5% chance of moving in wrong direction
-        if (centerDifference > 0) {
-          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime/3, -maxPaddleSpeed/3);
-        } else {
-          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime/3, maxPaddleSpeed/3);
+      // Only make centering decisions with a configurable probability
+      if (Math.random() < aiCenteringProbability) {
+        // Occasionally move in wrong direction (adds human-like mistakes)
+        if (Math.random() < 0.05) { // 5% chance of moving in wrong direction
+          if (centerDifference > 0) {
+            // Should move up instead of down
+            aiKeyState['ArrowUp'] = true;
+          } else {
+            // Should move down instead of up
+            aiKeyState['ArrowDown'] = true;
+          }
+        } 
+        // Only try to center if we're not already very close to center
+        else if (Math.abs(centerDifference) > 20) {
+          if (centerDifference > 0) {
+            // Need to move DOWN toward center
+            aiKeyState['ArrowDown'] = true;
+          } else {
+            // Need to move UP toward center
+            aiKeyState['ArrowUp'] = true;
+          }
         }
-      } else if (Math.abs(centerDifference) > 20) {
-        // Normal behavior - return to center, but slowly
-        if (centerDifference > 0) {
-          paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime/3, maxPaddleSpeed/3);
-        } else {
-          paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime/3, -maxPaddleSpeed/3);
-        }
-      } else {
-        // Near center, slow down
-        paddle2Speed *= 0.9;
       }
     }
+    
+    // Apply the AI's simulated key presses to control the paddle
+    // This uses the exact same code path as human player input
+    if (aiKeyState['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (aiKeyState['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
   } else {
-    // Human player controls
+    // Human player controls (unchanged)
     if (keysPressed['ArrowUp']) {
       paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
     } else if (keysPressed['ArrowDown']) {
@@ -551,6 +616,11 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
 
   // Adjust the ball's vertical speed based on the bounce angle
   ballSpeedY = speed * Math.sin(bounceAngle);
+  
+  // If right paddle (AI) hit the ball, we want the AI to return to center
+  if (!isLeftPaddle) {
+    shouldReturnToCenter = true;
+  }
 
   // Play a sound effect to indicate the ball hit the paddle
   playSound(paddleSound);
