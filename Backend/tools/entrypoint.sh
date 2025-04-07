@@ -1,7 +1,9 @@
 #!/bin/sh
 
-
+python manage.py makemigrations
 python manage.py migrate
+
+python manage.py collectstatic --noinput
 
 # Create superuser if DJANGO_SUPERUSER variables are set
 if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ]; then
