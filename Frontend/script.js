@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const loginButton = document.getElementById('loginButton');
     const registerButton = document.getElementById('registerButton');
+    const loginWith42Button = document.getElementById('loginWith42Button');
     
     const loginError = document.getElementById('loginError');
     const registerError = document.getElementById('registerError');
@@ -25,6 +26,31 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         registerForm.classList.add('hidden');
         loginForm.classList.remove('hidden');
+    });
+    
+    // 42 OAuth Login functionality
+    loginWith42Button.addEventListener('click', function() {
+        // Redirect to the backend route for 42 OAuth
+        fetch(`${API_BASE_URL}/oauth/42/`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to initiate 42 login');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Redirect to the 42 OAuth authorization URL
+            window.location.href = data.auth_url;
+        })
+        .catch(error => {
+            displayError(loginError, 'Failed to connect to 42 authentication service');
+            console.error('42 OAuth Error:', error);
+        });
     });
     
     // Login functionality
