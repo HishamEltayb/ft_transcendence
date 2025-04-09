@@ -94,6 +94,51 @@ button:hover {
     display: none;
 }
 
+/* Dashboard styles */
+.dashboard {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.dashboard h1 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.user-info {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.dashboard-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.game-btn {
+    width: 48%;
+    background-color: #00babc;
+    color: white;
+}
+
+.game-btn:hover {
+    background-color: #00a5a7;
+}
+
+.logout-btn {
+    width: 48%;
+    background-color: #e74c3c;
+    color: white;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
 /* 42 OAuth styles */
 .oauth-separator {
     display: flex;

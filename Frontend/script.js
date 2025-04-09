@@ -15,6 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // API URLs
     const API_BASE_URL = '/api/users';
     
+    // Check for redirect messages (e.g., from game auth protection)
+    const redirectMessage = sessionStorage.getItem('redirectMessage');
+    if (redirectMessage) {
+        displayError(loginError, redirectMessage);
+        // Clear the message after displaying
+        sessionStorage.removeItem('redirectMessage');
+    }
+    
     // Toggle between login and register forms
     showRegister.addEventListener('click', function(e) {
         e.preventDefault();
