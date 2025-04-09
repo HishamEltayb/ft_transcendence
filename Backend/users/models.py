@@ -5,6 +5,11 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     bio = models.TextField(blank=True)
     profile_image = models.CharField(max_length=255, blank=True)
+    
+    # 42 OAuth related fields
+    intra_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    intra_login = models.CharField(max_length=100, blank=True, null=True)
+    is_oauth_user = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
@@ -27,5 +32,9 @@ class User(AbstractUser):
 #     -- Your custom fields:
 #     email VARCHAR(254) UNIQUE NOT NULL,
 #     bio TEXT,
-#     profile_image VARCHAR(255)
+#     profile_image VARCHAR(255),
+#     -- 42 OAuth fields:
+#     intra_id VARCHAR(100) UNIQUE,
+#     intra_login VARCHAR(100),
+#     is_oauth_user BOOLEAN NOT NULL DEFAULT FALSE
 # );

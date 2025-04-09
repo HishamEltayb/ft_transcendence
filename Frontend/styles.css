@@ -93,3 +93,33 @@ button:hover {
 .hidden {
     display: none;
 }
+
+/* 42 OAuth styles */
+.oauth-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.oauth-separator::before,
+.oauth-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.oauth-separator span {
+    padding: 0 10px;
+    color: #777;
+    font-size: 14px;
+}
+
+.oauth-button {
+    background-color: #00babc;
+    color: white;
+}
+
+.oauth-button:hover {
+    background-color: #00a5a7;
+}
