@@ -57,7 +57,7 @@ const paddleAcceleration = 1;
 const paddleDeceleration = 1;
 const maxPaddleSpeed = 8; // Maximum paddle speed
 const speedIncreaseFactor = 1.1; // 10% speed increase per paddle hit
-const maxSpeed = 10; // Prevent excessive speed
+const maxSpeed = 15; // Prevent excessive speed
 
 // Fixed game dimensions as per requirements
 const gameWidth = 800;
@@ -65,18 +65,57 @@ const gameHeight = 600;
 
 // Game mode and AI variables
 let isAIMode = false;
-let lastAIUpdateTime = 0; // Track last time AI updated its perception (for 1 sec refresh)
+let lastAIUpdateTime = 0; // Track last time AI updated its perception
 let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
 let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
+let currentAIDifficulty = 'medium'; // Default difficulty
 
-// ********** AI DIFFICULTY PARAMETERS (Adjust these to change AI difficulty) **********
-let aiMistakeChance = 0.2;        // Chance AI makes mistake in prediction (higher = easier to beat)
-let aiErrorMargin = 0.3;          // Size of error margin as % of paddle height (higher = easier to beat)
-let aiReactionDelay = 0;          // Frames of delay before AI reacts (higher = easier to beat)
-let aiReturnToMiddleSpeed = 0.05; // How quickly AI returns to middle (higher = faster return)
-let aiCenteringProbability = 0.1; // Probability per frame that AI decides to recenter (higher = more eager to center)
+// ********** AI DIFFICULTY PARAMETERS **********
+// These values will be adjusted based on selected difficulty
+let aiMistakeChance = 0.02;        // Chance of AI misperceiving the ball
+let aiErrorMargin = 0.05;          // Paddle targeting precision (smaller = more accurate)
+let aiReactionDelay = 150;         // How often AI updates its movement (ms) (smaller = faster reactions)
+let aiReturnToMiddleSpeed = 0.15;  // How quickly AI returns to center
+let aiCenteringProbability = 0.3;  // How often AI tries to center itself
+let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
+
+// Preset difficulty configurations
+const aiDifficultySettings = {
+  easy: {
+    mistakeChance: 0.15,
+    errorMargin: 0.3,
+    reactionDelay: 300,
+    returnToMiddleSpeed: 0.05,
+    centeringProbability: 0.1,
+    predictionAccuracy: 0.5
+  },
+  medium: {
+    mistakeChance: 0.05,
+    errorMargin: 0.15,
+    reactionDelay: 150,
+    returnToMiddleSpeed: 0.15,
+    centeringProbability: 0.3,
+    predictionAccuracy: 0.8
+  },
+  hard: {
+    mistakeChance: 0.01,
+    errorMargin: 0.08,
+    reactionDelay: 80,
+    returnToMiddleSpeed: 0.25,
+    centeringProbability: 0.5,
+    predictionAccuracy: 0.95
+  },
+  unbeatable: {
+    mistakeChance: 0.0,
+    errorMargin: 0.02,
+    reactionDelay: 30,
+    returnToMiddleSpeed: 0.4,
+    centeringProbability: 0.8,
+    predictionAccuracy: 0.99
+  }
+};
 // ***********************************************************************************
 
 // AI simulated keyboard state (to mimic human keyboard input as required)
@@ -131,6 +170,7 @@ const pveButton = document.getElementById('pveButton');
 const player2Controls = document.getElementById('player2Controls');
 const winScoreSelect = document.getElementById('winScore');
 const ballSpeedSelect = document.getElementById('ballSpeedSelect');
+const aiDifficultySelect = document.getElementById('aiDifficultySelect');
 const player1NameInput = document.getElementById('player1NameInput');
 const player2NameInput = document.getElementById('player2NameInput');
 const saveSettingsButton = document.getElementById('saveSettingsButton');
@@ -194,8 +234,8 @@ function setNavButtonsEnabled(enabled) {
 pvpButton.addEventListener('click', () => {
   isAIMode = false;
   playScreen.style.display = 'none';
-//   startText.style.display = 'block';
-  player2Controls.textContent = 'Player 2: Up and Down';
+  startText.style.display = 'block';
+//   player2Controls.textContent = 'Player 2: Up and Down';
   
   // Apply current settings
   applySettings();
@@ -206,8 +246,8 @@ pvpButton.addEventListener('click', () => {
 pveButton.addEventListener('click', () => {
   isAIMode = true;
   playScreen.style.display = 'none';
-//   startText.style.display = 'block';
-  player2Controls.textContent = 'AI will control Player 2';
+  startText.style.display = 'block';
+//   player2Controls.textContent = 'AI will control Player 2';
   
   // Apply current settings
   applySettings();
@@ -235,9 +275,36 @@ function applySettings() {
   player1Name = player1NameInput.value || "Player 1";
   player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
   
+  // Apply AI difficulty settings if in AI mode
+  if (isAIMode && aiDifficultySelect) {
+    currentAIDifficulty = aiDifficultySelect.value;
+    const settings = aiDifficultySettings[currentAIDifficulty];
+    
+    // Apply the difficulty settings
+    aiMistakeChance = settings.mistakeChance;
+    aiErrorMargin = settings.errorMargin;
+    aiReactionDelay = settings.reactionDelay;
+    aiReturnToMiddleSpeed = settings.returnToMiddleSpeed;
+    aiCenteringProbability = settings.centeringProbability;
+    aiPredictionAccuracy = settings.predictionAccuracy;
+    
+    // Update AI name to reflect difficulty
+    if (currentAIDifficulty === 'unbeatable') {
+      player2Name = "MASTER AI";
+    } else {
+      player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
+    }
+  }
+  
   // Update display
   player1NameElement.textContent = player1Name;
   player2NameElement.textContent = player2Name;
+  
+  // Toggle AI difficulty setting visibility
+  const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
+  if (aiDifficultyContainer) {
+    aiDifficultyContainer.style.display = isAIMode ? 'block' : 'none';
+  }
 }
 
 // Back button from How to Play screen
@@ -322,11 +389,11 @@ function updatePaddle2(deltaTime) {
       lastBallHitX = ballX; // Mark where ball was when it changed direction
     }
     
-    // AI LOGIC - with limited perception update (once per second)
+    // AI LOGIC - with configurable perception update based on difficulty
     const currentTime = Date.now();
     
-    // Update AI's perception of the ball only once per second
-    if (currentTime - lastAIUpdateTime > 1000) {
+    // Update AI's perception of the ball based on reaction delay (difficulty setting)
+    if (currentTime - lastAIUpdateTime > aiReactionDelay) {
       // Update AI's perception of the ball
       aiPerceptionBallX = ballX;
       aiPerceptionBallY = ballY;
@@ -334,10 +401,15 @@ function updatePaddle2(deltaTime) {
       aiPerceptionBallSpeedY = ballSpeedY;
       lastAIUpdateTime = currentTime;
       
-      // Sometimes AI makes a mistake in prediction (adds realism)
+      // AI makes mistakes based on difficulty
       if (Math.random() < aiMistakeChance) {
         // Intentionally misjudge ball direction or speed
         aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4; // Random error in vertical prediction
+        
+        // For easier difficulties, sometimes misperceive horizontal direction too
+        if (currentAIDifficulty === 'easy' && Math.random() < 0.2) {
+          aiPerceptionBallSpeedX *= 0.7 + Math.random() * 0.6; // Add horizontal error for easier AI
+        }
       }
     }
     
@@ -355,8 +427,7 @@ function updatePaddle2(deltaTime) {
       if (Math.abs(centerDifference) < 15) {
         shouldReturnToCenter = false;
       } else {
-        // Only make centering decisions with a certain probability
-        // (this makes movement more human-like with some pauses)
+        // Only make centering decisions with a certain probability based on difficulty
         if (Math.random() < aiReturnToMiddleSpeed) {
           if (centerDifference > 0) {
             // Need to move DOWN toward center
@@ -370,26 +441,45 @@ function updatePaddle2(deltaTime) {
     }
     // BEHAVIOR: INTERCEPT BALL when it's coming toward the AI
     else if (aiPerceptionBallSpeedX > 0) {
-      // Calculate time until ball reaches paddle (simple physics prediction)
+      // Calculate time until ball reaches paddle (physics prediction)
       const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
       const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
       
       // Predict where ball will be vertically, accounting for bounces
       let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
       
-      // Account for potential bounces off top/bottom walls (simplified)
-      // This prediction is intentionally imperfect
+      // Advanced bounce prediction with configurable accuracy based on difficulty
+      const bounceCalculations = Math.min(6, Math.ceil(timeToImpact / 10)); // Limit calculations for performance
       const effectiveHeight = gameHeight - ball.clientHeight;
-      while (predictedY < 0 || predictedY > effectiveHeight) {
+      
+      // More accurate bounce prediction (fixes ball getting stuck bug)
+      for (let i = 0; i < bounceCalculations; i++) {
         if (predictedY < 0) {
-          predictedY = -predictedY; // Bounce off top
+          // When ball hits top, it bounces down with preserved momentum
+          predictedY = Math.abs(predictedY);
         } else if (predictedY > effectiveHeight) {
-          predictedY = 2 * effectiveHeight - predictedY; // Bounce off bottom
+          // When ball hits bottom, it bounces up with preserved momentum
+          predictedY = effectiveHeight - (predictedY - effectiveHeight);
+        }
+        
+        // If within bounds, no more bounces needed
+        if (predictedY >= 0 && predictedY <= effectiveHeight) {
+          break;
         }
       }
       
-      // Use configurable error margin (makes AI more human-like and beatable)
-      const errorMargin = paddle2.clientHeight * aiErrorMargin;
+      // Apply AI prediction accuracy (lower for easier difficulties)
+      if (Math.random() > aiPredictionAccuracy) {
+        // Introduce intentional prediction error (based on difficulty)
+        const errorAmount = (1 - aiPredictionAccuracy) * gameHeight * 0.3;
+        predictedY += (Math.random() * 2 - 1) * errorAmount;
+      }
+      
+      // Error margin gets larger as the ball gets further away (more human-like)
+      // Harder difficulties have smaller error margins
+      const distanceFactor = Math.min(1, distanceToTravel / gameWidth);
+      const dynamicErrorMargin = paddle2.clientHeight * (aiErrorMargin * (0.5 + 0.5 * distanceFactor));
+      
       const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
       const predictedBallCenter = predictedY + ball.clientHeight / 2;
       const difference = predictedBallCenter - paddleCenter;
@@ -397,27 +487,44 @@ function updatePaddle2(deltaTime) {
       // Reset the return to center flag when ball is coming toward AI
       shouldReturnToCenter = false;
       
-      // Decide which key to press based on prediction
-      if (Math.abs(difference) > errorMargin) {
-        if (difference > 0) {
-          // Ball is predicted BELOW paddle - press DOWN key
-          aiKeyState['ArrowDown'] = true;
-        } else {
-          // Ball is predicted ABOVE paddle - press UP key
-          aiKeyState['ArrowUp'] = true;
+      // For unbeatable difficulty, add perfect anticipation
+      if (currentAIDifficulty === 'unbeatable') {
+        // Perfect positioning with minimal correction
+        if (Math.abs(difference) > 2) {
+          if (difference > 0) {
+            aiKeyState['ArrowDown'] = true;
+          } else {
+            aiKeyState['ArrowUp'] = true;
+          }
         }
+      } else {
+        // Normal difficulty-based movement
+        if (Math.abs(difference) > dynamicErrorMargin) {
+          if (difference > 0) {
+            // Ball is predicted BELOW paddle - press DOWN key
+            aiKeyState['ArrowDown'] = true;
+          } else {
+            // Ball is predicted ABOVE paddle - press UP key
+            aiKeyState['ArrowUp'] = true;
+          }
+        }
+        // If within error margin, both keys remain released (paddle will slow down naturally)
       }
-      // If within error margin, both keys remain released (paddle will slow down naturally)
     } 
     // BEHAVIOR: IDLE CENTERING when ball is moving away and not actively returning to center
     else if (!shouldReturnToCenter) {
       const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
       const centerDifference = centerPosition - paddle2Y;
       
-      // Only make centering decisions with a configurable probability
+      // Only make centering decisions with a configurable probability based on difficulty
       if (Math.random() < aiCenteringProbability) {
         // Occasionally move in wrong direction (adds human-like mistakes)
-        if (Math.random() < 0.05) { // 5% chance of moving in wrong direction
+        // Higher chances for easier difficulties, almost never for harder ones
+        const wrongDirectionChance = currentAIDifficulty === 'easy' ? 0.15 : 
+                                    currentAIDifficulty === 'medium' ? 0.05 : 
+                                    currentAIDifficulty === 'hard' ? 0.01 : 0;
+                                    
+        if (Math.random() < wrongDirectionChance) {
           if (centerDifference > 0) {
             // Should move up instead of down
             aiKeyState['ArrowUp'] = true;
@@ -442,11 +549,16 @@ function updatePaddle2(deltaTime) {
     // Apply the AI's simulated key presses to control the paddle
     // This uses the exact same code path as human player input
     if (aiKeyState['ArrowUp']) {
-      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+      // For unbeatable difficulty, faster paddle movement
+      const accelerationMultiplier = currentAIDifficulty === 'unbeatable' ? 1.5 : 1;
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime * accelerationMultiplier, -maxPaddleSpeed);
     } else if (aiKeyState['ArrowDown']) {
-      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+      const accelerationMultiplier = currentAIDifficulty === 'unbeatable' ? 1.5 : 1;
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime * accelerationMultiplier, maxPaddleSpeed);
     } else {
-      paddle2Speed *= 0.9; // Gradual slow down
+      // Unbeatable AI has faster reactions when stopping
+      const decelMultiplier = currentAIDifficulty === 'unbeatable' ? 0.8 : 0.9;
+      paddle2Speed *= decelMultiplier; // Gradual slow down
     }
   } else {
     // Human player controls (unchanged)
@@ -479,12 +591,16 @@ function moveBall(deltaTime) {
   if (ballY <= 0) {
     ballY = 0;
     ballSpeedY = -ballSpeedY;
+    // FIX: Add a small random horizontal adjustment to prevent infinite top bouncing
+    ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
     playSound(wallSound);
   }
-  //Not sure if we need to make else if ?  Bottom collision: snap to bottom and reverse vertical velocity
- if (ballY >= gameHeight - ball.clientHeight) {
+  // Bottom collision: snap to bottom and reverse vertical velocity
+  else if (ballY >= gameHeight - ball.clientHeight) {
     ballY = gameHeight - ball.clientHeight;
     ballSpeedY = -ballSpeedY;
+    // FIX: Add a small random horizontal adjustment to prevent infinite bottom bouncing
+    ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
     playSound(wallSound);
   }
 
@@ -617,6 +733,14 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   // Adjust the ball's vertical speed based on the bounce angle
   ballSpeedY = speed * Math.sin(bounceAngle);
   
+  if (Math.abs(ballSpeedY) < 0.5) {
+    // If vertical speed is very low, add a small random adjustment
+    ballSpeedY += (Math.random() * 2 - 1) * speed * 0.1;
+  }
+  
+  // Also add a tiny random factor to horizontal speed to vary gameplay
+  ballSpeedX += (Math.random() * 2 - 1) * speed * 0.05;
+
   // If right paddle (AI) hit the ball, we want the AI to return to center
   if (!isLeftPaddle) {
     shouldReturnToCenter = true;
