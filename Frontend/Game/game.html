@@ -58,6 +58,15 @@
                 <option value="6">Insane</option>
             </select>
         </div>
+        <div class="setting" id="aiDifficultyContainer">
+            <label for="aiDifficultySelect">AI Difficulty:</label>
+            <select id="aiDifficultySelect">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="unbeatable">Unbeatable</option>
+            </select>
+        </div>
         <button class="modeButton" id="saveSettingsButton">Save Settings</button>
     </div>
     
@@ -88,9 +97,10 @@
     
     <!-- Start Game Instructions -->
     <h3 class="startText" id="startText" style="display: none;">
-        Press any key to Start<br> <br>
+        Press any key to Start
+		<!-- <br> <br>
         Player 1: W and S<br> <br>
-        <span id="player2Controls">Player 2: Up and Down</span>
+        <span id="player2Controls">Player 2: Up and Down</span> -->
     </h3>
     
     <div class="gameContainer">
