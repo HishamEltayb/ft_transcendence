@@ -56,7 +56,7 @@ let ballLastY = 0; // Track previous position for improved collision
 const paddleAcceleration = 1;
 const paddleDeceleration = 1;
 const maxPaddleSpeed = 8; // Maximum paddle speed
-const speedIncreaseFactor = 1.1; // 10% speed increase per paddle hit
+const speedIncreaseFactor = 1.05; // 5% speed increase per paddle hit
 const maxSpeed = 15; // Prevent excessive speed
 
 // Fixed game dimensions as per requirements
@@ -350,18 +350,19 @@ function handleKeyUp(e) {
 // Main Game Loop using requestAnimationFrame with delta time
 function gameLoop(timestamp) {
   if (!gameRunning) return;
-
+//   console.time('gameLoop');
   if (lastTime === null) {
+      lastTime = timestamp;
+    }
+    const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
+    
+    updatePaddle1(deltaTime);
+    updatePaddle2(deltaTime);
+    moveBall(deltaTime);
+    
     lastTime = timestamp;
-  }
-  const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
-
-  updatePaddle1(deltaTime);
-  updatePaddle2(deltaTime);
-  moveBall(deltaTime);
-
-  lastTime = timestamp;
-  requestAnimationFrame(gameLoop);
+    // console.timeEnd('gameLoop');
+    requestAnimationFrame(gameLoop);
 }
 
 /************************************ Update Paddles ***********************************/
@@ -393,7 +394,11 @@ function updatePaddle2(deltaTime) {
     const currentTime = Date.now();
     
     // Update AI's perception of the ball based on reaction delay (difficulty setting)
-    if (currentTime - lastAIUpdateTime > aiReactionDelay) {
+    // Performance optimization: Throttle AI calculations based on difficulty
+    const aiUpdateInterval = currentAIDifficulty === 'easy' ? 50 : 
+                            currentAIDifficulty === 'medium' ? 40 : 
+                            currentAIDifficulty === 'hard' ? 30 : 20;
+    if (currentTime - lastAIUpdateTime > Math.max(aiReactionDelay, aiUpdateInterval)) {
       // Update AI's perception of the ball
       aiPerceptionBallX = ballX;
       aiPerceptionBallY = ballY;
@@ -449,7 +454,8 @@ function updatePaddle2(deltaTime) {
       let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
       
       // Advanced bounce prediction with configurable accuracy based on difficulty
-      const bounceCalculations = Math.min(6, Math.ceil(timeToImpact / 10)); // Limit calculations for performance
+      // Performance optimization: Reduce maximum bounce calculations
+      const bounceCalculations = Math.min(3, Math.ceil(timeToImpact / 15)); // Reduced for better performance
       const effectiveHeight = gameHeight - ball.clientHeight;
       
       // More accurate bounce prediction (fixes ball getting stuck bug)
@@ -833,3 +839,4 @@ restartButton.addEventListener('click', () => {
   setActiveNavButton(playButton);
   playScreen.style.display = 'block';
 });
+
