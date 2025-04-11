@@ -18,6 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
+    // Game button functionality
+    const playGameBtn = document.getElementById('playGameBtn');
+    playGameBtn.addEventListener('click', function() {
+        window.location.href = 'Game/game.html';
+    });
+
     // Logout functionality
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function() {
