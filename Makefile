@@ -1,4 +1,3 @@
-
 all:
 	docker compose up --build
 
@@ -26,5 +25,3 @@ logs:
 re: clean all
 
 .PHONY: all down clean fclean logs re clean-re
-
-

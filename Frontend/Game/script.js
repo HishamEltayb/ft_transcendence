@@ -44,11 +44,11 @@ let ballSpeedY = 5; // Default higher speed
 let initialBallSpeed = 5; // Store initial ball speed for resets
 let player1Score = 0;
 let player2Score = 0;
-let player1Name = "Player 1";
-let player2Name = "Player 2";
-let pointsToWin = 5;
-let lastTime = null;
-let gameOver = false;
+let player1Name = "Player 1"; // Default player names
+let player2Name = "Player 2"; // Default player names
+let pointsToWin = 5; // Default points to win
+let lastTime = null; // Store last animation frame time
+let gameOver = false; // Track game state
 let ballLastX = 0; // Track previous position for improved collision
 let ballLastY = 0; // Track previous position for improved collision
 
@@ -70,7 +70,7 @@ let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
 let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
-let currentAIDifficulty = 'medium'; // Default difficulty
+let currentAIDifficulty = 'easy'; // Default difficulty
 
 // ********** AI DIFFICULTY PARAMETERS **********
 // These values will be adjusted based on selected difficulty
@@ -84,37 +84,29 @@ let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
 // Preset difficulty configurations
 const aiDifficultySettings = {
   easy: {
-    mistakeChance: 0.15,
-    errorMargin: 0.3,
-    reactionDelay: 300,
+    mistakeChance: 0.40,
+    errorMargin: 0.4,
+    reactionDelay: 500,
     returnToMiddleSpeed: 0.05,
-    centeringProbability: 0.1,
+    centeringProbability: 0.2,
     predictionAccuracy: 0.5
   },
   medium: {
-    mistakeChance: 0.05,
-    errorMargin: 0.15,
-    reactionDelay: 150,
+    mistakeChance: 0.25,
+    errorMargin: 0.25,
+    reactionDelay: 250,
     returnToMiddleSpeed: 0.15,
-    centeringProbability: 0.3,
+    centeringProbability: 0.4,
     predictionAccuracy: 0.8
   },
   hard: {
-    mistakeChance: 0.01,
-    errorMargin: 0.08,
-    reactionDelay: 80,
+    mistakeChance: 0.15,
+    errorMargin: 0.15,
+    reactionDelay: 150,
     returnToMiddleSpeed: 0.25,
-    centeringProbability: 0.5,
+    centeringProbability: 0.6,
     predictionAccuracy: 0.95
   },
-  unbeatable: {
-    mistakeChance: 0.0,
-    errorMargin: 0.02,
-    reactionDelay: 30,
-    returnToMiddleSpeed: 0.4,
-    centeringProbability: 0.8,
-    predictionAccuracy: 0.99
-  }
 };
 // ***********************************************************************************
 
@@ -289,11 +281,7 @@ function applySettings() {
     aiPredictionAccuracy = settings.predictionAccuracy;
     
     // Update AI name to reflect difficulty
-    if (currentAIDifficulty === 'unbeatable') {
-      player2Name = "MASTER AI";
-    } else {
-      player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
-    }
+    player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
   }
   
   // Update display
@@ -349,20 +337,16 @@ function handleKeyUp(e) {
 
 // Main Game Loop using requestAnimationFrame with delta time
 function gameLoop(timestamp) {
-  if (!gameRunning) return;
-//   console.time('gameLoop');
-  if (lastTime === null) {
-      lastTime = timestamp;
-    }
-    const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
-    
-    updatePaddle1(deltaTime);
-    updatePaddle2(deltaTime);
-    moveBall(deltaTime);
-    
+  if (!gameRunning)
+    return;
+  if (lastTime === null)
     lastTime = timestamp;
-    // console.timeEnd('gameLoop');
-    requestAnimationFrame(gameLoop);
+  const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
+  updatePaddle1(deltaTime);
+  updatePaddle2(deltaTime);
+  moveBall(deltaTime);
+  lastTime = timestamp;
+  requestAnimationFrame(gameLoop);
 }
 
 /************************************ Update Paddles ***********************************/
