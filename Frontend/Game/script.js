@@ -13,7 +13,11 @@
  * 6. Need to add player icon.
  * 7. Need to add history of the game.
 ******************************************************************************************************************************/
-// Create JS representation of the game from DOM
+
+/********************************************************************************************************
+ * DOM ELEMENTS AND GAME VARIABLES
+ ********************************************************************************************************/
+// DOM Elements
 const startText = document.getElementById('startText');
 const paddle1 = document.getElementById('paddle1');
 const paddle2 = document.getElementById('paddle2');
@@ -30,40 +34,75 @@ const lossSound = document.getElementById('lossSound');
 const wallSound = document.getElementById('wallSound');
 const paddleSound = document.getElementById('paddleSound');
 
-// Game Variables
+// Navigation Elements
+const playButton = document.getElementById('playButton');
+const settingsButton = document.getElementById('settingsButton');
+const howToPlayButton = document.getElementById('howToPlayButton');
+const playScreen = document.getElementById('playScreen');
+const settingsScreen = document.getElementById('settingsScreen');
+const howToPlayScreen = document.getElementById('howToPlayScreen');
+
+// Game Mode Elements
+const pvpButton = document.getElementById('pvpButton');
+const pveButton = document.getElementById('pveButton');
+const player2Controls = document.getElementById('player2Controls');
+const winScoreSelect = document.getElementById('winScore');
+const ballSpeedSelect = document.getElementById('ballSpeedSelect');
+const aiDifficultySelect = document.getElementById('aiDifficultySelect');
+const player1NameInput = document.getElementById('player1NameInput');
+const player2NameInput = document.getElementById('player2NameInput');
+const saveSettingsButton = document.getElementById('saveSettingsButton');
+const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
+
+/********************************************************************************************************
+ * GAME STATE VARIABLES
+ ********************************************************************************************************/
+// Core Game Variables
 let gameRunning = false;
+let gameOver = false;
 let keysPressed = {};
+let lastTime = null;
+
+// Paddle Variables
 let paddle1Speed = 0;
 let paddle1Y = 0;
 let paddle2Speed = 0;
 let paddle2Y = 0;
+
+// Ball Variables
 let ballX = 0;
-let ballSpeedX = 5; // Default higher speed
 let ballY = 0;
+let ballSpeedX = 5; // Default higher speed
 let ballSpeedY = 5; // Default higher speed
 let initialBallSpeed = 5; // Store initial ball speed for resets
+let ballLastX = 0; // Track previous position for improved collision
+let ballLastY = 0; // Track previous position for improved collision
+
+// Score and Player Variables
 let player1Score = 0;
 let player2Score = 0;
 let player1Name = "Player 1"; // Default player names
 let player2Name = "Player 2"; // Default player names
 let pointsToWin = 5; // Default points to win
-let lastTime = null; // Store last animation frame time
-let gameOver = false; // Track game state
-let ballLastX = 0; // Track previous position for improved collision
-let ballLastY = 0; // Track previous position for improved collision
 
-// Game Constants
+/********************************************************************************************************
+ * GAME CONSTANTS
+ ********************************************************************************************************/
+// Physics Constants
 const paddleAcceleration = 1;
 const paddleDeceleration = 1;
 const maxPaddleSpeed = 8; // Maximum paddle speed
 const speedIncreaseFactor = 1.05; // 5% speed increase per paddle hit
 const maxSpeed = 15; // Prevent excessive speed
 
-// Fixed game dimensions as per requirements
+// Game Dimensions
 const gameWidth = 800;
 const gameHeight = 600;
 
-// Game mode and AI variables
+/********************************************************************************************************
+ * AI CONFIGURATION
+ ********************************************************************************************************/
+// AI Mode Variables
 let isAIMode = false;
 let lastAIUpdateTime = 0; // Track last time AI updated its perception
 let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
@@ -72,8 +111,7 @@ let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
 let currentAIDifficulty = 'easy'; // Default difficulty
 
-// ********** AI DIFFICULTY PARAMETERS **********
-// These values will be adjusted based on selected difficulty
+// AI Behavior Parameters
 let aiMistakeChance = 0.02;        // Chance of AI misperceiving the ball
 let aiErrorMargin = 0.05;          // Paddle targeting precision (smaller = more accurate)
 let aiReactionDelay = 150;         // How often AI updates its movement (ms) (smaller = faster reactions)
@@ -81,7 +119,7 @@ let aiReturnToMiddleSpeed = 0.15;  // How quickly AI returns to center
 let aiCenteringProbability = 0.3;  // How often AI tries to center itself
 let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
 
-// Preset difficulty configurations
+// AI Difficulty Presets
 const aiDifficultySettings = {
   easy: {
     mistakeChance: 0.40,
@@ -108,18 +146,20 @@ const aiDifficultySettings = {
     predictionAccuracy: 0.95
   },
 };
-// ***********************************************************************************
 
-// AI simulated keyboard state (to mimic human keyboard input as required)
+// AI Control State
 let aiKeyState = {
   'ArrowUp': false,
   'ArrowDown': false
 };
 
-// Additional AI tracking variables
+// AI Tracking Variables
 let lastBallHitX = 0;           // Track where ball was last hit
 let shouldReturnToCenter = false; // Flag to indicate if AI should return to center
 
+/********************************************************************************************************
+ * INITIALIZATION AND SETUP
+ ********************************************************************************************************/
 // Initialize paddle and ball positions
 function initializePositions() {
   paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
@@ -146,47 +186,9 @@ window.addEventListener('load', () => {
   clearActiveNavButtons();
 });
 
-// Get navigation elements
-const playButton = document.getElementById('playButton');
-const settingsButton = document.getElementById('settingsButton');
-const howToPlayButton = document.getElementById('howToPlayButton');
-
-// Get screen elements
-const playScreen = document.getElementById('playScreen');
-const settingsScreen = document.getElementById('settingsScreen');
-const howToPlayScreen = document.getElementById('howToPlayScreen');
-
-// Setup game mode selection buttons
-const pvpButton = document.getElementById('pvpButton');
-const pveButton = document.getElementById('pveButton');
-const player2Controls = document.getElementById('player2Controls');
-const winScoreSelect = document.getElementById('winScore');
-const ballSpeedSelect = document.getElementById('ballSpeedSelect');
-const aiDifficultySelect = document.getElementById('aiDifficultySelect');
-const player1NameInput = document.getElementById('player1NameInput');
-const player2NameInput = document.getElementById('player2NameInput');
-const saveSettingsButton = document.getElementById('saveSettingsButton');
-const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
-
-// Navigation buttons event listeners
-playButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
-
-settingsButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(settingsButton);
-  settingsScreen.style.display = 'block';
-});
-
-howToPlayButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(howToPlayButton);
-  howToPlayScreen.style.display = 'block';
-});
-
+/********************************************************************************************************
+ * UI NAVIGATION FUNCTIONS
+ ********************************************************************************************************/
 // Helper function to hide all screens
 function hideAllScreens() {
   const screens = [playScreen, settingsScreen, howToPlayScreen, startText, winScreen];
@@ -222,12 +224,33 @@ function setNavButtonsEnabled(enabled) {
   });
 }
 
+/********************************************************************************************************
+ * EVENT LISTENERS
+ ********************************************************************************************************/
+// Navigation buttons event listeners
+playButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+settingsButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(settingsButton);
+  settingsScreen.style.display = 'block';
+});
+
+howToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(howToPlayButton);
+  howToPlayScreen.style.display = 'block';
+});
+
 // Game Mode buttons
 pvpButton.addEventListener('click', () => {
   isAIMode = false;
   playScreen.style.display = 'none';
   startText.style.display = 'block';
-//   player2Controls.textContent = 'Player 2: Up and Down';
   
   // Apply current settings
   applySettings();
@@ -239,7 +262,6 @@ pveButton.addEventListener('click', () => {
   isAIMode = true;
   playScreen.style.display = 'none';
   startText.style.display = 'block';
-//   player2Controls.textContent = 'AI will control Player 2';
   
   // Apply current settings
   applySettings();
@@ -258,6 +280,36 @@ saveSettingsButton.addEventListener('click', () => {
   playScreen.style.display = 'block';
 });
 
+// Back button from How to Play screen
+backFromHowToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+// Listeners for game controls
+document.addEventListener('keydown', (e) => {
+  // Resume game with any key if paused but not game over
+  if (!gameRunning && !gameOver && ball.style.display === 'none') {
+    startGame();
+  }
+});
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
+
+// Event listener for the restart button
+restartButton.addEventListener('click', () => {
+  winScreen.style.display = 'none';
+  resetGame();
+  // Return to the play screen
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+/********************************************************************************************************
+ * SETTINGS FUNCTIONS
+ ********************************************************************************************************/
 // Apply current settings
 function applySettings() {
   pointsToWin = parseInt(winScoreSelect.value);
@@ -295,23 +347,9 @@ function applySettings() {
   }
 }
 
-// Back button from How to Play screen
-backFromHowToPlayButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
-
-// Listeners for game controls
-document.addEventListener('keydown', (e) => {
-  // Resume game with any key if paused but not game over
-  if (!gameRunning && !gameOver && ball.style.display === 'none') {
-    startGame();
-  }
-});
-document.addEventListener('keydown', handleKeyDown);
-document.addEventListener('keyup', handleKeyUp);
-
+/********************************************************************************************************
+ * GAME CONTROL FUNCTIONS
+ ********************************************************************************************************/
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
   if (!gameOver) {
@@ -349,7 +387,9 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
-/************************************ Update Paddles ***********************************/
+/********************************************************************************************************
+ * PADDLE MOVEMENT FUNCTIONS
+ ********************************************************************************************************/
 function updatePaddle1(deltaTime) {
   if (keysPressed['w']) {
     paddle1Speed = Math.max(paddle1Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
@@ -368,6 +408,42 @@ function updatePaddle1(deltaTime) {
   paddle1.style.top = paddle1Y + 'px';
 }
 
+function updatePaddle2(deltaTime) {
+  if (isAIMode) {
+    // Update AI decisions
+    updateAIDecisions();
+    
+    // Apply the AI's simulated key presses to control the paddle
+    // This ensures AI follows the same speed constraints as human players
+    if (aiKeyState['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (aiKeyState['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
+  } else {
+    // Human player controls
+    if (keysPressed['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (keysPressed['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
+  }
+  
+  // Apply paddle movement with boundary constraints
+  paddle2Y += paddle2Speed * deltaTime;
+  if (paddle2Y < 0) paddle2Y = 0;
+  if (paddle2Y > gameHeight - paddle2.clientHeight)
+    paddle2Y = gameHeight - paddle2.clientHeight;
+  paddle2.style.top = paddle2Y + 'px';
+}
+
+/********************************************************************************************************
+ * AI LOGIC FUNCTIONS
+ ********************************************************************************************************/
 // AI Controller function - handles AI decision making
 function updateAIDecisions() {
   // Check if ball was just hit (to activate return to center behavior)
@@ -520,7 +596,9 @@ function updatePaddle2(deltaTime) {
   paddle2.style.top = paddle2Y + 'px';
 }
 
-/************************************ Move Ball ***********************************/
+/********************************************************************************************************
+ * BALL PHYSICS AND COLLISION DETECTION
+ ********************************************************************************************************/
 function moveBall(deltaTime) {
   // Store previous position for collision detection
   ballLastX = ballX;
@@ -638,6 +716,9 @@ function moveBall(deltaTime) {
   ball.style.top = ballY + 'px';
 }
 
+/********************************************************************************************************
+ * BALL PHYSICS HELPERS
+ ********************************************************************************************************/
 // Function to adjust the ball's direction and speed after it hits a paddle
 function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   // Calculate the vertical center of the paddle
@@ -692,7 +773,9 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   playSound(paddleSound);
 }
 
-/************************************ Helper Functions ***********************************/
+/********************************************************************************************************
+ * GAME STATE MANAGEMENT
+ ********************************************************************************************************/
 // Pause the game but don't show any menu; just hide the ball
 function pauseGame() {
   gameRunning = false;
@@ -752,6 +835,9 @@ function resetGame() {
   ball.style.display = 'none';
 }
 
+/********************************************************************************************************
+ * WIN CONDITION AND GAME END
+ ********************************************************************************************************/
 // Function to display the win screen
 function showWinScreen(winnerName) {
   gameRunning = false;
@@ -775,4 +861,3 @@ restartButton.addEventListener('click', () => {
   setActiveNavButton(playButton);
   playScreen.style.display = 'block';
 });
-
