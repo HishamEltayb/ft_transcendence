@@ -609,7 +609,7 @@ function moveBall(deltaTime) {
 
   // Top collision: snap to top and reverse vertical velocity
   if (ballY <= 0) {
-    ballY = 0;
+    ballY = 3;
     ballSpeedY = -ballSpeedY;
     // FIX: Add a small random horizontal adjustment to prevent infinite top bouncing
     ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
@@ -617,7 +617,7 @@ function moveBall(deltaTime) {
   }
   // Bottom collision: snap to bottom and reverse vertical velocity
   else if (ballY >= gameHeight - ball.clientHeight) {
-    ballY = gameHeight - ball.clientHeight;
+    ballY = gameHeight - ball.clientHeight - 3;
     ballSpeedY = -ballSpeedY;
     // FIX: Add a small random horizontal adjustment to prevent infinite bottom bouncing
     ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
@@ -797,7 +797,8 @@ function resetBall() {
   ballSpeedY = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
   
   // Ensure the vertical speed is a bit lower than horizontal for better gameplay
-  ballSpeedY *= 0.7;
+  ballSpeedY *= 0.5;
+  // ballSpeedX *= 0.6;
 }
 
 function updateScoreboard() {
