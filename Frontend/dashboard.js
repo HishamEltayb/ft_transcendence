@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'Game/game.html';
     });
 
+    // Tournament button functionality
+    const tournamentBtn = document.getElementById('tournamentBtn');
+    tournamentBtn.addEventListener('click', function() {
+        window.location.href = 'Tournament/tournament.html';
+    });
+
     // Logout functionality
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function() {

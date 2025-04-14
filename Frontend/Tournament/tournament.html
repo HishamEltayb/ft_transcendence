@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tournament.css">
+    <script defer src="tournament.js"></script>
+    <title>Pong Tournament</title>
+</head>
+<body>
+    <img src="../Game/assets/rm251-aum-14.jpg" alt="Neon Background" class="background">
+    <h1 class="title">PONG TOURNAMENT</h1>
+    
+    <!-- Navigation Bar -->
+    <div class="navBar">
+        <button class="navButton" id="homeButton">Home</button>
+        <button class="navButton active" id="tournamentButton">Tournament</button>
+    </div>
+    
+    <!-- Tournament Selection Screen -->
+    <div class="screen" id="tournamentSelectionScreen">
+        <h3>Select Tournament Size:</h3>
+        <button class="modeButton" id="fourPlayersBtn">4 Players</button>
+        <button class="modeButton" id="eightPlayersBtn">8 Players</button>
+        <button class="returnButton" id="returnToDashboardBtn">Return to Dashboard</button>
+    </div>
+    
+    <!-- Player Selection Screen -->
+    <div class="screen" id="playerSelectionScreen" style="display: none;">
+        <h3 id="playerSelectionTitle">Add Tournament Players</h3>
+        <div id="playersInputContainer">
+            <!-- Player inputs will be added dynamically via JS -->
+        </div>
+        <div class="buttonContainer">
+            <button class="actionButton" id="startTournamentBtn">Start Tournament</button>
+            <button class="actionButton" id="backToSelectionBtn">Back</button>
+        </div>
+    </div>
+    
+    <!-- Tournament Bracket Screen -->
+    <div class="screen" id="tournamentBracketScreen" style="display: none;">
+        <h3>Tournament Bracket</h3>
+        <div id="bracketContainer">
+            <!-- Tournament bracket will be generated dynamically -->
+        </div>
+        <div class="buttonContainer">
+            <button class="actionButton" id="playMatchBtn">Play Selected Match</button>
+            <button class="returnButton" id="resetTournamentBtn">Reset Tournament</button>
+        </div>
+    </div>
+    
+    <!-- Tournament Results Screen -->
+    <div class="screen" id="tournamentResultsScreen" style="display: none;">
+        <h2>Tournament Results</h2>
+        <div id="tournamentWinner">
+            <h3>Tournament Champion:</h3>
+            <p id="winnerName">Player 1</p>
+        </div>
+        <div class="buttonContainer">
+            <button class="actionButton" id="newTournamentBtn">New Tournament</button>
+            <button class="returnButton" id="returnHomeBtn">Return to Dashboard</button>
+        </div>
+    </div>
+    
+    <audio src="../Game/assets/paddle.wav" id="paddleSound"></audio>
+    <audio src="../Game/assets/wall.wav" id="wallSound"></audio>
+    <audio src="../Game/assets/loss.wav" id="lossSound"></audio>
+</body>
+</html>

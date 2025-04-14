@@ -54,6 +54,10 @@ const player2NameInput = document.getElementById('player2NameInput');
 const saveSettingsButton = document.getElementById('saveSettingsButton');
 const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
 
+// Tournament Mode Variables
+let isTournamentMode = false;
+let tournamentMatchData = null;
+
 /********************************************************************************************************
  * GAME STATE VARIABLES
  ********************************************************************************************************/
@@ -173,7 +177,66 @@ function initializePositions() {
   ball.style.top = ballY + 'px';
 }
 
-// Call initializePositions on page load
+// Check if this game is part of a tournament
+function checkTournamentMode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+  
+  if (mode === 'tournament') {
+    console.log("Tournament mode detected");
+    isTournamentMode = true;
+    
+    // Get tournament match data from localStorage
+    tournamentMatchData = JSON.parse(localStorage.getItem('tournamentMatch') || '{}');
+    console.log("Tournament match data:", tournamentMatchData);
+    
+    if (tournamentMatchData.player1 && tournamentMatchData.player2) {
+      // Auto-set player names
+      player1Name = tournamentMatchData.player1;
+      player2Name = tournamentMatchData.player2;
+      
+      // Update display
+      player1NameElement.textContent = player1Name;
+      player2NameElement.textContent = player2Name;
+      
+      // Tournament settings
+      pointsToWin = 5; // Default to 5 points for tournament matches
+      initialBallSpeed = 5; // Default speed
+      gameMode = 'pvp';
+      
+      console.log(`Tournament match: ${player1Name} vs ${player2Name}`);
+      
+      // Setup the game display for tournament
+      hideAllScreens();
+      setNavButtonsEnabled(false);
+      initializePositions();
+      
+      // Show game container and start prompt
+      const gameContainer = document.querySelector('.gameContainer');
+      if (gameContainer) {
+        gameContainer.style.display = 'flex';
+      }
+      
+      startText.style.display = 'block';
+      ball.style.display = 'none';
+      
+      // Hide AI container
+      const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
+      if (aiDifficultyContainer) {
+        aiDifficultyContainer.style.display = 'none';
+      }
+      
+      // Show the tournament return button
+      const tournamentReturnBtn = document.getElementById('tournamentReturnBtn');
+      if (tournamentReturnBtn) {
+        tournamentReturnBtn.style.display = 'block';
+        tournamentReturnBtn.addEventListener('click', returnToTournament);
+      }
+    }
+  }
+}
+
+// Window load event - initialize everything
 window.addEventListener('load', () => {
   initializePositions();
   
@@ -184,7 +247,40 @@ window.addEventListener('load', () => {
   // Hide all screens, don't select any button by default
   hideAllScreens();
   clearActiveNavButtons();
+  
+  // Add a global keydown listener for starting the game
+  window.addEventListener('keydown', function(e) {
+    // Only trigger if start text is visible and game isn't running
+    if (startText.style.display === 'block' && !gameRunning && !gameOver) {
+      console.log("Global key handler - starting game!");
+      startGame();
+    }
+  });
+  
+  // Set up regular game controls
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
+  
+  // Check if this is a tournament match
+  checkTournamentMode();
 });
+
+// Main key press handler that manages both starting the game and in-game controls
+function handleKeyDown(e) {
+  // Check if game should be started with any key
+  if (startText.style.display === 'block' && !gameRunning && !gameOver) {
+    console.log("Handling key press to start game:", e.key);
+    startGame();
+    return;
+  }
+  
+  // Regular in-game controls
+  keysPressed[e.key] = true;
+}
+
+function handleKeyUp(e) {
+  keysPressed[e.key] = false;
+}
 
 /********************************************************************************************************
  * UI NAVIGATION FUNCTIONS
@@ -287,24 +383,20 @@ backFromHowToPlayButton.addEventListener('click', () => {
   playScreen.style.display = 'block';
 });
 
-// Listeners for game controls
-document.addEventListener('keydown', (e) => {
-  // Resume game with any key if paused but not game over
-  if (!gameRunning && !gameOver && ball.style.display === 'none') {
-    startGame();
-  }
-});
-document.addEventListener('keydown', handleKeyDown);
-document.addEventListener('keyup', handleKeyUp);
-
 // Event listener for the restart button
 restartButton.addEventListener('click', () => {
   winScreen.style.display = 'none';
   resetGame();
-  // Return to the play screen
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
+  
+  if (isTournamentMode) {
+    // If in tournament mode, just reset the game but don't change screens
+    startText.style.display = 'block';
+  } else {
+    // Return to the play screen
+    hideAllScreens();
+    setActiveNavButton(playButton);
+    playScreen.style.display = 'block';
+  }
 });
 
 /********************************************************************************************************
@@ -352,25 +444,21 @@ function applySettings() {
  ********************************************************************************************************/
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
-  if (!gameOver) {
-    gameRunning = true;
-    hideAllScreens(); // Hide all screens including startText
-    ball.style.display = 'block';
-    lastTime = null; // Reset timing
-    
-    // Disable navigation buttons during gameplay
-    setNavButtonsEnabled(false);
-    
+  startText.style.display = 'none';
+  ball.style.display = 'block';
+  resetBall();
+  gameRunning = true;
+  gameOver = false;
+  setNavButtonsEnabled(false);
+  
+  console.log("Game started! Ball visible, game running set to true");
+  
+  // If this is the first start, kick off the game loop
+  if (!lastTime) {
+    lastTime = performance.now();
     requestAnimationFrame(gameLoop);
+    console.log("Game loop started with requestAnimationFrame");
   }
-}
-
-function handleKeyDown(e) {
-  keysPressed[e.key] = true;
-}
-
-function handleKeyUp(e) {
-  keysPressed[e.key] = false;
 }
 
 // Main Game Loop using requestAnimationFrame with delta time
@@ -692,7 +780,6 @@ function moveBall(deltaTime) {
       showWinScreen(player2Name);
     } else {
       resetBall();
-      pauseGame();
     }
     return;
   }
@@ -707,7 +794,6 @@ function moveBall(deltaTime) {
       showWinScreen(player1Name);
     } else {
       resetBall();
-      pauseGame();
     }
     return;
   }
@@ -776,14 +862,16 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
 /********************************************************************************************************
  * GAME STATE MANAGEMENT
  ********************************************************************************************************/
-// Pause the game but don't show any menu; just hide the ball
+// Note: pauseGame function is kept for backward compatibility but no longer used after scoring
 function pauseGame() {
   gameRunning = false;
   ball.style.display = 'none';
-  // Don't show any menu when paused
+  
+  // Don't show any menu when paused in normal mode
 }
 
 function resetBall() {
+  // Reset ball position and speed
   ballX = gameWidth / 2 - ball.clientWidth / 2; // Ball in the middle horizontally
   ballY = Math.random() * (gameHeight - ball.clientHeight); // Random Y position within bounds
   
@@ -798,7 +886,12 @@ function resetBall() {
   
   // Ensure the vertical speed is a bit lower than horizontal for better gameplay
   ballSpeedY *= 0.5;
-  // ballSpeedX *= 0.6;
+  
+  // Make sure ball is visible and game is running
+  ball.style.display = 'block';
+  
+  // Make sure the game stays running
+  gameRunning = true;
 }
 
 function updateScoreboard() {
@@ -847,18 +940,68 @@ function showWinScreen(winnerName) {
   
   winnerTextElement.textContent = `${winnerName} Wins!`;
   finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
-  winScreen.style.display = 'block';
   
-  // Re-enable navigation buttons when game is over
-  setNavButtonsEnabled(true);
+  // If in tournament mode, handle tournament match completion differently
+  if (isTournamentMode && tournamentMatchData) {
+    // Store match result in localStorage
+    localStorage.setItem('tournamentMatchResult', JSON.stringify({
+      round: tournamentMatchData.round,
+      matchId: tournamentMatchData.matchId,
+      winner: winnerName
+    }));
+    
+    // Show a brief win message for 2 seconds then automatically return to tournament
+    winScreen.style.display = 'block';
+    
+    // Create a countdown display
+    const countdownDiv = document.createElement('div');
+    countdownDiv.style.marginTop = '15px';
+    countdownDiv.style.fontSize = '14px';
+    countdownDiv.textContent = 'Returning to tournament in 3...';
+    winScreen.appendChild(countdownDiv);
+    
+    // Hide any existing buttons
+    const existingButtons = winScreen.querySelectorAll('button');
+    existingButtons.forEach(button => {
+      button.style.display = 'none';
+    });
+    
+    // Automatically return to tournament after countdown
+    let countdown = 3;
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        returnToTournament();
+      } else {
+        countdownDiv.textContent = `Returning to tournament in ${countdown}...`;
+      }
+    }, 1000);
+    
+  } else {
+    // Regular non-tournament game - show normal win screen with buttons
+    winScreen.style.display = 'block';
+    
+    // Re-enable navigation buttons when game is over
+    setNavButtonsEnabled(true);
+  }
 }
 
-// Event listener for the restart button
-restartButton.addEventListener('click', () => {
-  winScreen.style.display = 'none';
-  resetGame();
-  // Return to the play screen
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
+// Function to return to tournament after a match
+function returnToTournament() {
+  // If a match was completed and we have a winner, save the result
+  if (gameOver && tournamentMatchData) {
+    // Determine winner name
+    const winnerName = player1Score > player2Score ? player1Name : player2Name;
+    
+    // Store match result in localStorage
+    localStorage.setItem('tournamentMatchResult', JSON.stringify({
+      round: tournamentMatchData.round,
+      matchId: tournamentMatchData.matchId,
+      winner: winnerName
+    }));
+  }
+  
+  // Navigate back to tournament page with result parameter
+  window.location.href = '../Tournament/tournament.html?result=completed';
+}
