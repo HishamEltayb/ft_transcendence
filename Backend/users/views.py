@@ -2,6 +2,9 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt import authentication, tokens
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
 from .models import User
@@ -17,27 +20,49 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
+# class LoginView(APIView):
+#     permission_classes = [permissions.AllowAny]
+    
+#     def post(self, request):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+        
+#         user = authenticate(username=username, password=password)
+        
+#         if user:
+#             token, created = Token.objects.get_or_create(user=user)
+#             return Response({
+#                 'user': UserSerializer(user).data,
+#                 'token': token.key
+#             })
+#         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-        
+
         user = authenticate(username=username, password=password)
-        
+
         if user:
-            token, created = Token.objects.get_or_create(user=user)
+            refresh = RefreshToken.for_user(user)
             return Response({
                 'user': UserSerializer(user).data,
-                'token': token.key
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
             })
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        
 
 class UserDetailView(generics.RetrieveAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
     
     def get_object(self):
         return self.request.user
@@ -142,12 +167,14 @@ class FortyTwoCallbackView(APIView):
                     profile_image=profile_data.get('image', {}).get('link', '')
                 )
             
-            # Generate a token for the user
-            token, created = Token.objects.get_or_create(user=user)
+            # Generate JWT tokens for the user
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
             
-            # Create the redirect URL with the token
+            # Create the redirect URL with the tokens
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
-            redirect_url = f"{frontend_url}/oauth/callback.html?token={token.key}"
+            redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
             
             return redirect(redirect_url)
             

@@ -50,21 +50,23 @@
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
             }
             
-            // Get token from URL
-            const token = getUrlParameter('token');
+            // Get tokens from URL
+            const accessToken = getUrlParameter('access_token');
+            const refreshToken = getUrlParameter('refresh_token');
             
-            if (token) {
-                // Save token to localStorage
-                localStorage.setItem('token', token);
+            if (accessToken && refreshToken) {
+                // Save tokens to cookies
+                document.cookie = `access_token=${accessToken}; SameSite=Strict; Path=/`;
+                document.cookie = `refresh_token=${refreshToken}; SameSite=Strict; Path=/`;
                 
                 // Update status message
                 statusMessage.textContent = 'Login successful! Redirecting...';
                 
                 // Fetch user data
-                fetch('/api/users/me/', {
+                fetch('/api/users/me', {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Token ${token}`,
+                        'Authorization': `Bearer ${accessToken}`,
                         'Accept': 'application/json',
                     }
                 })
@@ -91,7 +93,7 @@
                     }, 2000);
                 });
             } else {
-                // No token found
+                // No tokens found
                 statusMessage.textContent = 'Authentication failed. Redirecting to login...';
                 
                 // Redirect to login page after a short delay
