@@ -13,7 +13,11 @@
  * 6. Need to add player icon.
  * 7. Need to add history of the game.
 ******************************************************************************************************************************/
-// Create JS representation of the game from DOM
+
+/********************************************************************************************************
+ * DOM ELEMENTS AND GAME VARIABLES
+ ********************************************************************************************************/
+// DOM Elements
 const startText = document.getElementById('startText');
 const paddle1 = document.getElementById('paddle1');
 const paddle2 = document.getElementById('paddle2');
@@ -30,50 +34,84 @@ const lossSound = document.getElementById('lossSound');
 const wallSound = document.getElementById('wallSound');
 const paddleSound = document.getElementById('paddleSound');
 
-// Game Variables
+// Navigation Elements
+const playButton = document.getElementById('playButton');
+const settingsButton = document.getElementById('settingsButton');
+const howToPlayButton = document.getElementById('howToPlayButton');
+const playScreen = document.getElementById('playScreen');
+const settingsScreen = document.getElementById('settingsScreen');
+const howToPlayScreen = document.getElementById('howToPlayScreen');
+
+// Game Mode Elements
+const pvpButton = document.getElementById('pvpButton');
+const pveButton = document.getElementById('pveButton');
+const player2Controls = document.getElementById('player2Controls');
+const winScoreSelect = document.getElementById('winScore');
+const ballSpeedSelect = document.getElementById('ballSpeedSelect');
+const aiDifficultySelect = document.getElementById('aiDifficultySelect');
+const player1NameInput = document.getElementById('player1NameInput');
+const player2NameInput = document.getElementById('player2NameInput');
+const saveSettingsButton = document.getElementById('saveSettingsButton');
+const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
+
+/********************************************************************************************************
+ * GAME STATE VARIABLES
+ ********************************************************************************************************/
+// Core Game Variables
 let gameRunning = false;
+let gameOver = false;
 let keysPressed = {};
+let lastTime = null;
+
+// Paddle Variables
 let paddle1Speed = 0;
 let paddle1Y = 0;
 let paddle2Speed = 0;
 let paddle2Y = 0;
+
+// Ball Variables
 let ballX = 0;
-let ballSpeedX = 5; // Default higher speed
 let ballY = 0;
+let ballSpeedX = 5; // Default higher speed
 let ballSpeedY = 5; // Default higher speed
 let initialBallSpeed = 5; // Store initial ball speed for resets
-let player1Score = 0;
-let player2Score = 0;
-let player1Name = "Player 1";
-let player2Name = "Player 2";
-let pointsToWin = 5;
-let lastTime = null;
-let gameOver = false;
 let ballLastX = 0; // Track previous position for improved collision
 let ballLastY = 0; // Track previous position for improved collision
 
-// Game Constants
+// Score and Player Variables
+let player1Score = 0;
+let player2Score = 0;
+let player1Name = "Player 1"; // Default player names
+let player2Name = "Player 2"; // Default player names
+let pointsToWin = 5; // Default points to win
+
+/********************************************************************************************************
+ * GAME CONSTANTS
+ ********************************************************************************************************/
+// Physics Constants
 const paddleAcceleration = 1;
 const paddleDeceleration = 1;
 const maxPaddleSpeed = 8; // Maximum paddle speed
 const speedIncreaseFactor = 1.05; // 5% speed increase per paddle hit
 const maxSpeed = 15; // Prevent excessive speed
 
-// Fixed game dimensions as per requirements
+// Game Dimensions
 const gameWidth = 800;
 const gameHeight = 600;
 
-// Game mode and AI variables
+/********************************************************************************************************
+ * AI CONFIGURATION
+ ********************************************************************************************************/
+// AI Mode Variables
 let isAIMode = false;
 let lastAIUpdateTime = 0; // Track last time AI updated its perception
 let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
 let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
-let currentAIDifficulty = 'medium'; // Default difficulty
+let currentAIDifficulty = 'easy'; // Default difficulty
 
-// ********** AI DIFFICULTY PARAMETERS **********
-// These values will be adjusted based on selected difficulty
+// AI Behavior Parameters
 let aiMistakeChance = 0.02;        // Chance of AI misperceiving the ball
 let aiErrorMargin = 0.05;          // Paddle targeting precision (smaller = more accurate)
 let aiReactionDelay = 150;         // How often AI updates its movement (ms) (smaller = faster reactions)
@@ -81,53 +119,47 @@ let aiReturnToMiddleSpeed = 0.15;  // How quickly AI returns to center
 let aiCenteringProbability = 0.3;  // How often AI tries to center itself
 let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
 
-// Preset difficulty configurations
+// AI Difficulty Presets
 const aiDifficultySettings = {
   easy: {
-    mistakeChance: 0.15,
-    errorMargin: 0.3,
-    reactionDelay: 300,
+    mistakeChance: 0.40,
+    errorMargin: 0.4,
+    reactionDelay: 500,
     returnToMiddleSpeed: 0.05,
-    centeringProbability: 0.1,
+    centeringProbability: 0.2,
     predictionAccuracy: 0.5
   },
   medium: {
-    mistakeChance: 0.05,
-    errorMargin: 0.15,
-    reactionDelay: 150,
+    mistakeChance: 0.25,
+    errorMargin: 0.25,
+    reactionDelay: 250,
     returnToMiddleSpeed: 0.15,
-    centeringProbability: 0.3,
+    centeringProbability: 0.4,
     predictionAccuracy: 0.8
   },
   hard: {
-    mistakeChance: 0.01,
-    errorMargin: 0.08,
-    reactionDelay: 80,
+    mistakeChance: 0.15,
+    errorMargin: 0.15,
+    reactionDelay: 150,
     returnToMiddleSpeed: 0.25,
-    centeringProbability: 0.5,
+    centeringProbability: 0.6,
     predictionAccuracy: 0.95
   },
-  unbeatable: {
-    mistakeChance: 0.0,
-    errorMargin: 0.02,
-    reactionDelay: 30,
-    returnToMiddleSpeed: 0.4,
-    centeringProbability: 0.8,
-    predictionAccuracy: 0.99
-  }
 };
-// ***********************************************************************************
 
-// AI simulated keyboard state (to mimic human keyboard input as required)
+// AI Control State
 let aiKeyState = {
   'ArrowUp': false,
   'ArrowDown': false
 };
 
-// Additional AI tracking variables
+// AI Tracking Variables
 let lastBallHitX = 0;           // Track where ball was last hit
 let shouldReturnToCenter = false; // Flag to indicate if AI should return to center
 
+/********************************************************************************************************
+ * INITIALIZATION AND SETUP
+ ********************************************************************************************************/
 // Initialize paddle and ball positions
 function initializePositions() {
   paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
@@ -154,47 +186,9 @@ window.addEventListener('load', () => {
   clearActiveNavButtons();
 });
 
-// Get navigation elements
-const playButton = document.getElementById('playButton');
-const settingsButton = document.getElementById('settingsButton');
-const howToPlayButton = document.getElementById('howToPlayButton');
-
-// Get screen elements
-const playScreen = document.getElementById('playScreen');
-const settingsScreen = document.getElementById('settingsScreen');
-const howToPlayScreen = document.getElementById('howToPlayScreen');
-
-// Setup game mode selection buttons
-const pvpButton = document.getElementById('pvpButton');
-const pveButton = document.getElementById('pveButton');
-const player2Controls = document.getElementById('player2Controls');
-const winScoreSelect = document.getElementById('winScore');
-const ballSpeedSelect = document.getElementById('ballSpeedSelect');
-const aiDifficultySelect = document.getElementById('aiDifficultySelect');
-const player1NameInput = document.getElementById('player1NameInput');
-const player2NameInput = document.getElementById('player2NameInput');
-const saveSettingsButton = document.getElementById('saveSettingsButton');
-const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
-
-// Navigation buttons event listeners
-playButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
-
-settingsButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(settingsButton);
-  settingsScreen.style.display = 'block';
-});
-
-howToPlayButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(howToPlayButton);
-  howToPlayScreen.style.display = 'block';
-});
-
+/********************************************************************************************************
+ * UI NAVIGATION FUNCTIONS
+ ********************************************************************************************************/
 // Helper function to hide all screens
 function hideAllScreens() {
   const screens = [playScreen, settingsScreen, howToPlayScreen, startText, winScreen];
@@ -230,12 +224,33 @@ function setNavButtonsEnabled(enabled) {
   });
 }
 
+/********************************************************************************************************
+ * EVENT LISTENERS
+ ********************************************************************************************************/
+// Navigation buttons event listeners
+playButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+settingsButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(settingsButton);
+  settingsScreen.style.display = 'block';
+});
+
+howToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(howToPlayButton);
+  howToPlayScreen.style.display = 'block';
+});
+
 // Game Mode buttons
 pvpButton.addEventListener('click', () => {
   isAIMode = false;
   playScreen.style.display = 'none';
   startText.style.display = 'block';
-//   player2Controls.textContent = 'Player 2: Up and Down';
   
   // Apply current settings
   applySettings();
@@ -247,7 +262,6 @@ pveButton.addEventListener('click', () => {
   isAIMode = true;
   playScreen.style.display = 'none';
   startText.style.display = 'block';
-//   player2Controls.textContent = 'AI will control Player 2';
   
   // Apply current settings
   applySettings();
@@ -266,6 +280,36 @@ saveSettingsButton.addEventListener('click', () => {
   playScreen.style.display = 'block';
 });
 
+// Back button from How to Play screen
+backFromHowToPlayButton.addEventListener('click', () => {
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+// Listeners for game controls
+document.addEventListener('keydown', (e) => {
+  // Resume game with any key if paused but not game over
+  if (!gameRunning && !gameOver && ball.style.display === 'none') {
+    startGame();
+  }
+});
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
+
+// Event listener for the restart button
+restartButton.addEventListener('click', () => {
+  winScreen.style.display = 'none';
+  resetGame();
+  // Return to the play screen
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+});
+
+/********************************************************************************************************
+ * SETTINGS FUNCTIONS
+ ********************************************************************************************************/
 // Apply current settings
 function applySettings() {
   pointsToWin = parseInt(winScoreSelect.value);
@@ -289,11 +333,7 @@ function applySettings() {
     aiPredictionAccuracy = settings.predictionAccuracy;
     
     // Update AI name to reflect difficulty
-    if (currentAIDifficulty === 'unbeatable') {
-      player2Name = "MASTER AI";
-    } else {
-      player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
-    }
+    player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
   }
   
   // Update display
@@ -307,23 +347,9 @@ function applySettings() {
   }
 }
 
-// Back button from How to Play screen
-backFromHowToPlayButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
-
-// Listeners for game controls
-document.addEventListener('keydown', (e) => {
-  // Resume game with any key if paused but not game over
-  if (!gameRunning && !gameOver && ball.style.display === 'none') {
-    startGame();
-  }
-});
-document.addEventListener('keydown', handleKeyDown);
-document.addEventListener('keyup', handleKeyUp);
-
+/********************************************************************************************************
+ * GAME CONTROL FUNCTIONS
+ ********************************************************************************************************/
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
   if (!gameOver) {
@@ -349,23 +375,21 @@ function handleKeyUp(e) {
 
 // Main Game Loop using requestAnimationFrame with delta time
 function gameLoop(timestamp) {
-  if (!gameRunning) return;
-//   console.time('gameLoop');
-  if (lastTime === null) {
-      lastTime = timestamp;
-    }
-    const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
-    
-    updatePaddle1(deltaTime);
-    updatePaddle2(deltaTime);
-    moveBall(deltaTime);
-    
+  if (!gameRunning)
+    return;
+  if (lastTime === null)
     lastTime = timestamp;
-    // console.timeEnd('gameLoop');
-    requestAnimationFrame(gameLoop);
+  const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
+  updatePaddle1(deltaTime);
+  updatePaddle2(deltaTime);
+  moveBall(deltaTime);
+  lastTime = timestamp;
+  requestAnimationFrame(gameLoop);
 }
 
-/************************************ Update Paddles ***********************************/
+/********************************************************************************************************
+ * PADDLE MOVEMENT FUNCTIONS
+ ********************************************************************************************************/
 function updatePaddle1(deltaTime) {
   if (keysPressed['w']) {
     paddle1Speed = Math.max(paddle1Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
@@ -375,199 +399,31 @@ function updatePaddle1(deltaTime) {
     paddle1Speed *= 0.9; // Gradual slow down
   }
   paddle1Y += paddle1Speed * deltaTime;
-  if (paddle1Y < 0) paddle1Y = 0;
-  if (paddle1Y > gameHeight - paddle1.clientHeight)
+  if (paddle1Y < 0) {
+    paddle1Y = 0;
+  }
+  if (paddle1Y > gameHeight - paddle1.clientHeight) {
     paddle1Y = gameHeight - paddle1.clientHeight;
+  }
   paddle1.style.top = paddle1Y + 'px';
 }
 
 function updatePaddle2(deltaTime) {
   if (isAIMode) {
-    // Check if ball was just hit (to activate return to center behavior)
-    // This detects when the ball changes direction from left to right (meaning AI just hit it)
-    if (ballSpeedX < 0 && aiPerceptionBallSpeedX > 0) {
-      shouldReturnToCenter = true;
-      lastBallHitX = ballX; // Mark where ball was when it changed direction
-    }
-    
-    // AI LOGIC - with configurable perception update based on difficulty
-    const currentTime = Date.now();
-    
-    // Update AI's perception of the ball based on reaction delay (difficulty setting)
-    // Performance optimization: Throttle AI calculations based on difficulty
-    const aiUpdateInterval = currentAIDifficulty === 'easy' ? 50 : 
-                            currentAIDifficulty === 'medium' ? 40 : 
-                            currentAIDifficulty === 'hard' ? 30 : 20;
-    if (currentTime - lastAIUpdateTime > Math.max(aiReactionDelay, aiUpdateInterval)) {
-      // Update AI's perception of the ball
-      aiPerceptionBallX = ballX;
-      aiPerceptionBallY = ballY;
-      aiPerceptionBallSpeedX = ballSpeedX;
-      aiPerceptionBallSpeedY = ballSpeedY;
-      lastAIUpdateTime = currentTime;
-      
-      // AI makes mistakes based on difficulty
-      if (Math.random() < aiMistakeChance) {
-        // Intentionally misjudge ball direction or speed
-        aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4; // Random error in vertical prediction
-        
-        // For easier difficulties, sometimes misperceive horizontal direction too
-        if (currentAIDifficulty === 'easy' && Math.random() < 0.2) {
-          aiPerceptionBallSpeedX *= 0.7 + Math.random() * 0.6; // Add horizontal error for easier AI
-        }
-      }
-    }
-    
-    // Reset key states at the beginning of each frame
-    aiKeyState['ArrowUp'] = false;
-    aiKeyState['ArrowDown'] = false;
-    
-    // BEHAVIOR: RETURN TO CENTER after hitting the ball
-    // This only activates if the shouldReturnToCenter flag is true and ball is moving away
-    if (shouldReturnToCenter && aiPerceptionBallSpeedX < 0) {
-      const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
-      const centerDifference = centerPosition - paddle2Y;
-      
-      // If we're close enough to center, stop centering
-      if (Math.abs(centerDifference) < 15) {
-        shouldReturnToCenter = false;
-      } else {
-        // Only make centering decisions with a certain probability based on difficulty
-        if (Math.random() < aiReturnToMiddleSpeed) {
-          if (centerDifference > 0) {
-            // Need to move DOWN toward center
-            aiKeyState['ArrowDown'] = true;
-          } else {
-            // Need to move UP toward center
-            aiKeyState['ArrowUp'] = true;
-          }
-        }
-      }
-    }
-    // BEHAVIOR: INTERCEPT BALL when it's coming toward the AI
-    else if (aiPerceptionBallSpeedX > 0) {
-      // Calculate time until ball reaches paddle (physics prediction)
-      const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
-      const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
-      
-      // Predict where ball will be vertically, accounting for bounces
-      let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
-      
-      // Advanced bounce prediction with configurable accuracy based on difficulty
-      // Performance optimization: Reduce maximum bounce calculations
-      const bounceCalculations = Math.min(3, Math.ceil(timeToImpact / 15)); // Reduced for better performance
-      const effectiveHeight = gameHeight - ball.clientHeight;
-      
-      // More accurate bounce prediction (fixes ball getting stuck bug)
-      for (let i = 0; i < bounceCalculations; i++) {
-        if (predictedY < 0) {
-          // When ball hits top, it bounces down with preserved momentum
-          predictedY = Math.abs(predictedY);
-        } else if (predictedY > effectiveHeight) {
-          // When ball hits bottom, it bounces up with preserved momentum
-          predictedY = effectiveHeight - (predictedY - effectiveHeight);
-        }
-        
-        // If within bounds, no more bounces needed
-        if (predictedY >= 0 && predictedY <= effectiveHeight) {
-          break;
-        }
-      }
-      
-      // Apply AI prediction accuracy (lower for easier difficulties)
-      if (Math.random() > aiPredictionAccuracy) {
-        // Introduce intentional prediction error (based on difficulty)
-        const errorAmount = (1 - aiPredictionAccuracy) * gameHeight * 0.3;
-        predictedY += (Math.random() * 2 - 1) * errorAmount;
-      }
-      
-      // Error margin gets larger as the ball gets further away (more human-like)
-      // Harder difficulties have smaller error margins
-      const distanceFactor = Math.min(1, distanceToTravel / gameWidth);
-      const dynamicErrorMargin = paddle2.clientHeight * (aiErrorMargin * (0.5 + 0.5 * distanceFactor));
-      
-      const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
-      const predictedBallCenter = predictedY + ball.clientHeight / 2;
-      const difference = predictedBallCenter - paddleCenter;
-      
-      // Reset the return to center flag when ball is coming toward AI
-      shouldReturnToCenter = false;
-      
-      // For unbeatable difficulty, add perfect anticipation
-      if (currentAIDifficulty === 'unbeatable') {
-        // Perfect positioning with minimal correction
-        if (Math.abs(difference) > 2) {
-          if (difference > 0) {
-            aiKeyState['ArrowDown'] = true;
-          } else {
-            aiKeyState['ArrowUp'] = true;
-          }
-        }
-      } else {
-        // Normal difficulty-based movement
-        if (Math.abs(difference) > dynamicErrorMargin) {
-          if (difference > 0) {
-            // Ball is predicted BELOW paddle - press DOWN key
-            aiKeyState['ArrowDown'] = true;
-          } else {
-            // Ball is predicted ABOVE paddle - press UP key
-            aiKeyState['ArrowUp'] = true;
-          }
-        }
-        // If within error margin, both keys remain released (paddle will slow down naturally)
-      }
-    } 
-    // BEHAVIOR: IDLE CENTERING when ball is moving away and not actively returning to center
-    else if (!shouldReturnToCenter) {
-      const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
-      const centerDifference = centerPosition - paddle2Y;
-      
-      // Only make centering decisions with a configurable probability based on difficulty
-      if (Math.random() < aiCenteringProbability) {
-        // Occasionally move in wrong direction (adds human-like mistakes)
-        // Higher chances for easier difficulties, almost never for harder ones
-        const wrongDirectionChance = currentAIDifficulty === 'easy' ? 0.15 : 
-                                    currentAIDifficulty === 'medium' ? 0.05 : 
-                                    currentAIDifficulty === 'hard' ? 0.01 : 0;
-                                    
-        if (Math.random() < wrongDirectionChance) {
-          if (centerDifference > 0) {
-            // Should move up instead of down
-            aiKeyState['ArrowUp'] = true;
-          } else {
-            // Should move down instead of up
-            aiKeyState['ArrowDown'] = true;
-          }
-        } 
-        // Only try to center if we're not already very close to center
-        else if (Math.abs(centerDifference) > 20) {
-          if (centerDifference > 0) {
-            // Need to move DOWN toward center
-            aiKeyState['ArrowDown'] = true;
-          } else {
-            // Need to move UP toward center
-            aiKeyState['ArrowUp'] = true;
-          }
-        }
-      }
-    }
+    // Update AI decisions
+    updateAIDecisions();
     
     // Apply the AI's simulated key presses to control the paddle
-    // This uses the exact same code path as human player input
+    // This ensures AI follows the same speed constraints as human players
     if (aiKeyState['ArrowUp']) {
-      // For unbeatable difficulty, faster paddle movement
-      const accelerationMultiplier = currentAIDifficulty === 'unbeatable' ? 1.5 : 1;
-      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime * accelerationMultiplier, -maxPaddleSpeed);
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
     } else if (aiKeyState['ArrowDown']) {
-      const accelerationMultiplier = currentAIDifficulty === 'unbeatable' ? 1.5 : 1;
-      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime * accelerationMultiplier, maxPaddleSpeed);
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
     } else {
-      // Unbeatable AI has faster reactions when stopping
-      const decelMultiplier = currentAIDifficulty === 'unbeatable' ? 0.8 : 0.9;
-      paddle2Speed *= decelMultiplier; // Gradual slow down
+      paddle2Speed *= 0.9; // Gradual slow down
     }
   } else {
-    // Human player controls (unchanged)
+    // Human player controls
     if (keysPressed['ArrowUp']) {
       paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
     } else if (keysPressed['ArrowDown']) {
@@ -577,6 +433,7 @@ function updatePaddle2(deltaTime) {
     }
   }
   
+  // Apply paddle movement with boundary constraints
   paddle2Y += paddle2Speed * deltaTime;
   if (paddle2Y < 0) paddle2Y = 0;
   if (paddle2Y > gameHeight - paddle2.clientHeight)
@@ -584,7 +441,164 @@ function updatePaddle2(deltaTime) {
   paddle2.style.top = paddle2Y + 'px';
 }
 
-/************************************ Move Ball ***********************************/
+/********************************************************************************************************
+ * AI LOGIC FUNCTIONS
+ ********************************************************************************************************/
+// AI Controller function - handles AI decision making
+function updateAIDecisions() {
+  // Check if ball was just hit (to activate return to center behavior)
+  if (ballSpeedX < 0 && aiPerceptionBallSpeedX > 0) {
+    shouldReturnToCenter = true;
+    lastBallHitX = ballX; // Mark where ball was when it changed direction
+  }
+  
+  // Reset key states at the beginning of each frame
+  aiKeyState['ArrowUp'] = false;
+  aiKeyState['ArrowDown'] = false;
+  
+  // Update AI's perception of the ball based on reaction delay
+  const currentTime = Date.now();
+  const aiUpdateInterval = currentAIDifficulty === 'easy' ? 50 : 
+                          currentAIDifficulty === 'medium' ? 40 : 
+                          currentAIDifficulty === 'hard' ? 30 : 20;
+  
+  // Only update perception periodically based on difficulty
+  if (currentTime - lastAIUpdateTime > Math.max(aiReactionDelay, aiUpdateInterval)) {
+    // Update AI's perception of the ball
+    aiPerceptionBallX = ballX;
+    aiPerceptionBallY = ballY;
+    aiPerceptionBallSpeedX = ballSpeedX;
+    aiPerceptionBallSpeedY = ballSpeedY;
+    lastAIUpdateTime = currentTime;
+    
+    // AI makes mistakes based on difficulty
+    if (Math.random() < aiMistakeChance) {
+      // Intentionally misjudge ball direction or speed
+      aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4;
+    }
+  }
+  
+  // Get the center position of the paddle
+  const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
+  const centerDifference = centerPosition - paddle2Y;
+  
+  // BEHAVIOR 1: RETURN TO CENTER after hitting the ball
+  if (shouldReturnToCenter && aiPerceptionBallSpeedX < 0) {
+    // If we're close enough to center, stop centering
+    if (Math.abs(centerDifference) < 15) {
+      shouldReturnToCenter = false;
+    } 
+    // Move toward center with probability based on difficulty
+    else if (Math.random() < aiReturnToMiddleSpeed) {
+      aiKeyState[centerDifference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+    }
+  }
+  // BEHAVIOR 2: INTERCEPT BALL when it's coming toward the AI
+  else if (aiPerceptionBallSpeedX > 0) {
+    // Calculate time until ball reaches paddle
+    const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
+    const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
+    
+    // Predict where ball will be vertically
+    let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
+    
+    // Simple bounce prediction (limited calculations for performance)
+    const bounceCalculations = Math.min(3, Math.ceil(timeToImpact / 15));
+    const effectiveHeight = gameHeight - ball.clientHeight;
+    
+    // Predict bounces
+    for (let i = 0; i < bounceCalculations; i++) {
+      if (predictedY < 0) {
+        predictedY = Math.abs(predictedY); // Bounce off top
+      } else if (predictedY > effectiveHeight) {
+        predictedY = effectiveHeight - (predictedY - effectiveHeight); // Bounce off bottom
+      }
+      
+      // If within bounds, no more bounces needed
+      if (predictedY >= 0 && predictedY <= effectiveHeight) break;
+    }
+    
+    // Add prediction errors based on difficulty
+    if (Math.random() > aiPredictionAccuracy) {
+      const errorAmount = (1 - aiPredictionAccuracy) * gameHeight * 0.3;
+      predictedY += (Math.random() * 2 - 1) * errorAmount;
+    }
+    
+    // Calculate error margin (larger when ball is far away)
+    const distanceFactor = Math.min(1, distanceToTravel / gameWidth);
+    const dynamicErrorMargin = paddle2.clientHeight * (aiErrorMargin * (0.5 + 0.5 * distanceFactor));
+    
+    // Calculate difference between predicted ball position and paddle position
+    const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
+    const predictedBallCenter = predictedY + ball.clientHeight / 2;
+    const difference = predictedBallCenter - paddleCenter;
+    
+    // Reset the return to center flag
+    shouldReturnToCenter = false;
+    
+    // Move paddle based on prediction
+    if (Math.abs(difference) > dynamicErrorMargin) {
+      aiKeyState[difference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+    }
+  }
+  // BEHAVIOR 3: IDLE CENTERING when ball is moving away
+  else if (!shouldReturnToCenter) {
+    // Only make centering decisions with a probability based on difficulty
+    if (Math.random() < aiCenteringProbability) {
+      // Occasionally move in wrong direction (human-like mistakes)
+      const wrongDirectionChance = 
+        currentAIDifficulty === 'easy' ? 0.15 : 
+        currentAIDifficulty === 'medium' ? 0.05 : 
+        currentAIDifficulty === 'hard' ? 0.01 : 0;
+      
+      if (Math.random() < wrongDirectionChance) {
+        // Move in the wrong direction
+        aiKeyState[centerDifference > 0 ? 'ArrowUp' : 'ArrowDown'] = true;
+      }
+      // Only try to center if not already close to center
+      else if (Math.abs(centerDifference) > 20) {
+        aiKeyState[centerDifference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+      }
+    }
+  }
+}
+
+function updatePaddle2(deltaTime) {
+  if (isAIMode) {
+    // Update AI decisions
+    updateAIDecisions();
+    
+    // Apply the AI's simulated key presses to control the paddle
+    // This ensures AI follows the same speed constraints as human players
+    if (aiKeyState['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (aiKeyState['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
+  } else {
+    // Human player controls
+    if (keysPressed['ArrowUp']) {
+      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+    } else if (keysPressed['ArrowDown']) {
+      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+    } else {
+      paddle2Speed *= 0.9; // Gradual slow down
+    }
+  }
+  
+  // Apply paddle movement with boundary constraints
+  paddle2Y += paddle2Speed * deltaTime;
+  if (paddle2Y < 0) paddle2Y = 0;
+  if (paddle2Y > gameHeight - paddle2.clientHeight)
+    paddle2Y = gameHeight - paddle2.clientHeight;
+  paddle2.style.top = paddle2Y + 'px';
+}
+
+/********************************************************************************************************
+ * BALL PHYSICS AND COLLISION DETECTION
+ ********************************************************************************************************/
 function moveBall(deltaTime) {
   // Store previous position for collision detection
   ballLastX = ballX;
@@ -595,7 +609,7 @@ function moveBall(deltaTime) {
 
   // Top collision: snap to top and reverse vertical velocity
   if (ballY <= 0) {
-    ballY = 0;
+    ballY = 3;
     ballSpeedY = -ballSpeedY;
     // FIX: Add a small random horizontal adjustment to prevent infinite top bouncing
     ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
@@ -603,7 +617,7 @@ function moveBall(deltaTime) {
   }
   // Bottom collision: snap to bottom and reverse vertical velocity
   else if (ballY >= gameHeight - ball.clientHeight) {
-    ballY = gameHeight - ball.clientHeight;
+    ballY = gameHeight - ball.clientHeight - 3;
     ballSpeedY = -ballSpeedY;
     // FIX: Add a small random horizontal adjustment to prevent infinite bottom bouncing
     ballSpeedX += (Math.random() * 0.4 - 0.2) * Math.sign(ballSpeedX);
@@ -702,6 +716,9 @@ function moveBall(deltaTime) {
   ball.style.top = ballY + 'px';
 }
 
+/********************************************************************************************************
+ * BALL PHYSICS HELPERS
+ ********************************************************************************************************/
 // Function to adjust the ball's direction and speed after it hits a paddle
 function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   // Calculate the vertical center of the paddle
@@ -756,7 +773,9 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   playSound(paddleSound);
 }
 
-/************************************ Helper Functions ***********************************/
+/********************************************************************************************************
+ * GAME STATE MANAGEMENT
+ ********************************************************************************************************/
 // Pause the game but don't show any menu; just hide the ball
 function pauseGame() {
   gameRunning = false;
@@ -778,7 +797,8 @@ function resetBall() {
   ballSpeedY = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
   
   // Ensure the vertical speed is a bit lower than horizontal for better gameplay
-  ballSpeedY *= 0.7;
+  ballSpeedY *= 0.5;
+  // ballSpeedX *= 0.6;
 }
 
 function updateScoreboard() {
@@ -816,6 +836,9 @@ function resetGame() {
   ball.style.display = 'none';
 }
 
+/********************************************************************************************************
+ * WIN CONDITION AND GAME END
+ ********************************************************************************************************/
 // Function to display the win screen
 function showWinScreen(winnerName) {
   gameRunning = false;
@@ -839,4 +862,3 @@ restartButton.addEventListener('click', () => {
   setActiveNavButton(playButton);
   playScreen.style.display = 'block';
 });
-
