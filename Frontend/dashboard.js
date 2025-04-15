@@ -18,6 +18,36 @@ document.addEventListener('DOMContentLoaded', function() {
             <p><strong>Email:</strong> ${user.email || 'Not provided'}</p>
         `;
     }
+    
+    // Display 2FA status
+    const twoFactorStatus = document.getElementById('twoFactorStatus');
+    if (twoFactorStatus) {
+        if (user.is_two_factor_enabled) {
+            twoFactorStatus.innerHTML = `
+                <div class="status-badge enabled">
+                    <span class="status-icon">✓</span>
+                    Two-factor authentication is enabled
+                </div>
+                <p>Your account is protected with an additional layer of security.</p>
+            `;
+        } else {
+            twoFactorStatus.innerHTML = `
+                <div class="status-badge disabled">
+                    <span class="status-icon">!</span>
+                    Two-factor authentication is not enabled
+                </div>
+                <p>Add an extra layer of security to your account by enabling 2FA.</p>
+            `;
+        }
+    }
+
+    // 2FA management button functionality
+    const manage2FABtn = document.getElementById('manage2FABtn');
+    if (manage2FABtn) {
+        manage2FABtn.addEventListener('click', function() {
+            window.location.href = '/2fa-setup.html';
+        });
+    }
 
     // Game button functionality
     const playGameBtn = document.getElementById('playGameBtn');

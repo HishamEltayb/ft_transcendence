@@ -26,24 +26,39 @@ function getCookie(name) {
 }
 
 // Store tokens after login
-function login(username, password, loginError) {
-    console.log('Login function called with API URL:', `${API_BASE_URL}/token/`);
-    fetch(`${API_BASE_URL}/token/`, {
+function login(username, password, otpToken, loginError) {
+    console.log('Login function called with API URL:', `${API_BASE_URL}/login/`);
+    
+    // Prepare request body - only include OTP if provided
+    const requestBody = { username, password };
+    if (otpToken) {
+        requestBody.otp_token = otpToken;
+    }
+    
+    fetch(`${API_BASE_URL}/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(requestBody)
     })
     .then(response => {
         console.log('Login response status:', response.status);
-        if (!response.ok) {
-            return response.text().then(text => {
-                console.error('Login error details:', text);
-                throw new Error('Login failed: ' + text);
+        if (!response.ok && response.status !== 200) {
+            return response.json().then(data => {
+                console.error('Login error details:', data);
+                throw new Error(data.error || 'Login failed');
             });
         }
         return response.json();
     })
     .then(data => {
+        // Check if 2FA verification is required
+        if (data.require_2fa) {
+            console.log('2FA required for login, showing OTP input');
+            // Show 2FA verification form
+            showOtpVerificationForm(username, password, data.user_id);
+            return; // Stop here, wait for OTP verification
+        }
+        
         console.log('Login successful, received data:', data);
         // Save tokens to cookies
         document.cookie = `access_token=${data.access}; SameSite=Strict; Path=/`;
@@ -55,7 +70,15 @@ function login(username, password, loginError) {
         // Get username from login/register form for the basic user data
         const formUsername = username; // This comes from the login function parameters
         
-        // Fetch user details from the Django backend
+        // Use the user data already returned from login if available
+        if (data.user) {
+            console.log('User data received with login response:', data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            window.location.href = '/dashboard.html';
+            return;
+        }
+        
+        // Otherwise fetch user details from the Django backend
         return fetch(`${API_BASE_URL}/me/`, { // UserDetailView endpoint in your Django backend
             headers: {
                 'Authorization': `Bearer ${data.access}`
@@ -95,8 +118,62 @@ function login(username, password, loginError) {
     })
     .catch(error => {
         console.error('Login error:', error);
-        displayError(loginError, 'Invalid username or password');
+        displayError(loginError, error.message || 'Invalid username or password');
     });
+}
+
+// Display 2FA verification form
+function showOtpVerificationForm(username, password, userId) {
+    console.log('Showing 2FA verification form for user:', username);
+    
+    // Hide login and register forms
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.add('hidden');
+    
+    // Check if 2FA form already exists, if not create it
+    let otpForm = document.getElementById('otpVerificationForm');
+    
+    if (!otpForm) {
+        // Create the 2FA verification form
+        otpForm = document.createElement('div');
+        otpForm.id = 'otpVerificationForm';
+        otpForm.className = 'auth-form';
+        otpForm.innerHTML = `
+            <h2>Two-Factor Authentication</h2>
+            <p>Please enter the 6-digit verification code from your authenticator app.</p>
+            <div class="form-group">
+                <label for="otpCode">Verification Code</label>
+                <input type="text" id="otpCode" name="otpCode" maxlength="6" required>
+            </div>
+            <div class="error-message" id="otpError"></div>
+            <button type="button" id="verifyOtpButton">Verify</button>
+            <button type="button" id="cancelOtpButton" class="secondary-button">Cancel</button>
+        `;
+        
+        // Add the form to the container
+        document.querySelector('.container').appendChild(otpForm);
+        
+        // Add event listeners for the new buttons
+        document.getElementById('verifyOtpButton').addEventListener('click', function() {
+            const otpCode = document.getElementById('otpCode').value;
+            if (!otpCode || otpCode.length !== 6) {
+                displayError(document.getElementById('otpError'), 'Please enter a valid 6-digit code');
+                return;
+            }
+            
+            // Submit the OTP for verification
+            login(username, password, otpCode, document.getElementById('otpError'));
+        });
+        
+        document.getElementById('cancelOtpButton').addEventListener('click', function() {
+            // Hide OTP form and show login form again
+            otpForm.classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        });
+    } else {
+        // Just show the existing form
+        otpForm.classList.remove('hidden');
+    }
 }
 
 // Ensure this code runs when the DOM is fully loaded
@@ -254,7 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log('Attempting login with username:', username);
-        login(username, password, loginError);
+        // Call login with username, password, no OTP initially, and the error display element
+        login(username, password, null, loginError);
     }
     
     // Attach click event directly

@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'bio', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user']
+        fields = ['id', 'username', 'email', 'bio', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled']
         read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user']
 
 class RegisterSerializer(serializers.ModelSerializer):
