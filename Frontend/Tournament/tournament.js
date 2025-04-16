@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
+    // Check if user is logged in using the updated authentication system
+    const accessToken = getCookie('access_token');
+    const refreshToken = getCookie('refresh_token');
+    
+    if (!accessToken || !refreshToken) {
         window.location.href = '/';
         return;
     }
@@ -173,7 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 player2: players[i + 1],
                 winner: null,
                 completed: false,
-                matchId: firstRoundMatches.length
+                matchId: firstRoundMatches.length,
+                player1_source_match: null, // No source match for first round
+                player2_source_match: null  // No source match for first round
             };
             firstRoundMatches.push(match);
         }
@@ -191,7 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     player2: null,
                     winner: null,
                     completed: false,
-                    matchId: roundMatches.length
+                    matchId: roundMatches.length,
+                    player1_source_match: i * 2,       // Source match ID for player1
+                    player2_source_match: i * 2 + 1    // Source match ID for player2
                 };
                 roundMatches.push(match);
             }
@@ -268,8 +274,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Can only select matches where both players are assigned and match isn't completed
         if (match.player1 && match.player2 && !match.completed) {
             selectedMatch = { round: roundIndex, matchId: matchIndex };
+            
+            // Log selected match for debugging
+            console.log("Selected match:", selectedMatch);
+            console.log("Match details:", match);
+            
             renderTournamentBracket();
         } else {
+            if (!match.player1 || !match.player2) {
+                console.log("Match not ready - missing players");
+            }
+            if (match.completed) {
+                console.log("Match already completed");
+            }
             selectedMatch = null;
             renderTournamentBracket();
         }
@@ -326,6 +343,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Find the match
         const match = matches[round][matchId];
         
+        // Skip if match is already completed with the same winner
+        if (match.completed && match.winner === winnerName) {
+            console.log("Match already completed with the same winner");
+            return;
+        }
+        
         // Set the winner
         match.winner = winnerName;
         match.completed = true;
@@ -337,10 +360,21 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Determine if this player goes to player1 or player2 slot in the next match
             if (matchId % 2 === 0) {
-                nextMatch.player1 = winnerName;
+                // Only update player1 if it hasn't been set yet or if this is the correct source match
+                if (!nextMatch.player1 || nextMatch.player1_source_match === matchId) {
+                    nextMatch.player1 = winnerName;
+                    nextMatch.player1_source_match = matchId; // Track where player1 came from
+                }
             } else {
-                nextMatch.player2 = winnerName;
+                // Only update player2 if it hasn't been set yet or if this is the correct source match
+                if (!nextMatch.player2 || nextMatch.player2_source_match === matchId) {
+                    nextMatch.player2 = winnerName;
+                    nextMatch.player2_source_match = matchId; // Track where player2 came from
+                }
             }
+            
+            // Save tournament state after updating bracket
+            saveTournamentState();
             
             // Re-render the bracket
             renderTournamentBracket();
@@ -354,6 +388,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const allMatchesCompleted = matches[round].every(m => m.completed);
         if (allMatchesCompleted) {
             currentRound++;
+            
+            // Save tournament state after advancing round
+            saveTournamentState();
         }
     };
     
@@ -461,3 +498,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if returning from a match
     checkReturnFromMatch();
 });
+
+// Helper function to get cookies - copied from dashboard.js for consistency
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}

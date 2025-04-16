@@ -59,7 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tournament button functionality
     const tournamentBtn = document.getElementById('tournamentBtn');
     tournamentBtn.addEventListener('click', function() {
-        window.location.href = 'Tournament/tournament.html';
+        // Use absolute path with leading slash to ensure proper routing (consistent with game button)
+        window.location.href = '/Tournament/tournament.html';
     });
 
     // Logout functionality
