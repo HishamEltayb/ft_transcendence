@@ -4,11 +4,12 @@
  */
 
 function checkAuthentication() {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const accesstoken = getCookie('access_token');
+    const refreshToken = getCookie('refresh_token');
+    if (!accesstoken || !refreshToken) {
         // If not logged in, redirect to login page
         window.location.href = '/';
-        return false;
+        return;
     }
     return true;
 }
@@ -17,3 +18,6 @@ function checkAuthentication() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { checkAuthentication };
 }
+
+
+// Check if user is logged in

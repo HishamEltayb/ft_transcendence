@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const accesstoken = getCookie('access_token');
+    const refreshToken = getCookie('refresh_token');
+    if (!accesstoken || !refreshToken) {
         // If not logged in, redirect to login page
         window.location.href = '/';
         return;
@@ -17,11 +18,42 @@ document.addEventListener('DOMContentLoaded', function() {
             <p><strong>Email:</strong> ${user.email || 'Not provided'}</p>
         `;
     }
+    
+    // Display 2FA status
+    const twoFactorStatus = document.getElementById('twoFactorStatus');
+    if (twoFactorStatus) {
+        if (user.is_two_factor_enabled) {
+            twoFactorStatus.innerHTML = `
+                <div class="status-badge enabled">
+                    <span class="status-icon">✓</span>
+                    Two-factor authentication is enabled
+                </div>
+                <p>Your account is protected with an additional layer of security.</p>
+            `;
+        } else {
+            twoFactorStatus.innerHTML = `
+                <div class="status-badge disabled">
+                    <span class="status-icon">!</span>
+                    Two-factor authentication is not enabled
+                </div>
+                <p>Add an extra layer of security to your account by enabling 2FA.</p>
+            `;
+        }
+    }
+
+    // 2FA management button functionality
+    const manage2FABtn = document.getElementById('manage2FABtn');
+    if (manage2FABtn) {
+        manage2FABtn.addEventListener('click', function() {
+            window.location.href = '/2fa-setup.html';
+        });
+    }
 
     // Game button functionality
     const playGameBtn = document.getElementById('playGameBtn');
     playGameBtn.addEventListener('click', function() {
-        window.location.href = 'Game/game.html';
+        // Use absolute path with leading slash to ensure proper routing
+        window.location.href = '/Game/game.html';
     });
 
     // Tournament button functionality
@@ -31,10 +63,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Logout functionality
+    // const logoutBtn = document.getElementById('logoutBtn');
+    // logoutBtn.addEventListener('click', function() {
+    //     localStorage.removeItem('token');
+    //     localStorage.removeItem('user');
+    //     window.location.href = '/';
+    // });
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function() {
-        localStorage.removeItem('token');
+        // Clear all authentication data with consistent format
+        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+           
+        // Also clear localStorage items
         localStorage.removeItem('user');
-        window.location.href = '/';
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        
+        console.log('User logged out, redirecting to login page');
+        window.location.href = '/';     
     });
 });
+
+// // Old code - only checking for the presence of an access token
+// const accesstoken = getCookie('access_token');
+// if (accesstoken && window.location.pathname === '/') {
+//     window.location.href = '/dashboard.html';
+// }
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
