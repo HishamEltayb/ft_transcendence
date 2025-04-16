@@ -12,49 +12,167 @@ import requests
 import os
 import secrets
 import string
+import pyotp
+import base64
+import qrcode
+import io
+import json
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.conf import settings
+from django_otp import devices_for_user
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
-# class LoginView(APIView):
-#     permission_classes = [permissions.AllowAny]
-    
-#     def post(self, request):
-#         username = request.data.get('username')
-#         password = request.data.get('password')
-        
-#         user = authenticate(username=username, password=password)
-        
-#         if user:
-#             token, created = Token.objects.get_or_create(user=user)
-#             return Response({
-#                 'user': UserSerializer(user).data,
-#                 'token': token.key
-#             })
-#         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        username = request.data.get('username', '').lower()
+        password = request.data.get('password', '')
+        otp_token = request.data.get('otp_token', None)
 
         user = authenticate(username=username, password=password)
 
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token)
-            })
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        if not user:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Check if 2FA is enabled for this user
+        if user.is_two_factor_enabled:
+            # If no OTP token was provided, tell the client to request one
+            if not otp_token:
+                return Response({
+                    'require_2fa': True,
+                    'user_id': user.id,
+                    'message': 'Please provide an OTP token'}, 
+                    status=status.HTTP_200_OK)
+            
+            # Verify the provided OTP token
+            devices = TOTPDevice.objects.filter(user=user)
+            if not devices.exists():
+                return Response({'error': 'No 2FA device found for this user'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            device = devices.first()
+            if not device.verify_token(otp_token):
+                return Response({'error': 'Invalid OTP token'}, status=status.HTTP_401_UNAUTHORIZED)
         
+        # At this point, the user is authenticated (and passed 2FA if enabled)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        })
+
+class Setup2FAView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        
+        # Delete any existing TOTP devices for this user
+        TOTPDevice.objects.filter(user=user).delete()
+        
+        # Create a new TOTP device
+        device = TOTPDevice.objects.create(
+            user=user,
+            name=f"2FA Device for {user.username}",
+            confirmed=False
+        )
+        
+        # Generate the TOTP secret key
+        secret_key = base64.b32encode(device.bin_key).decode('utf-8')
+        
+        # Create the OTP provisioning URI
+        totp = pyotp.TOTP(secret_key)
+        provisioning_uri = totp.provisioning_uri(user.email, issuer_name="ft_transcendence")
+        
+        # Generate a QR code for the URI
+        qr = qrcode.make(provisioning_uri)
+        qr_buffer = io.BytesIO()
+        qr.save(qr_buffer, format="PNG")
+        qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
+        
+        return Response({
+            'secret_key': secret_key,
+            'qr_code': f"data:image/png;base64,{qr_base64}"
+        })
+
+class Verify2FAView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        otp_token = request.data.get('otp_token')
+        
+        if not otp_token:
+            return Response({'error': 'OTP token required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        devices = TOTPDevice.objects.filter(user=user)
+        if not devices.exists():
+            return Response({'error': 'No 2FA device found. Please set up 2FA first.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        device = devices.first()
+        if device.verify_token(otp_token):
+            # Mark device as confirmed and enable 2FA for the user
+            device.confirmed = True
+            device.save()
+            
+            user.is_two_factor_enabled = True
+            user.save()
+            
+            return Response({
+                'success': True,
+                'message': '2FA has been enabled successfully',
+                'user': UserSerializer(user).data
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': 'Invalid OTP token'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+class Disable2FAView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        otp_token = request.data.get('otp_token')
+        
+        if not user.is_two_factor_enabled:
+            return Response({'error': '2FA is not enabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not otp_token:
+            return Response({'error': 'OTP token required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        devices = TOTPDevice.objects.filter(user=user)
+        if not devices.exists():
+            return Response({'error': 'No 2FA device found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        device = devices.first()
+        if device.verify_token(otp_token):
+            # Disable 2FA and remove device
+            user.is_two_factor_enabled = False
+            user.save()
+            device.delete()
+            
+            return Response({
+                'success': True,
+                'message': '2FA has been disabled successfully',
+                'user': UserSerializer(user).data
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': 'Invalid OTP token'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
 
 class UserDetailView(generics.RetrieveAPIView):
