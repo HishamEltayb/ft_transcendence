@@ -1,3 +1,4 @@
+from sre_parse import State
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -10,6 +11,7 @@ class User(AbstractUser):
     intra_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
     intra_login = models.CharField(max_length=100, blank=True, null=True)
     is_oauth_user = models.BooleanField(default=False)
+    state = models.CharField(max_length=10, choices=[('OF', 'Offline'), ('ON', 'Online'), ('ID', 'In-Game')], default='OF')
     
     # 2FA fields
     is_two_factor_enabled = models.BooleanField(default=False)
