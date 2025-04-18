@@ -52,33 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Game button functionality
     const playGameBtn = document.getElementById('playGameBtn');
     playGameBtn.addEventListener('click', function() {
-        fetch('/api/users/2fa/status/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accesstoken}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to check 2FA status');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.is_two_factor_enabled) {
-                alert('You must enable 2FA authentication to play the game!');
-                return;
-            }
-            window.location.href = '/Game/game.html';
-        })
-        .catch(error => {
-            console.error('2FA status check error:', error);
-            alert('Error checking 2FA status, please try again later!');
-            return;
-        });
+        window.location.href = '/Game/game.html';
     });
 
     // Logout functionality
@@ -96,12 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/';     
     });
 });
-
-// // Old code - only checking for the presence of an access token
-// const accesstoken = getCookie('access_token');
-// if (accesstoken && window.location.pathname === '/') {
-//     window.location.href = '/dashboard.html';
-// }
 
 function getCookie(name) {
     const value = `; ${document.cookie}`;
