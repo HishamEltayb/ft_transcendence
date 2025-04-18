@@ -54,10 +54,6 @@ const player2NameInput = document.getElementById('player2NameInput');
 const saveSettingsButton = document.getElementById('saveSettingsButton');
 const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
 
-// Tournament Mode Variables
-let isTournamentMode = false;
-let tournamentMatchData = null;
-
 /********************************************************************************************************
  * GAME STATE VARIABLES
  ********************************************************************************************************/
@@ -89,6 +85,25 @@ let player1Name = "Player 1"; // Default player names
 let player2Name = "Player 2"; // Default player names
 let pointsToWin = 5; // Default points to win
 
+// Function to get logged-in user data
+function getLoggedInUser() {
+  // Check if we have a user in localStorage
+  const userData = localStorage.getItem('userData');
+  
+  if (userData) {
+    try {
+      const user = JSON.parse(userData);
+      if (user && user.username) {
+        return user;
+      }
+    } catch (e) {
+      console.error('Error parsing user data:', e);
+    }
+  }
+  
+  return null;
+}
+
 /********************************************************************************************************
  * GAME CONSTANTS
  ********************************************************************************************************/
@@ -113,12 +128,12 @@ let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
 let aiPerceptionBallSpeedX = 0;
 let aiPerceptionBallSpeedY = 0;
-let currentAIDifficulty = 'easy'; // Default difficulty
+let currentAIDifficulty = 'medium'; // Default difficulty
 
-// AI Behavior Parameters
+// AI Behavior Parameters - these will be set based on difficulty
 let aiMistakeChance = 0.02;        // Chance of AI misperceiving the ball
 let aiErrorMargin = 0.05;          // Paddle targeting precision (smaller = more accurate)
-let aiReactionDelay = 150;         // How often AI updates its movement (ms) (smaller = faster reactions)
+let aiReactionDelay = 1000;        // AI updates its perception once per second
 let aiReturnToMiddleSpeed = 0.15;  // How quickly AI returns to center
 let aiCenteringProbability = 0.3;  // How often AI tries to center itself
 let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
@@ -126,32 +141,32 @@ let aiPredictionAccuracy = 0.9;    // How accurately AI predicts bounces (0-1)
 // AI Difficulty Presets
 const aiDifficultySettings = {
   easy: {
-    mistakeChance: 0.40,
-    errorMargin: 0.4,
-    reactionDelay: 500,
+    mistakeChance: 0.35,
+    errorMargin: 0.35,
+    reactionDelay: 1000, // 1 second as per requirements
     returnToMiddleSpeed: 0.05,
     centeringProbability: 0.2,
     predictionAccuracy: 0.5
   },
   medium: {
-    mistakeChance: 0.25,
-    errorMargin: 0.25,
-    reactionDelay: 250,
-    returnToMiddleSpeed: 0.15,
-    centeringProbability: 0.4,
+    mistakeChance: 0.15,
+    errorMargin: 0.15,
+    reactionDelay: 1000, // 1 second as per requirements
+    returnToMiddleSpeed: 0.3,
+    centeringProbability: 0.6,
     predictionAccuracy: 0.8
   },
   hard: {
-    mistakeChance: 0.15,
-    errorMargin: 0.15,
-    reactionDelay: 150,
-    returnToMiddleSpeed: 0.25,
-    centeringProbability: 0.6,
+    mistakeChance: 0.05,
+    errorMargin: 0.05,
+    reactionDelay: 1000, // 1 second as per requirements
+    returnToMiddleSpeed: 0.7,
+    centeringProbability: 0.9,
     predictionAccuracy: 0.95
   },
 };
 
-// AI Control State
+// AI Control State - simulating keyboard input
 let aiKeyState = {
   'ArrowUp': false,
   'ArrowDown': false
@@ -177,71 +192,21 @@ function initializePositions() {
   ball.style.top = ballY + 'px';
 }
 
-// Check if this game is part of a tournament
-function checkTournamentMode() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const mode = urlParams.get('mode');
-  
-  if (mode === 'tournament') {
-    console.log("Tournament mode detected");
-    isTournamentMode = true;
-    
-    // Get tournament match data from localStorage
-    tournamentMatchData = JSON.parse(localStorage.getItem('tournamentMatch') || '{}');
-    console.log("Tournament match data:", tournamentMatchData);
-    
-    if (tournamentMatchData.player1 && tournamentMatchData.player2) {
-      // Auto-set player names
-      player1Name = tournamentMatchData.player1;
-      player2Name = tournamentMatchData.player2;
-      
-      // Update display
-      player1NameElement.textContent = player1Name;
-      player2NameElement.textContent = player2Name;
-      
-      // Tournament settings
-      pointsToWin = 5; // Default to 5 points for tournament matches
-      initialBallSpeed = 5; // Default speed
-      gameMode = 'pvp';
-      
-      console.log(`Tournament match: ${player1Name} vs ${player2Name}`);
-      
-      // Setup the game display for tournament
-      hideAllScreens();
-      setNavButtonsEnabled(false);
-      initializePositions();
-      
-      // Show game container and start prompt
-      const gameContainer = document.querySelector('.gameContainer');
-      if (gameContainer) {
-        gameContainer.style.display = 'flex';
-      }
-      
-      startText.style.display = 'block';
-      ball.style.display = 'none';
-      
-      // Hide AI container
-      const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
-      if (aiDifficultyContainer) {
-        aiDifficultyContainer.style.display = 'none';
-      }
-      
-      // Show the tournament return button
-      const tournamentReturnBtn = document.getElementById('tournamentReturnBtn');
-      if (tournamentReturnBtn) {
-        tournamentReturnBtn.style.display = 'block';
-        tournamentReturnBtn.addEventListener('click', returnToTournament);
-      }
-    }
-  }
-}
-
 // Window load event - initialize everything
 window.addEventListener('load', () => {
   initializePositions();
   
+  // Try to get logged-in user for player1 name
+  const loggedInUser = getLoggedInUser();
+  if (loggedInUser) {
+    player1Name = loggedInUser.username;
+    if (player1NameInput) {
+      player1NameInput.value = player1Name;
+    }
+  }
+  
   // Set default player names on initial load
-  player1NameElement.textContent = "Player 1";
+  player1NameElement.textContent = player1Name;
   player2NameElement.textContent = "Player 2";
   
   // Hide all screens, don't select any button by default
@@ -260,9 +225,6 @@ window.addEventListener('load', () => {
   // Set up regular game controls
   document.addEventListener('keydown', handleKeyDown);
   document.addEventListener('keyup', handleKeyUp);
-  
-  // Check if this is a tournament match
-  checkTournamentMode();
 });
 
 // Main key press handler that manages both starting the game and in-game controls
@@ -388,15 +350,13 @@ restartButton.addEventListener('click', () => {
   winScreen.style.display = 'none';
   resetGame();
   
-  if (isTournamentMode) {
-    // If in tournament mode, just reset the game but don't change screens
-    startText.style.display = 'block';
-  } else {
-    // Return to the play screen
-    hideAllScreens();
-    setActiveNavButton(playButton);
-    playScreen.style.display = 'block';
-  }
+  // Return to the play screen
+  hideAllScreens();
+  setActiveNavButton(playButton);
+  playScreen.style.display = 'block';
+  
+  // Reset the lastTime variable to ensure the game loop starts fresh
+  lastTime = null;
 });
 
 /********************************************************************************************************
@@ -442,6 +402,103 @@ function applySettings() {
 /********************************************************************************************************
  * GAME CONTROL FUNCTIONS
  ********************************************************************************************************/
+// Main Game Loop using requestAnimationFrame with delta time
+function gameLoop(timestamp) {
+  if (!gameRunning) {
+    return; // Exit if game is not running
+  }
+    
+  if (lastTime === null) {
+    lastTime = timestamp;
+  }
+    
+  const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
+  
+  // Update game objects
+  updatePaddle1(deltaTime);
+  updatePaddle2(deltaTime);
+  moveBall(deltaTime);
+  
+  lastTime = timestamp;
+  requestAnimationFrame(gameLoop);
+}
+
+// Helper function to play a sound with error handling
+function playSound(sound) {
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(error => {
+      console.error("Error playing sound:", error);
+    });
+  }
+}
+
+// Update the scoreboard with current scores
+function updateScoreboard() {
+  player1ScoreElement.textContent = player1Score;
+  player2ScoreElement.textContent = player2Score;
+}
+
+// Reset the ball position and speed
+function resetBall() {
+  // Reset ball position and speed
+  ballX = gameWidth / 2 - ball.clientWidth / 2; // Ball in the middle horizontally
+  ballY = Math.random() * (gameHeight - ball.clientHeight); // Random Y position within bounds
+  
+  // Store previous position for collision detection
+  ballLastX = ballX;
+  ballLastY = ballY;
+  
+  // Use the configured initial ball speed but with random direction
+  ballSpeedX = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
+  // Randomly choose an up or down initial direction with configured speed
+  ballSpeedY = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
+  
+  // Ensure the vertical speed is a bit lower than horizontal for better gameplay
+  ballSpeedY *= 0.5;
+  
+  // Update ball position
+  ball.style.left = ballX + 'px';
+  ball.style.top = ballY + 'px';
+  
+  // Make sure ball is visible and game is running
+  ball.style.display = 'block';
+  
+  // Make sure the game stays running
+  gameRunning = true;
+}
+
+// Reset the entire game state
+function resetGame() {
+  // Reset scores
+  player1Score = 0;
+  player2Score = 0;
+  updateScoreboard();
+  
+  // Reset paddles and ball
+  initializePositions();
+  
+  // Reset speeds
+  paddle1Speed = 0;
+  paddle2Speed = 0;
+  ballSpeedX = initialBallSpeed;
+  ballSpeedY = initialBallSpeed * 0.5;
+  
+  // Reset game state
+  gameRunning = false;
+  gameOver = false;
+  
+  // Update player names display (ensuring they're always visible)
+  player1NameElement.textContent = player1Name || "Player 1";
+  player2NameElement.textContent = player2Name || "Player 2";
+  
+  // Hide the ball until game starts
+  ball.style.display = 'none';
+  
+  // Reset last time to ensure game loop functions properly on restart
+  lastTime = null;
+}
+
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
   startText.style.display = 'none';
@@ -453,26 +510,26 @@ function startGame() {
   
   console.log("Game started! Ball visible, game running set to true");
   
-  // If this is the first start, kick off the game loop
-  if (!lastTime) {
-    lastTime = performance.now();
-    requestAnimationFrame(gameLoop);
-    console.log("Game loop started with requestAnimationFrame");
-  }
+  // Always reset lastTime to ensure a fresh game loop start
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+  console.log("Game loop started with requestAnimationFrame");
 }
 
-// Main Game Loop using requestAnimationFrame with delta time
-function gameLoop(timestamp) {
-  if (!gameRunning)
-    return;
-  if (lastTime === null)
-    lastTime = timestamp;
-  const deltaTime = (timestamp - lastTime) / 16.67; // Normalize to 60fps baseline
-  updatePaddle1(deltaTime);
-  updatePaddle2(deltaTime);
-  moveBall(deltaTime);
-  lastTime = timestamp;
-  requestAnimationFrame(gameLoop);
+// Function to display the win screen
+function showWinScreen(winnerName) {
+  gameRunning = false;
+  gameOver = true;
+  ball.style.display = 'none';
+  
+  winnerTextElement.textContent = `${winnerName} Wins!`;
+  finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
+  
+  // Show normal win screen with buttons
+  winScreen.style.display = 'block';
+  
+  // Re-enable navigation buttons when game is over
+  setNavButtonsEnabled(true);
 }
 
 /********************************************************************************************************
@@ -540,18 +597,16 @@ function updateAIDecisions() {
     lastBallHitX = ballX; // Mark where ball was when it changed direction
   }
   
-  // Reset key states at the beginning of each frame
+  // Reset key states at the beginning of each frame - this simulates keyboard input
   aiKeyState['ArrowUp'] = false;
   aiKeyState['ArrowDown'] = false;
   
   // Update AI's perception of the ball based on reaction delay
+  // The AI can only refresh its view of the game once per second
   const currentTime = Date.now();
-  const aiUpdateInterval = currentAIDifficulty === 'easy' ? 50 : 
-                          currentAIDifficulty === 'medium' ? 40 : 
-                          currentAIDifficulty === 'hard' ? 30 : 20;
   
-  // Only update perception periodically based on difficulty
-  if (currentTime - lastAIUpdateTime > Math.max(aiReactionDelay, aiUpdateInterval)) {
+  // Only update perception once per second as per requirements
+  if (currentTime - lastAIUpdateTime > aiReactionDelay) {
     // Update AI's perception of the ball
     aiPerceptionBallX = ballX;
     aiPerceptionBallY = ballY;
@@ -561,50 +616,27 @@ function updateAIDecisions() {
     
     // AI makes mistakes based on difficulty
     if (Math.random() < aiMistakeChance) {
-      // Intentionally misjudge ball direction or speed
+      // Intentionally misjudge ball direction or speed (makes AI more human-like)
       aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4;
     }
   }
   
   // Get the center position of the paddle
   const centerPosition = gameHeight / 2 - paddle2.clientHeight / 2;
+  const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
   const centerDifference = centerPosition - paddle2Y;
+  const distanceFromCenter = Math.abs(paddleCenter - gameHeight / 2);
   
-  // BEHAVIOR 1: RETURN TO CENTER after hitting the ball
-  if (shouldReturnToCenter && aiPerceptionBallSpeedX < 0) {
-    // If we're close enough to center, stop centering
-    if (Math.abs(centerDifference) < 15) {
-      shouldReturnToCenter = false;
-    } 
-    // Move toward center with probability based on difficulty
-    else if (Math.random() < aiReturnToMiddleSpeed) {
-      aiKeyState[centerDifference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
-    }
-  }
-  // BEHAVIOR 2: INTERCEPT BALL when it's coming toward the AI
-  else if (aiPerceptionBallSpeedX > 0) {
+  // AGGRESSIVE BEHAVIOR: Move to intercept the ball if it's coming toward the AI
+  if (aiPerceptionBallSpeedX > 0) {
     // Calculate time until ball reaches paddle
     const distanceToTravel = gameWidth - paddle2.clientWidth - ball.clientWidth - aiPerceptionBallX;
-    const timeToImpact = distanceToTravel / aiPerceptionBallSpeedX;
+    const timeToImpact = distanceToTravel / Math.max(0.1, aiPerceptionBallSpeedX); // Avoid division by zero
     
-    // Predict where ball will be vertically
-    let predictedY = aiPerceptionBallY + (aiPerceptionBallSpeedY * timeToImpact);
-    
-    // Simple bounce prediction (limited calculations for performance)
-    const bounceCalculations = Math.min(3, Math.ceil(timeToImpact / 15));
-    const effectiveHeight = gameHeight - ball.clientHeight;
-    
-    // Predict bounces
-    for (let i = 0; i < bounceCalculations; i++) {
-      if (predictedY < 0) {
-        predictedY = Math.abs(predictedY); // Bounce off top
-      } else if (predictedY > effectiveHeight) {
-        predictedY = effectiveHeight - (predictedY - effectiveHeight); // Bounce off bottom
-      }
-      
-      // If within bounds, no more bounces needed
-      if (predictedY >= 0 && predictedY <= effectiveHeight) break;
-    }
+    // Predict where ball will be vertically with multiple bounce calculation
+    let predictedY = predictBallPosition(aiPerceptionBallX, aiPerceptionBallY, 
+                                        aiPerceptionBallSpeedX, aiPerceptionBallSpeedY, 
+                                        distanceToTravel);
     
     // Add prediction errors based on difficulty
     if (Math.random() > aiPredictionAccuracy) {
@@ -612,76 +644,89 @@ function updateAIDecisions() {
       predictedY += (Math.random() * 2 - 1) * errorAmount;
     }
     
-    // Calculate error margin (larger when ball is far away)
+    // Calculate dynamic error margin (smaller for hard difficulty)
     const distanceFactor = Math.min(1, distanceToTravel / gameWidth);
-    const dynamicErrorMargin = paddle2.clientHeight * (aiErrorMargin * (0.5 + 0.5 * distanceFactor));
+    const dynamicErrorMargin = paddle2.clientHeight * (aiErrorMargin * (0.3 + 0.7 * distanceFactor));
     
     // Calculate difference between predicted ball position and paddle position
-    const paddleCenter = paddle2Y + paddle2.clientHeight / 2;
     const predictedBallCenter = predictedY + ball.clientHeight / 2;
     const difference = predictedBallCenter - paddleCenter;
     
-    // Reset the return to center flag
-    shouldReturnToCenter = false;
-    
-    // Move paddle based on prediction
+    // Intercept the ball with higher precision for harder difficulties
     if (Math.abs(difference) > dynamicErrorMargin) {
       aiKeyState[difference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
     }
+    
+    // Reset center flag when actively tracking ball
+    shouldReturnToCenter = false;
+  } 
+  // RETURN TO CENTER: After hitting ball or when ball is moving away
+  else if (aiPerceptionBallSpeedX < 0) {
+    // Hard difficulty AI should aggressively return to center
+    const shouldCenter = Math.random() < aiReturnToMiddleSpeed;
+    
+    // If we should center and we're not already centered
+    if (shouldCenter && distanceFromCenter > 10) {
+      aiKeyState[paddleCenter > gameHeight / 2 ? 'ArrowUp' : 'ArrowDown'] = true;
+    }
   }
-  // BEHAVIOR 3: IDLE CENTERING when ball is moving away
-  else if (!shouldReturnToCenter) {
-    // Only make centering decisions with a probability based on difficulty
-    if (Math.random() < aiCenteringProbability) {
-      // Occasionally move in wrong direction (human-like mistakes)
-      const wrongDirectionChance = 
-        currentAIDifficulty === 'easy' ? 0.15 : 
-        currentAIDifficulty === 'medium' ? 0.05 : 
-        currentAIDifficulty === 'hard' ? 0.01 : 0;
+  
+  // For medium/hard difficulty, occasionally predict and move based on expected return trajectory
+  if (aiPerceptionBallSpeedX < 0 && currentAIDifficulty !== 'easy') {
+    const proactiveChance = currentAIDifficulty === 'hard' ? 0.7 : 0.3;
+    
+    if (Math.random() < proactiveChance) {
+      // Try to predict where the ball might come back
+      // This simulates a more experienced player anticipating the return
+      const playerPaddleX = paddle1.clientWidth;
+      const bounceX = Math.max(playerPaddleX, aiPerceptionBallX - Math.abs(aiPerceptionBallSpeedX) * 15);
       
-      if (Math.random() < wrongDirectionChance) {
-        // Move in the wrong direction
-        aiKeyState[centerDifference > 0 ? 'ArrowUp' : 'ArrowDown'] = true;
-      }
-      // Only try to center if not already close to center
-      else if (Math.abs(centerDifference) > 20) {
-        aiKeyState[centerDifference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+      // Simple prediction of return trajectory
+      let expectedReturnY = aiPerceptionBallY + (aiPerceptionBallSpeedY * 
+                           (gameWidth / Math.max(1, Math.abs(aiPerceptionBallSpeedX))));
+      
+      // Keep within game bounds
+      expectedReturnY = Math.max(0, Math.min(gameHeight - ball.clientHeight, expectedReturnY));
+      
+      // Move slightly toward the expected return position
+      const returnDiff = (expectedReturnY + ball.clientHeight/2) - paddleCenter;
+      
+      // Only move if we're far from the predicted position and not already moving to center
+      if (Math.abs(returnDiff) > gameHeight/4 && !aiKeyState['ArrowUp'] && !aiKeyState['ArrowDown']) {
+        aiKeyState[returnDiff > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
       }
     }
   }
 }
 
-function updatePaddle2(deltaTime) {
-  if (isAIMode) {
-    // Update AI decisions
-    updateAIDecisions();
+// Helper function to predict ball position with multiple bounces
+function predictBallPosition(startX, startY, speedX, speedY, distanceX) {
+  let currentX = startX;
+  let currentY = startY;
+  let currentSpeedY = speedY;
+  const effectiveHeight = gameHeight - ball.clientHeight;
+  
+  // Calculate how far the ball will travel horizontally
+  const timeSteps = Math.min(100, Math.ceil(distanceX / Math.max(0.1, speedX)));
+  const stepSizeX = distanceX / timeSteps;
+  
+  // Simulate ball movement with bounces
+  for (let i = 0; i < timeSteps; i++) {
+    // Move ball
+    currentX += stepSizeX;
+    currentY += currentSpeedY * (stepSizeX / speedX);
     
-    // Apply the AI's simulated key presses to control the paddle
-    // This ensures AI follows the same speed constraints as human players
-    if (aiKeyState['ArrowUp']) {
-      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
-    } else if (aiKeyState['ArrowDown']) {
-      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
-    } else {
-      paddle2Speed *= 0.9; // Gradual slow down
-    }
-  } else {
-    // Human player controls
-    if (keysPressed['ArrowUp']) {
-      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
-    } else if (keysPressed['ArrowDown']) {
-      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
-    } else {
-      paddle2Speed *= 0.9; // Gradual slow down
+    // Check for bounces
+    if (currentY < 0) {
+      currentY = -currentY; // Bounce off top
+      currentSpeedY = -currentSpeedY;
+    } else if (currentY > effectiveHeight) {
+      currentY = effectiveHeight - (currentY - effectiveHeight); // Bounce off bottom
+      currentSpeedY = -currentSpeedY;
     }
   }
   
-  // Apply paddle movement with boundary constraints
-  paddle2Y += paddle2Speed * deltaTime;
-  if (paddle2Y < 0) paddle2Y = 0;
-  if (paddle2Y > gameHeight - paddle2.clientHeight)
-    paddle2Y = gameHeight - paddle2.clientHeight;
-  paddle2.style.top = paddle2Y + 'px';
+  return currentY;
 }
 
 /********************************************************************************************************
@@ -868,140 +913,4 @@ function pauseGame() {
   ball.style.display = 'none';
   
   // Don't show any menu when paused in normal mode
-}
-
-function resetBall() {
-  // Reset ball position and speed
-  ballX = gameWidth / 2 - ball.clientWidth / 2; // Ball in the middle horizontally
-  ballY = Math.random() * (gameHeight - ball.clientHeight); // Random Y position within bounds
-  
-  // Store previous position for collision detection
-  ballLastX = ballX;
-  ballLastY = ballY;
-  
-  // Use the configured initial ball speed but with random direction
-  ballSpeedX = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
-  // Randomly choose an up or down initial direction with configured speed
-  ballSpeedY = Math.random() > 0.5 ? initialBallSpeed : -initialBallSpeed;
-  
-  // Ensure the vertical speed is a bit lower than horizontal for better gameplay
-  ballSpeedY *= 0.5;
-  
-  // Make sure ball is visible and game is running
-  ball.style.display = 'block';
-  
-  // Make sure the game stays running
-  gameRunning = true;
-}
-
-function updateScoreboard() {
-  player1ScoreElement.textContent = player1Score;
-  player2ScoreElement.textContent = player2Score;
-}
-
-function playSound(sound) {
-  sound.currentTime = 0;
-  sound.play();
-}
-
-// Reset the entire game state
-function resetGame() {
-  // Reset scores
-  player1Score = 0;
-  player2Score = 0;
-  updateScoreboard();
-  
-  // Reset paddles and ball
-  initializePositions();
-  
-  // Reset speeds
-  paddle1Speed = 0;
-  paddle2Speed = 0;
-  
-  // Reset game state
-  gameOver = false;
-  
-  // Update player names display (ensuring they're always visible)
-  player1NameElement.textContent = player1Name || "Player 1";
-  player2NameElement.textContent = player2Name || "Player 2";
-  
-  // Hide the ball until game starts
-  ball.style.display = 'none';
-}
-
-/********************************************************************************************************
- * WIN CONDITION AND GAME END
- ********************************************************************************************************/
-// Function to display the win screen
-function showWinScreen(winnerName) {
-  gameRunning = false;
-  gameOver = true;
-  ball.style.display = 'none';
-  
-  winnerTextElement.textContent = `${winnerName} Wins!`;
-  finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
-  
-  // If in tournament mode, handle tournament match completion differently
-  if (isTournamentMode && tournamentMatchData) {
-    // Store match result in localStorage
-    localStorage.setItem('tournamentMatchResult', JSON.stringify({
-      round: tournamentMatchData.round,
-      matchId: tournamentMatchData.matchId,
-      winner: winnerName
-    }));
-    
-    // Show a brief win message for 2 seconds then automatically return to tournament
-    winScreen.style.display = 'block';
-    
-    // Create a countdown display
-    const countdownDiv = document.createElement('div');
-    countdownDiv.style.marginTop = '15px';
-    countdownDiv.style.fontSize = '14px';
-    countdownDiv.textContent = 'Returning to tournament in 3...';
-    winScreen.appendChild(countdownDiv);
-    
-    // Hide any existing buttons
-    const existingButtons = winScreen.querySelectorAll('button');
-    existingButtons.forEach(button => {
-      button.style.display = 'none';
-    });
-    
-    // Automatically return to tournament after countdown
-    let countdown = 3;
-    const countdownInterval = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        clearInterval(countdownInterval);
-        returnToTournament();
-      } else {
-        countdownDiv.textContent = `Returning to tournament in ${countdown}...`;
-      }
-    }, 1000);
-    
-  } else {
-    // Regular non-tournament game - show normal win screen with buttons
-    winScreen.style.display = 'block';
-    
-    // Re-enable navigation buttons when game is over
-    setNavButtonsEnabled(true);
-  }
-}
-
-// Function to return to tournament after a match
-function returnToTournament() {
-  // If a match was completed and we have a winner, save the result
-  if (gameOver && tournamentMatchData) {
-    // Determine winner name
-    const winnerName = player1Score > player2Score ? player1Name : player2Name;
-    
-    // Store match result in localStorage
-    localStorage.setItem('tournamentMatchResult', JSON.stringify({
-      round: tournamentMatchData.round,
-      matchId: tournamentMatchData.matchId,
-      winner: winnerName
-    }));
-  }
-  
-  // Navigate back to tournament page with result parameter
-  window.location.href = '../Tournament/tournament.html?result=completed';
 }
