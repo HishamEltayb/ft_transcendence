@@ -299,21 +299,6 @@ class FortyTwoCallbackView(APIView):
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class Verify2FAStatusView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get(self, request):
-        user = request.user
-        if user.is_two_factor_enabled:
-            return Response({
-                'is_two_factor_enabled': True
-            })
-        else:
-            return Response({
-                'is_two_factor_enabled': False
-            })
-
 # Authentication Flow
 # The complete authentication flow in your application works like this:
 
