@@ -18,7 +18,26 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+        
 
+class PlayerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    total_games = models.IntegerField(default=0)
+    wins = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    rank = models.IntegerField(default=1000)  # ELO rating starting at 1000
+    
+    @property
+    def win_rate(self):
+        if self.total_games > 0:
+            return round((self.wins / self.total_games) * 100, 2)
+        return 0
+    
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+
+# No signals needed - creating profiles happens in the User.save method
 
 
 #postgres sql table structure
