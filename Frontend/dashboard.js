@@ -52,8 +52,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Game button functionality
     const playGameBtn = document.getElementById('playGameBtn');
     playGameBtn.addEventListener('click', function() {
-        // Use absolute path with leading slash to ensure proper routing
-        window.location.href = '/Game/game.html';
+        fetch('/api/users/2fa/status/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accesstoken}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to check 2FA status');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.is_two_factor_enabled) {
+                alert('You must enable 2FA authentication to play the game!');
+                return;
+            }
+            window.location.href = '/Game/game.html';
+        })
+        .catch(error => {
+            console.error('2FA status check error:', error);
+            alert('Error checking 2FA status, please try again later!');
+            return;
+        });
     });
 
     // Tournament button functionality
@@ -64,24 +89,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Logout functionality
-    // const logoutBtn = document.getElementById('logoutBtn');
-    // logoutBtn.addEventListener('click', function() {
-    //     localStorage.removeItem('token');
-    //     localStorage.removeItem('user');
-    //     window.location.href = '/';
-    // });
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function() {
         // Clear all authentication data with consistent format
         document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
         document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-           
         // Also clear localStorage items
         localStorage.removeItem('user');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        
-        console.log('User logged out, redirecting to login page');
+
+        // Redirect to login page
         window.location.href = '/';     
     });
 });
