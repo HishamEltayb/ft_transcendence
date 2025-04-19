@@ -13,7 +13,7 @@
 </head>
 <body>
     <img src="assets/rm251-aum-14.jpg" alt="Neon Background" class="background">
-    <h1 class="title">CYBER PONG</h1>
+    <!-- <h1 class="title">CYBER PONG</h1> -->
     
     <!-- Navigation Bar -->
     <div class="navBar">
@@ -131,6 +131,13 @@
         <h3 id="winnerText">Player 1 Wins!</h3>
         <p>Final Score: <span id="finalScore">0 - 0</span></p>
         <button class="modeButton" id="restartButton">Play Again</button>
+    </div>
+    
+    <!-- Window Size Warning Overlay -->
+    <div class="screen" id="sizeWarningScreen" style="display: none;">
+        <h2>Window Too Small!</h2>
+        <p>Please increase your window size to play the game properly.</p>
+        <p>For the best experience, use a larger screen or maximize your browser window.</p>
     </div>
 
     <audio src="assets/paddle.wav" id="paddleSound"></audio>

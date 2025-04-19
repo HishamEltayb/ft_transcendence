@@ -1,19 +1,3 @@
-/******************************************************************************************************************************
- * This is a modified version of the basic Pong game that includes the following features:
- * 
- * 
- * This game has 1 vs 1 working as expected and follows the basic rules of Pong.
- * What needs to be done:
- * 1. Add a start menu that displays the controls and waits for the player to press any key to start the game.
- * 2. There is a bug where the ball get stuck on the bottom or top of the screen and keeps bouncing back and forth,
- * even though it bounced off the paddle but it keeps going back and forth in straight line. This needs to be fixed.
- * 3. Need to make it single player vs computer.
- * 4. Need to make game win condition.
- * 5. Need to add players name and details, and display them on the screen.
- * 6. Need to add player icon.
- * 7. Need to add history of the game.
-******************************************************************************************************************************/
-
 /********************************************************************************************************
  * DOM ELEMENTS AND GAME VARIABLES
  ********************************************************************************************************/
@@ -62,6 +46,11 @@ let gameRunning = false;
 let gameOver = false;
 let keysPressed = {};
 let lastTime = null;
+
+// Responsive scaling variables
+let gameArea = document.querySelector('.gameArea');
+let scaleX = 1;       // Horizontal scale factor
+let scaleY = 1;       // Vertical scale factor
 
 // Paddle Variables
 let paddle1Speed = 0;
@@ -115,8 +104,38 @@ const speedIncreaseFactor = 1.05; // 5% speed increase per paddle hit
 const maxSpeed = 15; // Prevent excessive speed
 
 // Game Dimensions
-const gameWidth = 800;
-const gameHeight = 600;
+// Reference dimensions (what the game was originally designed for)
+// Now using 16:9 ratio
+const REFERENCE_WIDTH = 960;
+const REFERENCE_HEIGHT = 540;
+
+// Actual dimensions that will be updated based on current game area size
+let gameWidth = REFERENCE_WIDTH;
+let gameHeight = REFERENCE_HEIGHT;
+
+// Function to update the game dimensions and scale factors
+function updateGameDimensions() {
+  // Get the actual dimensions of the game area
+  gameWidth = gameArea.clientWidth;
+  gameHeight = gameArea.clientHeight;
+  
+  // Calculate scale factors relative to reference dimensions
+  scaleX = gameWidth / REFERENCE_WIDTH;
+  scaleY = gameHeight / REFERENCE_HEIGHT;
+  
+  // Reinitialize positions when dimensions change
+  if (gameRunning) {
+    // Scale current positions instead of resetting completely
+    paddle1.style.left = (parseInt(paddle1.style.left) * scaleX || 0) + 'px';
+    paddle2.style.right = (parseInt(paddle2.style.right) * scaleX || 0) + 'px';
+    paddle1.style.top = (paddle1Y * scaleY) + 'px';
+    paddle2.style.top = (paddle2Y * scaleY) + 'px';
+    ball.style.left = (ballX * scaleX) + 'px';
+    ball.style.top = (ballY * scaleY) + 'px';
+  } else {
+    initializePositions();
+  }
+}
 
 /********************************************************************************************************
  * AI CONFIGURATION
@@ -181,20 +200,73 @@ let shouldReturnToCenter = false; // Flag to indicate if AI should return to cen
  ********************************************************************************************************/
 // Initialize paddle and ball positions
 function initializePositions() {
+  // Position paddles at the center of the game area vertically
   paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
   paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
+  
+  // Set the paddle width based on the game area width
+  const paddleWidth = Math.max(Math.round(0.01 * gameWidth), 6); // at least 6px wide
+  paddle1.style.width = paddleWidth + 'px';
+  paddle2.style.width = paddleWidth + 'px';
+  
+  // Set the ball size based on the game area
+  const ballSize = Math.max(Math.round(0.02 * Math.min(gameWidth, gameHeight)), 8); // at least 8px
+  ball.style.width = ballSize + 'px';
+  ball.style.height = ballSize + 'px';
+  
+  // IMPORTANT: Calculate ball position AFTER updating its size
+  // We need to account for the ball's dimensions to center it properly
+  // This fixes the issue where the ball sometimes doesn't appear centered
   ballX = gameWidth / 2 - ball.clientWidth / 2;
   ballY = gameHeight / 2 - ball.clientHeight / 2;
 
+  // Apply positions to DOM elements
   paddle1.style.top = paddle1Y + 'px';
   paddle2.style.top = paddle2Y + 'px';
   ball.style.left = ballX + 'px';
   ball.style.top = ballY + 'px';
 }
 
+// Get reference to size warning screen
+const sizeWarningScreen = document.getElementById('sizeWarningScreen');
+
+// Minimum dimensions for gameplay
+const MIN_GAME_WIDTH = 320; // px
+const MIN_GAME_HEIGHT = 180; // px
+
+// Function to check if window size is adequate for gameplay
+function checkWindowSize() {
+  const gameAreaWidth = gameArea.clientWidth;
+  const gameAreaHeight = gameArea.clientHeight;
+  
+  if (gameAreaWidth < MIN_GAME_WIDTH || gameAreaHeight < MIN_GAME_HEIGHT) {
+    // Show warning and pause game if it's running
+    sizeWarningScreen.style.display = 'block';
+    if (gameRunning) {
+      gameRunning = false;
+    }
+    return false;
+  } else {
+    // Hide warning and allow game to run
+    sizeWarningScreen.style.display = 'none';
+    return true;
+  }
+}
+
 // Window load event - initialize everything
 window.addEventListener('load', () => {
+  // Update game dimensions before initializing positions
+  updateGameDimensions();
   initializePositions();
+  
+  // Check window size on load
+  checkWindowSize();
+  
+  // Add resize event listener to handle window size changes
+  window.addEventListener('resize', function() {
+    updateGameDimensions();
+    checkWindowSize();
+  });
   
   // Try to get logged-in user for player1 name
   const loggedInUser = getLoggedInUser();
@@ -501,6 +573,12 @@ function resetGame() {
 
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
 function startGame() {
+  // First check if the window is large enough
+  if (!checkWindowSize()) {
+    // Don't start the game if window is too small
+    return;
+  }
+  
   startText.style.display = 'none';
   ball.style.display = 'block';
   resetBall();
@@ -536,20 +614,37 @@ function showWinScreen(winnerName) {
  * PADDLE MOVEMENT FUNCTIONS
  ********************************************************************************************************/
 function updatePaddle1(deltaTime) {
-  if (keysPressed['w']) {
-    paddle1Speed = Math.max(paddle1Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
-  } else if (keysPressed['s']) {
-    paddle1Speed = Math.min(paddle1Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+  // Player 1 controls (W/S keys)
+  if (keysPressed['w'] || keysPressed['W']) {
+    paddle1Speed -= paddleAcceleration;
+  } else if (keysPressed['s'] || keysPressed['S']) {
+    paddle1Speed += paddleAcceleration;
   } else {
-    paddle1Speed *= 0.9; // Gradual slow down
+    // Apply deceleration when no keys are pressed
+    if (paddle1Speed > 0) paddle1Speed = Math.max(0, paddle1Speed - paddleDeceleration);
+    if (paddle1Speed < 0) paddle1Speed = Math.min(0, paddle1Speed + paddleDeceleration);
   }
-  paddle1Y += paddle1Speed * deltaTime;
+
+  // Clamp paddle speed to maximum
+  paddle1Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle1Speed));
+  
+  // Scale paddle speed based on game area height
+  // This makes movement feel consistent regardless of screen size
+  const effectiveSpeed = paddle1Speed * scaleY * deltaTime;
+  
+  // Update position
+  paddle1Y += effectiveSpeed;
+  
+  // Boundary checks - keep paddle within the game area
   if (paddle1Y < 0) {
     paddle1Y = 0;
+    paddle1Speed = 0;
   }
   if (paddle1Y > gameHeight - paddle1.clientHeight) {
     paddle1Y = gameHeight - paddle1.clientHeight;
+    paddle1Speed = 0;
   }
+  
   paddle1.style.top = paddle1Y + 'px';
 }
 
@@ -568,21 +663,38 @@ function updatePaddle2(deltaTime) {
       paddle2Speed *= 0.9; // Gradual slow down
     }
   } else {
-    // Human player controls
+    // Player 2 controls (Arrow keys)
     if (keysPressed['ArrowUp']) {
-      paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
+      paddle2Speed -= paddleAcceleration;
     } else if (keysPressed['ArrowDown']) {
-      paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
+      paddle2Speed += paddleAcceleration;
     } else {
-      paddle2Speed *= 0.9; // Gradual slow down
+      // Apply deceleration when no keys are pressed
+      if (paddle2Speed > 0) paddle2Speed = Math.max(0, paddle2Speed - paddleDeceleration);
+      if (paddle2Speed < 0) paddle2Speed = Math.min(0, paddle2Speed + paddleDeceleration);
     }
   }
   
-  // Apply paddle movement with boundary constraints
-  paddle2Y += paddle2Speed * deltaTime;
-  if (paddle2Y < 0) paddle2Y = 0;
-  if (paddle2Y > gameHeight - paddle2.clientHeight)
+  // Clamp paddle speed to maximum
+  paddle2Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle2Speed));
+  
+  // Scale paddle speed based on game area height 
+  // This makes movement feel consistent regardless of screen size
+  const effectiveSpeed = paddle2Speed * scaleY * deltaTime;
+  
+  // Update position
+  paddle2Y += effectiveSpeed;
+  
+  // Boundary checks
+  if (paddle2Y < 0) {
+    paddle2Y = 0;
+    paddle2Speed = 0;
+  }
+  if (paddle2Y > gameHeight - paddle2.clientHeight) {
     paddle2Y = gameHeight - paddle2.clientHeight;
+    paddle2Speed = 0;
+  }
+  
   paddle2.style.top = paddle2Y + 'px';
 }
 
@@ -737,8 +849,13 @@ function moveBall(deltaTime) {
   ballLastX = ballX;
   ballLastY = ballY;
   
-  ballX += ballSpeedX * deltaTime;
-  ballY += ballSpeedY * deltaTime;
+  // Scale ball speed based on game area dimensions
+  // This makes ball movement feel consistent regardless of screen size
+  const effectiveSpeedX = ballSpeedX * scaleX * deltaTime;
+  const effectiveSpeedY = ballSpeedY * scaleY * deltaTime;
+  
+  ballX += effectiveSpeedX;
+  ballY += effectiveSpeedY;
 
   // Top collision: snap to top and reverse vertical velocity
   if (ballY <= 0) {
@@ -757,59 +874,74 @@ function moveBall(deltaTime) {
     playSound(wallSound);
   }
 
-  // Improved collision detection for Paddle1 using line intersection
-  // This handles fast balls better by checking if the ball's path intersects with paddle
-  if (ballSpeedX < 0) { // Ball moving left
+  // IMPROVED LEFT PADDLE COLLISION DETECTION
+  // Check if the ball is moving left (toward left paddle)
+  if (ballSpeedX < 0) {
+    // Trajectory-based collision detection for left paddle
+    // This calculates if the ball crossed the paddle boundary between frames
     const paddleRight = paddle1.clientWidth;
     
-    // Check if ball crossed the paddle boundary line in this frame
+    // Only check if the ball was to the right of the paddle in the last frame
+    // and now is at or to the left of the paddle's right edge
     if (ballX <= paddleRight && ballLastX > paddleRight) {
-      // Calculate the Y position at intersection point
+      // Calculate the y position at the time of intersection using linear interpolation
       const ratio = (paddleRight - ballLastX) / (ballX - ballLastX);
       const intersectY = ballLastY + ratio * (ballY - ballLastY);
       
-      // Check if this Y position is within the paddle height
-      if (intersectY + ball.clientHeight >= paddle1Y && 
+      // Check if this y position is within the paddle's height bounds
+      if (intersectY + ball.clientHeight >= paddle1Y &&
           intersectY <= paddle1Y + paddle1.clientHeight) {
-        // Move ball to paddle edge to prevent going through
-        ballX = paddle1.clientWidth;
+        // Valid collision - set ball position to the edge of paddle
+        ballX = paddleRight;
         adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
       }
     }
-    // Standard collision (for slow moving balls)
+    // Backup collision check for slower balls or edge cases
+    // Bounding box collision detection as fallback
     else if (
-      ballX <= paddle1.clientWidth &&
+      ballX <= paddleRight &&
+      ballX + ball.clientWidth >= 0 && // Make sure ball isn't completely past paddle
       ballY + ball.clientHeight >= paddle1Y &&
       ballY <= paddle1Y + paddle1.clientHeight
     ) {
+      ballX = paddleRight; // Snap to paddle edge
       adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
     }
   }
 
-  // Improved collision detection for Paddle2
-  if (ballSpeedX > 0) { // Ball moving right
-    const paddleLeft = gameWidth - paddle2.clientWidth - ball.clientWidth;
+  // IMPROVED RIGHT PADDLE COLLISION DETECTION
+  // Check if the ball is moving right (toward right paddle)
+  if (ballSpeedX > 0) {
+    // Fix the right paddle collision by using the exact paddle position
+    // Get the actual left edge of the paddle (not an approximation)
+    const rightPaddleLeft = gameWidth - paddle2.clientWidth;
     
-    // Check if ball crossed the paddle boundary line in this frame
-    if (ballX >= paddleLeft && ballLastX < paddleLeft) {
-      // Calculate the Y position at intersection point
-      const ratio = (paddleLeft - ballLastX) / (ballX - ballLastX);
+    // Trajectory-based collision detection
+    // Only check if the ball was to the left of the paddle in the last frame
+    // and now is at or beyond the paddle's left edge
+    if (ballX + ball.clientWidth >= rightPaddleLeft && ballLastX + ball.clientWidth < rightPaddleLeft) {
+      // Calculate the y position at the time of intersection using linear interpolation
+      const ratio = (rightPaddleLeft - (ballLastX + ball.clientWidth)) / 
+                    ((ballX + ball.clientWidth) - (ballLastX + ball.clientWidth));
       const intersectY = ballLastY + ratio * (ballY - ballLastY);
       
-      // Check if this Y position is within the paddle height
-      if (intersectY + ball.clientHeight >= paddle2Y && 
+      // Check if this y position is within the paddle's height bounds
+      if (intersectY + ball.clientHeight >= paddle2Y &&
           intersectY <= paddle2Y + paddle2.clientHeight) {
-        // Move ball to paddle edge to prevent going through
-        ballX = paddleLeft;
+        // Valid collision - set ball position to the edge of paddle
+        ballX = rightPaddleLeft - ball.clientWidth;
         adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
       }
     }
-    // Standard collision (for slow moving balls)
+    // Backup collision check for slower balls or edge cases
+    // Bounding box collision detection as fallback
     else if (
-      ballX >= gameWidth - paddle2.clientWidth - ball.clientWidth &&
+      ballX + ball.clientWidth >= rightPaddleLeft &&
+      ballX < rightPaddleLeft + paddle2.clientWidth && // Make sure ball isn't completely past paddle
       ballY + ball.clientHeight >= paddle2Y &&
       ballY <= paddle2Y + paddle2.clientHeight
     ) {
+      ballX = rightPaddleLeft - ball.clientWidth; // Snap to paddle edge
       adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
     }
   }
@@ -843,8 +975,12 @@ function moveBall(deltaTime) {
     return;
   }
 
+  // Update ball position on screen
   ball.style.left = ballX + 'px';
   ball.style.top = ballY + 'px';
+
+  // When debugging
+  // console.log(`Game dimensions: ${gameWidth}x${gameHeight}, Scale: ${scaleX}x${scaleY}`);
 }
 
 /********************************************************************************************************
