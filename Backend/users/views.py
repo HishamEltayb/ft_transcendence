@@ -6,8 +6,8 @@ from rest_framework_simplejwt import authentication, tokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer
-from .models import User
+from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer
+from .models import User, PlayerProfile
 import requests
 import os
 import secrets
@@ -298,19 +298,109 @@ class FortyTwoCallbackView(APIView):
             
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+# Player Profile Views
+class PlayerProfileDetailView(generics.RetrieveAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PlayerProfileSerializer
 
-# Authentication Flow
-# The complete authentication flow in your application works like this:
+    def get_object(self):
+        # Get the profile for the currently authenticated user
+        try:
+            return self.request.user.profile
+        except PlayerProfile.DoesNotExist:  
+            # Create profile if it doesn't exist
+            return PlayerProfile.objects.create(user=self.request.user)
 
-# 1 User submits registration form → RegisterView creates a new user
-# 2 User submits login form → LoginView verifies credentials and returns a token
-# 3 Frontend stores token in localStorage
-# 4 Frontend includes token in subsequent requests
-# 5 UserDetailView uses token to identify user and return their data
+class PlayerProfileUpdateView(generics.UpdateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PlayerProfileSerializer
+    
+    def get_object(self):
+        return self.request.user.profile
 
-# 42 OAuth Flow:
-# 1. User clicks "Login with 42" → FortyTwoLoginView redirects to 42 OAuth page
-# 2. User authorizes the app on 42 → 42 redirects back with a code
-# 3. FortyTwoCallbackView exchanges the code for a token and gets user data
-# 4. User is created or logged in → Token is generated
-# 5. User is redirected to frontend with token
+    def update(self, request, *args, **kwargs):
+        profile = self.get_object()
+        
+        game_result = request.data.get('game_result')
+        if game_result:
+            profile.total_games += 1
+            if game_result.lower() == 'win':
+                profile.wins += 1
+                profile.rank += 10
+            elif game_result.lower() == 'loss':
+                profile.losses += 1
+                # Decrement rank for losing, but not below 0
+                profile.rank = max(0, profile.rank - 5)
+            profile.save()
+            return Response(self.get_serializer(profile).data)
+        
+        # Handle direct stats update (admin or system use)
+        return super().update(request, *args, **kwargs)
+        
+class LeaderboardView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PlayerProfileSerializer
+    queryset = PlayerProfile.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
+
+    """
+This file contains all the views for the users app.
+
+The views are:
+
+* RegisterView: Handles user registration
+	1. Receive a POST request with the user's registration details
+	2. Validate the request data
+	3. Create a new user instance
+	4. Save the user to the database
+	5. Return a JSON response with the user's details
+* LoginView: Handles user login
+	1. Receive a POST request with the user's login credentials
+	2. Validate the request data
+	3. Authenticate the user
+	4. Return a JSON response with the user's details and a token
+* Setup2FAView: Handles setting up 2FA for a user
+	1. Receive a POST request with the user's 2FA setup details
+	2. Validate the request data
+	3. Generate a QR code for the user
+	4. Return a JSON response with the QR code and a secret key
+* Verify2FAView: Handles verifying a user's 2FA token
+	1. Receive a POST request with the user's 2FA token
+	2. Validate the request data
+	3. Verify the token with the user's secret key
+	4. Return a JSON response with a success message
+* Disable2FAView: Handles disabling 2FA for a user
+	1. Receive a POST request with the user's 2FA disable details
+	2. Validate the request data
+	3. Disable 2FA for the user
+	4. Return a JSON response with a success message
+* UserDetailView: Handles retrieving a user's profile
+	1. Receive a GET request with the user's ID
+	2. Retrieve the user from the database
+	3. Return a JSON response with the user's details
+* FortyTwoLoginView: Handles redirecting the user to 42's OAuth authorization page
+	1. Receive a GET request with the user's ID
+	2. Redirect the user to 42's OAuth authorization page
+* FortyTwoCallbackView: Handles the callback from 42's OAuth service
+	1. Receive a GET request with the user's authorization code
+	2. Exchange the authorization code for an access token
+	3. Retrieve the user's details from 42's API
+	4. Create a new user instance
+	5. Save the user to the database
+	6. Return a JSON response with the user's details and a token
+* PlayerProfileDetailView: Handles retrieving a player's profile
+	1. Receive a GET request with the player's ID
+	2. Retrieve the player from the database
+	3. Return a JSON response with the player's details
+* PlayerProfileUpdateView: Handles updating a player's profile
+	1. Receive a PATCH or PUT request with the player's updated details
+	2. Validate the request data
+	3. Update the player's profile
+	4. Return a JSON response with the player's updated details
+* LeaderboardView: Handles retrieving the top 10 players by rank
+	1. Retrieve the top 10 players from the database
+	2. Return a JSON response with the players' details
+""" 
