@@ -1,6 +1,11 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import RegisterView, LoginView, UserDetailView, FortyTwoLoginView, FortyTwoCallbackView, Setup2FAView, Verify2FAView, Disable2FAView
+from .views import (
+    RegisterView, LoginView,UserDetailView,
+    FortyTwoLoginView, FortyTwoCallbackView,
+    Setup2FAView, Verify2FAView, Disable2FAView,
+    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView
+)
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -15,4 +20,9 @@ urlpatterns = [
     path('2fa/setup/', Setup2FAView.as_view(), name='2fa-setup'),
     path('2fa/verify/', Verify2FAView.as_view(), name='2fa-verify'),
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
+
+    # Player Profile endpoints
+    path('profile/', PlayerProfileDetailView.as_view(), name='player-profile'),
+    path('profile/update/', PlayerProfileUpdateView.as_view(), name='player-profile-update'),
+    path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
 ]

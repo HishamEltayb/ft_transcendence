@@ -37,7 +37,6 @@ class PlayerProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 
-# No signals needed - creating profiles happens in the User.save method
 
 
 #postgres sql table structure
