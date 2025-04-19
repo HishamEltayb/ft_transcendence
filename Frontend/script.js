@@ -415,15 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
 
-    
-    // Check if user is already logged in
-    // With this version that only redirects if we're on the login page:
-    // const token = localStorage.getItem('token');
-    // if (token && window.location.pathname === '/') {
-    //     // Only redirect if we're on the login page
-    //     window.location.href = '/dashboard.html';
-    // }
-
     // Proper authentication check before redirecting to dashboard
     const accessToken = getCookie('access_token');
     const refresh_Token = getCookie('refresh_token'); 
