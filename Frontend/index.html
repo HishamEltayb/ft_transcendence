@@ -1,55 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Transcendence</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="auth-form" id="loginForm">
-            <h2>Login</h2>
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pong Game</title>
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="./css/index.css">
+        <link rel="stylesheet" href="./css/common.css">
+        <link rel="stylesheet" href="./css/header.css">
+        <link rel="stylesheet" href="./css/footer.css">
+        <link rel="stylesheet" href="./css/video.css">
+        <link rel="stylesheet" href="./css/home.css">
+        <link rel="stylesheet" href="./css/game.css">
+        <link rel="stylesheet" href="./css/login.css">
+        <link rel="stylesheet" href="./css/profile.css">
+    </head>
+
+    <body>
+        <div class="video-background">
+            <div class="video-overlay"></div>
+            <video autoplay muted loop preload="auto" style="background: #000;"> 
+                <source src="./public/assets/videos/vid.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <main id="App" class="main-container">
+        </main>
+        
+        <div id="spinner-container" class="spinner-container d-none">
+            <div class="spinner-content">
+                <div class="spinner"></div>
+                <!-- <p class="spinner-text">Loading...</p> -->
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div id="toast-component" class="toast-component d-none">
+            <button class="toast-close" id="toast-close-button"><i class="bi bi-x-lg"></i></button>
+            <div class="toast-icon-container">
+                <i class="bi bi-exclamation-triangle-fill toast-icon"></i>
             </div>
-            <div class="error-message" id="loginError"></div>
-            <button type="button" id="loginButton">Login</button>
-            <div class="oauth-separator">
-                <span>OR</span>
+            <div class="toast-text">
+                <p class="toast-title" id="toast-title"></p>
+                <p class="toast-message" id="toast-message-text"></p>
             </div>
-            <button type="button" id="loginWith42Button" class="oauth-button">Login with 42</button>
-            <p class="form-switch">Don't have an account? <a href="#" id="showRegister">Register</a></p>
         </div>
 
-        <div class="auth-form hidden" id="registerForm">
-            <h2>Register</h2>
-            <div class="form-group">
-                <label for="registerUsername">Username</label>
-                <input type="text" id="registerUsername" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="registerPassword">Password</label>
-                <input type="password" id="registerPassword" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
-            </div>
-            <div class="error-message" id="registerError"></div>
-            <button type="button" id="registerButton">Register</button>
-            <p class="form-switch">Already have an account? <a href="#" id="showLogin">Login</a></p>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- ES modules -->
+        <script type="module" src="./js/app.js"></script>
+        
+        <!-- Video autoplay fallback script -->
+        <!-- <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const video = document.querySelector('.video-background video');
+                if (video) {
+                    // Fix video path if needed
+                    const source = video.querySelector('source');
+                    if (source && source.src) {
+                        // Make sure the video source path is correct
+                        if (source.src.includes('../public')) {
+                            source.src = source.src.replace('../public', './public');
+                            video.load(); // Reload video with corrected path
+                        }
+                    }
+                    
+                    // Ensure video plays
+                    video.play().catch(function(e) {
+                        console.warn('Autoplay prevented:', e);
+                        // Add click listener as fallback for browsers that block autoplay
+                        document.addEventListener('click', function() {
+                            video.play().catch(e => console.error("User-triggered play failed:", e));
+                        }, {once: true});
+                    });
+                }
+            });
+        </script> -->
+    </body>
+</html> 
