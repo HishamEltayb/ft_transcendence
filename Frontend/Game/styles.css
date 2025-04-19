@@ -23,8 +23,11 @@ body {
 
 .gameArea {
     position: relative;
-    width: 800px; /* Fixed width */
-    height: 600px; /* Fixed height */
+    width: 80vw; /* Responsive width - percentage of viewport width */
+    max-width: 960px; /* Max width for very large screens - using 16:9 ratio */
+    aspect-ratio: 16/9; /* Force 16:9 aspect ratio */
+    min-width: 320px; /* Minimum width to prevent it from becoming too small */
+    min-height: 180px; /* Minimum height based on 16:9 ratio */
     background-color: rgba(7, 26, 49, 0.6);
     border: #e604ffc7 1px solid;
     box-shadow: 0 0 10px rgba(208, 250, 0, 0.7);
@@ -55,11 +58,13 @@ body {
     position: absolute;
     height: 2%; /* Responsive size */
     width: 2%; /* Responsive size */
+    min-width: 8px; /* Minimum size to ensure visibility */
+    min-height: 8px; /* Minimum size to ensure visibility */
     background: rgb(255, 255, 255);
-    border-radius: 40%; /* Make it perfectly circular */
+    border-radius: 50%; /* Make it perfectly circular */
     left: 50%; /* Center horizontally */
     top: 50%; /* Center vertically */
-    /*transform: translate(-50%, -50%); /* Adjust for ball size */
+    /*transform: translate(-50%, -50%); /* Adjust for ball size to ensure proper centering */
     box-shadow: 0 0 4px rgba(252, 0, 235, 0.9);
 }
 
@@ -72,7 +77,7 @@ body {
 }
 
 .title {
-    font-size: 90px;
+    font-size: clamp(40px, 8vw, 90px); /* Responsive font size with min and max */
     color: #ffcc00; /* Base text color */
     text-shadow: 
         0 0 10px rgba(232, 6, 244, 0.7), /* First glow layer */
@@ -82,7 +87,9 @@ body {
     /* background: rgba(0, 0, 0, 0.712); */
     text-transform: uppercase;
     position: absolute;
-    top: 80px;
+    top: 8vh; /* Responsive top position */
+    width: 100%; /* Full width so it centers properly */
+    text-align: center; /* Center the text */
 }
 
 .gameContainer {
@@ -90,8 +97,10 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 2vw; /* Responsive gap */
     margin-top: 20px;
+    width: 90vw; /* Responsive width */
+    max-width: 1000px; /* Max width for very large screens */
 }
 
 .player1Info, .player2Info {
@@ -219,6 +228,26 @@ body {
     color: #ffcc00;
     border: 3px solid #ffcc00;
     box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+}
+
+/* Size warning screen styles */
+#sizeWarningScreen {
+    background: rgba(0, 0, 0, 0.95);
+    color: #ff3333;
+    border: 3px solid #ff3333;
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.7);
+    z-index: 1000; /* Ensure it appears above other elements */
+}
+
+#sizeWarningScreen h2 {
+    color: #ff3333;
+    margin-bottom: 20px;
+}
+
+#sizeWarningScreen p {
+    margin: 10px 0;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .modeButton {

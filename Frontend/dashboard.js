@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/Game/game.html';
     });
 
+
     // Logout functionality
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function() {
