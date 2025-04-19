@@ -1,0 +1,94 @@
+/* Profile page specific styles */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+}
+
+/* Profile avatar */
+#profile-avatar {
+    width: 150px;
+    height: 150px;
+    border: 3px solid var(--gold);
+    padding: 3px;
+    margin-bottom: 1rem;
+}
+
+/* Status indicator */
+#profile-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    background-color: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+#profile-status.offline {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+#profile-status.away {
+    background-color: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+/* Profile cards */
+.card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: rgba(212, 175, 55, 0.1);
+    color: var(--gold);
+    font-weight: 600;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* Match history styling */
+.table {
+    color: var(--white);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-striped tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+}
+
+.table-success {
+    background-color: rgba(46, 204, 113, 0.1) !important;
+}
+
+.table-danger {
+    background-color: rgba(231, 76, 60, 0.1) !important;
+}
+
+/* Profile message notifications */
+.profile-message {
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-top: 15px;
+    transition: opacity 0.5s ease;
+}
+
+/* Settings button */
+#edit-profile-btn, #save-settings-btn {
+    background-color: var(--gold);
+    color: var(--black);
+    border: none;
+    font-weight: 600;
+} 
