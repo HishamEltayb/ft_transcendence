@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, PlayerProfile
 from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,3 +25,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
         return user
+
+class PlayerProfileSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+    win_rate = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = PlayerProfile
+        fields = ['id', 'username', 'total_games', 'wins', 'losses', 'rank', 'win_rate']
+        read_only_fields = ['id', 'win_rate']
