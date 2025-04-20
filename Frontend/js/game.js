@@ -18,11 +18,10 @@ const lossSound = document.getElementById('lossSound');
 const wallSound = document.getElementById('wallSound');
 const paddleSound = document.getElementById('paddleSound');
 
-// Navigation Elements
-const playButton = document.getElementById('playButton');
-const settingsButton = document.getElementById('settingsButton');
-const howToPlayButton = document.getElementById('howToPlayButton');
+// UI Elements
 const playScreen = document.getElementById('playScreen');
+const settingsLink = document.getElementById('settingsLink');
+const howToPlayLink = document.getElementById('howToPlayLink');
 const settingsScreen = document.getElementById('settingsScreen');
 const howToPlayScreen = document.getElementById('howToPlayScreen');
 
@@ -141,7 +140,8 @@ function updateGameDimensions() {
  * AI CONFIGURATION
  ********************************************************************************************************/
 // AI Mode Variables
-let isAIMode = false;
+window.isAIMode = false; // Make isAIMode global to ensure it's accessible everywhere
+let isAIMode = window.isAIMode; // Local reference
 let lastAIUpdateTime = 0; // Track last time AI updated its perception
 let aiPerceptionBallX = 0; // What the AI "sees" (not actual ball position)
 let aiPerceptionBallY = 0;
@@ -310,10 +310,12 @@ function handleKeyDown(e) {
   
   // Regular in-game controls
   keysPressed[e.key] = true;
+  console.log('Key pressed:', e.key, 'keysPressed state:', keysPressed);
 }
 
 function handleKeyUp(e) {
   keysPressed[e.key] = false;
+  console.log('Key released:', e.key);
 }
 
 /********************************************************************************************************
@@ -321,82 +323,73 @@ function handleKeyUp(e) {
  ********************************************************************************************************/
 // Helper function to hide all screens
 function hideAllScreens() {
+  // Hide all screens and UI elements
   const screens = [playScreen, settingsScreen, howToPlayScreen, startText, winScreen];
   screens.forEach(screen => {
     if (screen) screen.style.display = 'none';
   });
+  
+  // Also hide the game selection
+  const gameSelection = document.querySelector('.gameSelection');
+  if (gameSelection) gameSelection.style.display = 'none';
 }
 
-// Helper function to set active nav button
-function setActiveNavButton(activeButton) {
-  clearActiveNavButtons();
-  activeButton.classList.add('active');
-}
-
-// Helper function to clear all active nav buttons
-function clearActiveNavButtons() {
-  const navButtons = [playButton, settingsButton, howToPlayButton];
-  navButtons.forEach(button => {
-    button.classList.remove('active');
-  });
-}
-
-// Helper function to toggle nav buttons enabled/disabled state
+// Helper function retained for compatibility but no longer needed
 function setNavButtonsEnabled(enabled) {
-  const navButtons = [playButton, settingsButton, howToPlayButton];
-  navButtons.forEach(button => {
-    button.disabled = !enabled;
-    if (!enabled) {
-      button.classList.add('disabled');
-    } else {
-      button.classList.remove('disabled');
-    }
-  });
+  // Navigation buttons removed from the UI
+  // This function is kept as a no-op for backward compatibility
+  console.log('Navigation disabled state set to:', !enabled);
 }
 
 /********************************************************************************************************
  * EVENT LISTENERS
  ********************************************************************************************************/
-// Navigation buttons event listeners
-playButton.addEventListener('click', () => {
+// Direct access to settings and how to play
+settingsLink.addEventListener('click', () => {
   hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
-});
-
-settingsButton.addEventListener('click', () => {
-  hideAllScreens();
-  setActiveNavButton(settingsButton);
   settingsScreen.style.display = 'block';
+  
+  // Always show AI settings
+  const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
+  if (aiDifficultyContainer) {
+    aiDifficultyContainer.style.display = 'block';
+  }
 });
 
-howToPlayButton.addEventListener('click', () => {
+howToPlayLink.addEventListener('click', () => {
   hideAllScreens();
-  setActiveNavButton(howToPlayButton);
   howToPlayScreen.style.display = 'block';
 });
 
-// Game Mode buttons
+// Game Mode buttons with simpler direct start
 pvpButton.addEventListener('click', () => {
-  isAIMode = false;
-  playScreen.style.display = 'none';
-  startText.style.display = 'block';
+  console.log('PVP button clicked');
+  window.isAIMode = false;
+  isAIMode = false; // Set both local and global
+  console.log('PVP mode selected, isAIMode set to:', isAIMode);
+  hideAllScreens();
   
   // Apply current settings
   applySettings();
   
+  // Reset and start the game immediately
   resetGame();
+  startGame();
 });
 
 pveButton.addEventListener('click', () => {
-  isAIMode = true;
-  playScreen.style.display = 'none';
-  startText.style.display = 'block';
+  console.log('PVE button clicked');
+  window.isAIMode = true;
+  isAIMode = true; // Set both local and global
+  console.log('AI mode selected, isAIMode set to:', isAIMode);
+  hideAllScreens();
   
   // Apply current settings
   applySettings();
   
+  // Reset and start the game immediately
   resetGame();
+  startGame();
 });
 
 // Settings screen save button
@@ -404,17 +397,15 @@ saveSettingsButton.addEventListener('click', () => {
   // Save settings but don't start the game yet
   applySettings();
   
-  // Go back to play screen
+  // Go back to game selection
   hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
+  document.querySelector('.gameSelection').style.display = 'block';
 });
 
 // Back button from How to Play screen
 backFromHowToPlayButton.addEventListener('click', () => {
   hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
+  document.querySelector('.gameSelection').style.display = 'block';
 });
 
 // Event listener for the restart button
@@ -422,10 +413,9 @@ restartButton.addEventListener('click', () => {
   winScreen.style.display = 'none';
   resetGame();
   
-  // Return to the play screen
+  // Return to the game selection screen
   hideAllScreens();
-  setActiveNavButton(playButton);
-  playScreen.style.display = 'block';
+  document.querySelector('.gameSelection').style.display = 'block';
   
   // Reset the lastTime variable to ensure the game loop starts fresh
   lastTime = null;
@@ -436,6 +426,7 @@ restartButton.addEventListener('click', () => {
  ********************************************************************************************************/
 // Apply current settings
 function applySettings() {
+  console.log('applySettings() called, isAIMode:', isAIMode);
   pointsToWin = parseInt(winScoreSelect.value);
   initialBallSpeed = parseInt(ballSpeedSelect.value);
   ballSpeedX = Math.sign(ballSpeedX) * initialBallSpeed; // Preserve direction
@@ -443,8 +434,8 @@ function applySettings() {
   player1Name = player1NameInput.value || "Player 1";
   player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
   
-  // Apply AI difficulty settings if in AI mode
-  if (isAIMode && aiDifficultySelect) {
+  // Always apply AI difficulty settings regardless of mode
+  if (aiDifficultySelect) {
     currentAIDifficulty = aiDifficultySelect.value;
     const settings = aiDifficultySettings[currentAIDifficulty];
     
@@ -456,18 +447,20 @@ function applySettings() {
     aiCenteringProbability = settings.centeringProbability;
     aiPredictionAccuracy = settings.predictionAccuracy;
     
-    // Update AI name to reflect difficulty
-    player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
+    // Update AI name to reflect difficulty if in AI mode
+    if (isAIMode) {
+      player2Name = `AI (${currentAIDifficulty.charAt(0).toUpperCase() + currentAIDifficulty.slice(1)})`;
+    }
   }
   
   // Update display
   player1NameElement.textContent = player1Name;
   player2NameElement.textContent = player2Name;
   
-  // Toggle AI difficulty setting visibility
+  // Always show AI difficulty settings regardless of mode
   const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
   if (aiDifficultyContainer) {
-    aiDifficultyContainer.style.display = isAIMode ? 'block' : 'none';
+    aiDifficultyContainer.style.display = 'block';
   }
 }
 
@@ -649,18 +642,23 @@ function updatePaddle1(deltaTime) {
 }
 
 function updatePaddle2(deltaTime) {
+  console.log('updatePaddle2 called, isAIMode:', isAIMode);
   if (isAIMode) {
     // Update AI decisions
     updateAIDecisions();
     
     // Apply the AI's simulated key presses to control the paddle
-    // This ensures AI follows the same speed constraints as human players
     if (aiKeyState['ArrowUp']) {
       paddle2Speed = Math.max(paddle2Speed - paddleAcceleration * deltaTime, -maxPaddleSpeed);
     } else if (aiKeyState['ArrowDown']) {
       paddle2Speed = Math.min(paddle2Speed + paddleAcceleration * deltaTime, maxPaddleSpeed);
     } else {
-      paddle2Speed *= 0.9; // Gradual slow down
+      // Apply natural deceleration when AI isn't pressing a key
+      if (paddle2Speed > 0) {
+        paddle2Speed = Math.max(0, paddle2Speed - paddleDeceleration * deltaTime);
+      } else if (paddle2Speed < 0) {
+        paddle2Speed = Math.min(0, paddle2Speed + paddleDeceleration * deltaTime);
+      }
     }
   } else {
     // Player 2 controls (Arrow keys)
@@ -1039,6 +1037,32 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   // Play a sound effect to indicate the ball hit the paddle
   playSound(paddleSound);
 }
+
+// Export key game functions and variables to global window object for SPA context
+// This ensures the paddles work properly when loaded in the SPA
+window.gameRunning = gameRunning;
+window.gameOver = gameOver;
+window.keysPressed = keysPressed;
+window.startGame = startGame;
+window.resetGame = resetGame;
+window.applySettings = applySettings;
+window.handleKeyDown = handleKeyDown;
+window.handleKeyUp = handleKeyUp;
+window.updatePaddle1 = updatePaddle1;
+window.updatePaddle2 = updatePaddle2;
+window.updateAIDecisions = updateAIDecisions; // Export AI function
+window.updateGameDimensions = updateGameDimensions;
+window.initializePositions = initializePositions;
+window.checkWindowSize = checkWindowSize;
+
+// Add a function to synchronize isAIMode between window and local scope
+function syncAIMode() {
+  isAIMode = window.isAIMode;
+  console.log('Synchronized isAIMode:', isAIMode);
+}
+
+// Set up a periodic check to ensure isAIMode stays in sync
+setInterval(syncAIMode, 1000);
 
 /********************************************************************************************************
  * GAME STATE MANAGEMENT

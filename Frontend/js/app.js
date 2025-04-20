@@ -2,6 +2,7 @@ import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
 import { AVAILABLE_PAGES } from './constant.js';
+import gameLoader from './gameLoader.js'; // Import the game loader for SPA game initialization
 
 class App {
     constructor() {

@@ -2,19 +2,16 @@
     <div class="game-container text-center p-4">
         <h2 class="text-gold mb-4">Pong Game</h2>
         
-    <!-- Navigation Bar -->
-    <div class="navBar">
-        <button class="navButton" id="playButton">Play</button>
-        <button class="navButton" id="settingsButton">Settings</button>
-        <button class="navButton" id="howToPlayButton">How to Play</button>
-    </div>
-    
-    <!-- Game Mode Selection Menu -->
-    <div class="screen" id="playScreen">
-        <h3>Select Game Mode:</h3>
+    <!-- Simple game selection instead of navigation bar -->
+    <div class="gameSelection">
         <button class="modeButton" id="pvpButton">1 vs 1</button>
         <button class="modeButton" id="pveButton">1 vs AI</button>
+        <button class="modeButton" id="settingsLink">Game Settings</button>
+        <button class="modeButton" id="howToPlayLink">How to Play</button>
     </div>
+    
+    <!-- Game Mode Selection Menu removed as it's now part of the main interface -->
+    <div class="screen" id="playScreen" style="display: none;"></div>
     
     <!-- Settings Screen -->
     <div class="screen" id="settingsScreen">
@@ -129,4 +126,10 @@
     <audio src="../public/assets/sound/paddle.wav" id="paddleSound"></audio>
     <audio src="../public/assets/sound/wall.wav" id="wallSound"></audio>
     <audio src="../public/assets/sound/loss.wav" id="lossSound"></audio>
+    
+    <!-- Script tag to initialize game when loaded in SPA context -->
+    <script>
+        // Notify the app that the game page has been loaded
+        document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+    </script>
 </div> 
