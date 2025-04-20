@@ -114,26 +114,53 @@ let gameHeight = REFERENCE_HEIGHT;
 
 // Function to update the game dimensions and scale factors
 function updateGameDimensions() {
+  // Store previous dimensions to calculate scaling ratio
+  const prevWidth = gameWidth;
+  const prevHeight = gameHeight;
+  
   // Get the actual dimensions of the game area
-  gameWidth = gameArea.clientWidth;
-  gameHeight = gameArea.clientHeight;
+  const newWidth = gameArea.clientWidth;
+  const newHeight = gameArea.clientHeight;
   
   // Calculate scale factors relative to reference dimensions
-  scaleX = gameWidth / REFERENCE_WIDTH;
-  scaleY = gameHeight / REFERENCE_HEIGHT;
+  const newScaleX = newWidth / REFERENCE_WIDTH;
+  const newScaleY = newHeight / REFERENCE_HEIGHT;
   
-  // Reinitialize positions when dimensions change
+  // Calculate scaling ratios between old and new dimensions
+  const widthRatio = newWidth / prevWidth;
+  const heightRatio = newHeight / prevHeight;
+  
+  // Update global variables
+  gameWidth = newWidth;
+  gameHeight = newHeight;
+  scaleX = newScaleX;
+  scaleY = newScaleY;
+  
   if (gameRunning) {
-    // Scale current positions instead of resetting completely
-    paddle1.style.left = (parseInt(paddle1.style.left) * scaleX || 0) + 'px';
-    paddle2.style.right = (parseInt(paddle2.style.right) * scaleX || 0) + 'px';
-    paddle1.style.top = (paddle1Y * scaleY) + 'px';
-    paddle2.style.top = (paddle2Y * scaleY) + 'px';
-    ball.style.left = (ballX * scaleX) + 'px';
-    ball.style.top = (ballY * scaleY) + 'px';
+    // Properly scale paddle positions
+    paddle1Y = Math.min(gameHeight - paddle1.clientHeight, paddle1Y * heightRatio);
+    paddle2Y = Math.min(gameHeight - paddle2.clientHeight, paddle2Y * heightRatio);
+    
+    // Scale ball position
+    ballX = Math.min(gameWidth - ball.clientWidth, ballX * widthRatio);
+    ballY = Math.min(gameHeight - ball.clientHeight, ballY * heightRatio);
+    
+    // Apply the new positions
+    paddle1.style.top = paddle1Y + 'px';
+    paddle2.style.top = paddle2Y + 'px';
+    ball.style.left = ballX + 'px';
+    ball.style.top = ballY + 'px';
+    
+    // Make sure the ball's previous position is also scaled for accurate collision detection
+    ballLastX = ballLastX * widthRatio;
+    ballLastY = ballLastY * heightRatio;
   } else {
+    // If game is not running, just reset positions
     initializePositions();
   }
+  
+  // Ensure the resize doesn't break things by forcing a checkWindowSize
+  checkWindowSize();
 }
 
 /********************************************************************************************************
@@ -249,8 +276,42 @@ function checkWindowSize() {
   } else {
     // Hide warning and allow game to run
     sizeWarningScreen.style.display = 'none';
+    
+    // Important: Make sure paddles haven't gone out of bounds after resize
+    ensureElementsInBounds();
     return true;
   }
+}
+
+// New function to ensure all game elements stay within bounds after resize
+function ensureElementsInBounds() {
+  // Check and fix paddle positions
+  if (paddle1Y < 0) paddle1Y = 0;
+  if (paddle2Y < 0) paddle2Y = 0;
+  
+  const maxPaddle1Y = gameHeight - paddle1.clientHeight;
+  const maxPaddle2Y = gameHeight - paddle2.clientHeight;
+  
+  if (paddle1Y > maxPaddle1Y) paddle1Y = maxPaddle1Y;
+  if (paddle2Y > maxPaddle2Y) paddle2Y = maxPaddle2Y;
+  
+  // Apply corrected positions
+  paddle1.style.top = paddle1Y + 'px';
+  paddle2.style.top = paddle2Y + 'px';
+  
+  // Check and fix ball position
+  if (ballX < 0) ballX = 0;
+  if (ballY < 0) ballY = 0;
+  
+  const maxBallX = gameWidth - ball.clientWidth;
+  const maxBallY = gameHeight - ball.clientHeight;
+  
+  if (ballX > maxBallX) ballX = maxBallX;
+  if (ballY > maxBallY) ballY = maxBallY;
+  
+  // Apply corrected positions
+  ball.style.left = ballX + 'px';
+  ball.style.top = ballY + 'px';
 }
 
 // Window load event - initialize everything
@@ -572,6 +633,9 @@ function startGame() {
     return;
   }
   
+  // Ensure elements are in bounds before starting
+  ensureElementsInBounds();
+  
   startText.style.display = 'none';
   ball.style.display = 'block';
   resetBall();
@@ -872,48 +936,49 @@ function moveBall(deltaTime) {
     playSound(wallSound);
   }
 
+  // Get the actual left paddle edge position - more accurate after resize
+  const paddle1Right = paddle1.clientWidth;
+  
   // IMPROVED LEFT PADDLE COLLISION DETECTION
   // Check if the ball is moving left (toward left paddle)
   if (ballSpeedX < 0) {
     // Trajectory-based collision detection for left paddle
     // This calculates if the ball crossed the paddle boundary between frames
-    const paddleRight = paddle1.clientWidth;
     
     // Only check if the ball was to the right of the paddle in the last frame
     // and now is at or to the left of the paddle's right edge
-    if (ballX <= paddleRight && ballLastX > paddleRight) {
+    if (ballX <= paddle1Right && ballLastX > paddle1Right) {
       // Calculate the y position at the time of intersection using linear interpolation
-      const ratio = (paddleRight - ballLastX) / (ballX - ballLastX);
+      const ratio = (paddle1Right - ballLastX) / (ballX - ballLastX);
       const intersectY = ballLastY + ratio * (ballY - ballLastY);
       
       // Check if this y position is within the paddle's height bounds
       if (intersectY + ball.clientHeight >= paddle1Y &&
           intersectY <= paddle1Y + paddle1.clientHeight) {
         // Valid collision - set ball position to the edge of paddle
-        ballX = paddleRight;
+        ballX = paddle1Right;
         adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
       }
     }
     // Backup collision check for slower balls or edge cases
-    // Bounding box collision detection as fallback
+    // Bounding box collision detection as fallback - with extra buffer for resize issues
     else if (
-      ballX <= paddleRight &&
+      ballX <= paddle1Right + 2 && // Add small buffer for resize issues
       ballX + ball.clientWidth >= 0 && // Make sure ball isn't completely past paddle
-      ballY + ball.clientHeight >= paddle1Y &&
-      ballY <= paddle1Y + paddle1.clientHeight
+      ballY + ball.clientHeight >= paddle1Y - 2 && // Add small buffer
+      ballY <= paddle1Y + paddle1.clientHeight + 2 // Add small buffer
     ) {
-      ballX = paddleRight; // Snap to paddle edge
+      ballX = paddle1Right; // Snap to paddle edge
       adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
     }
   }
 
+  // Get the actual right paddle position - more accurate after resize
+  const rightPaddleLeft = gameWidth - paddle2.clientWidth;
+  
   // IMPROVED RIGHT PADDLE COLLISION DETECTION
   // Check if the ball is moving right (toward right paddle)
   if (ballSpeedX > 0) {
-    // Fix the right paddle collision by using the exact paddle position
-    // Get the actual left edge of the paddle (not an approximation)
-    const rightPaddleLeft = gameWidth - paddle2.clientWidth;
-    
     // Trajectory-based collision detection
     // Only check if the ball was to the left of the paddle in the last frame
     // and now is at or beyond the paddle's left edge
@@ -931,13 +996,13 @@ function moveBall(deltaTime) {
         adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
       }
     }
-    // Backup collision check for slower balls or edge cases
+    // Backup collision check for slower balls or edge cases - with extra buffer for resize issues
     // Bounding box collision detection as fallback
     else if (
-      ballX + ball.clientWidth >= rightPaddleLeft &&
+      ballX + ball.clientWidth >= rightPaddleLeft - 2 && // Add small buffer for resize issues
       ballX < rightPaddleLeft + paddle2.clientWidth && // Make sure ball isn't completely past paddle
-      ballY + ball.clientHeight >= paddle2Y &&
-      ballY <= paddle2Y + paddle2.clientHeight
+      ballY + ball.clientHeight >= paddle2Y - 2 && // Add small buffer
+      ballY <= paddle2Y + paddle2.clientHeight + 2 // Add small buffer
     ) {
       ballX = rightPaddleLeft - ball.clientWidth; // Snap to paddle edge
       adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
@@ -976,9 +1041,6 @@ function moveBall(deltaTime) {
   // Update ball position on screen
   ball.style.left = ballX + 'px';
   ball.style.top = ballY + 'px';
-
-  // When debugging
-  // console.log(`Game dimensions: ${gameWidth}x${gameHeight}, Scale: ${scaleX}x${scaleY}`);
 }
 
 /********************************************************************************************************
@@ -1054,6 +1116,7 @@ window.updateAIDecisions = updateAIDecisions; // Export AI function
 window.updateGameDimensions = updateGameDimensions;
 window.initializePositions = initializePositions;
 window.checkWindowSize = checkWindowSize;
+window.ensureElementsInBounds = ensureElementsInBounds;
 
 // Add a function to synchronize isAIMode between window and local scope
 function syncAIMode() {

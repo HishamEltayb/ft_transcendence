@@ -2,6 +2,8 @@
     <div class="game-container text-center p-4">
         <h2 class="text-gold mb-4">Pong Game</h2>
         
+        <!-- Video background removed from here as it's now inside gameArea -->
+        
     <!-- Simple game selection instead of navigation bar -->
     <div class="gameSelection">
         <button class="modeButton" id="pvpButton">1 vs 1</button>
@@ -96,6 +98,15 @@
         
         <!-- Game area in the middle -->
         <div class="gameArea">
+            <!-- Video Background moved inside gameArea -->
+            <div class="video-background">
+                <div class="video-overlay"></div>
+                <video autoplay muted loop playsinline> 
+                    <source src="../public/assets/videos/bg1.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
             <div class="paddle1 paddle" id="paddle1"></div>
             <div class="paddle2 paddle" id="paddle2"></div>
             <div class="ball" id="ball"></div>

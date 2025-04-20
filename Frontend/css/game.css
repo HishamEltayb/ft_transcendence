@@ -127,15 +127,52 @@
     aspect-ratio: 16/9; 
     min-width: 320px;
     min-height: 180px;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.4); /* More transparent to see video */
     border: var(--gold) 2px solid;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     border-radius: 4px;
-    overflow: hidden;
+    overflow: hidden; /* Important to contain video */
     margin: 0 auto; /* Center horizontally */
     display: flex; /* Added to improve centering of internal elements */
     justify-content: center; /* Center contents horizontally */
     align-items: center; /* Center contents vertically */
+}
+
+/* Video Background specifically for gameArea */
+.gameArea .video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Above the base gameArea background */
+    overflow: hidden;
+}
+
+.gameArea .video-background video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the entire game area */
+}
+
+.gameArea .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.0); /* Semi-transparent overlay */
+    z-index: 2; /* Above video */
+}
+
+/* Ensure paddles and ball appear above video */
+.paddle, .ball {
+    position: absolute;
+    z-index: 5; /* Above video and overlay */
+}
+
+.net {
+    z-index: 4; /* Above overlay but below paddles/ball */
 }
 
 /* Paddles and Ball */
@@ -174,14 +211,6 @@
     top: 50%; /* Center vertically */
     /*transform: translate(-50%, -50%); /* Re-enable true centering */
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
-}
-
-.net {
-    position: absolute;
-    border-right: 3px rgba(255, 215, 0, 0.3) dotted;
-    height: 100%;
-    left: 50%; /* Center the net */
-    transform: translateX(-50%);
 }
 
 /* Player information - make responsive */
