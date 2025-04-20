@@ -69,6 +69,7 @@ class Pages {
     
     
     showPage(pageName) {
+        console.log(`Showing page: ${pageName}`);
         // Get the content for the requested page
         const content = this.pages[pageName];
         
@@ -77,6 +78,26 @@ class Pages {
             this.pageSection.innerHTML = content;
             this.updateActiveNavLink(pageName);
             window.scrollTo(0, 0);
+            
+            // Special handling for game page to ensure proper initialization
+            if (pageName === 'game') {
+                console.log('Game page detected, ensuring initialization...');
+                // Force dispatch of gamePageLoaded event to ensure game initializes properly
+                setTimeout(() => {
+                    // Make sure the DOM is fully ready before dispatching
+                    if (document.getElementById('pvpButton') && document.getElementById('pveButton')) {
+                        console.log('Game page buttons found, dispatching gamePageLoaded event');
+                        document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+                    } else {
+                        console.log('Game buttons not found yet, waiting...');
+                        // Try again after a delay if buttons aren't found yet
+                        setTimeout(() => {
+                            console.log('Retrying game initialization...');
+                            document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+                        }, 200);
+                    }
+                }, 50);
+            }
         } else {
             console.error(`Error: Content for page ${pageName} not found!`);
             if (this.pages.home) {

@@ -129,7 +129,10 @@
     
     <!-- Script tag to initialize game when loaded in SPA context -->
     <script>
-        // Notify the app that the game page has been loaded
-        document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+        // Make sure the page is fully loaded before dispatching the event
+        setTimeout(() => {
+            console.log('Game page fully loaded, dispatching gamePageLoaded event');
+            document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+        }, 100);
     </script>
 </div> 
