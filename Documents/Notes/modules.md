@@ -25,6 +25,10 @@
    - Support more than 2 players in the same game
    - Points: 1
 
+7. **User Management** 👥
+   - Implement user management system
+   - Points: 1
+
 ## Minor Modules (0.5 points each)
 1. **Frontend Framework** 🎨
    - Use a front-end framework or toolkit
