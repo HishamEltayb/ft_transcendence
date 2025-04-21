@@ -14,6 +14,10 @@ class User(AbstractUser):
     
     # 2FA fields
     is_two_factor_enabled = models.BooleanField(default=False)
+    
+    # Password reset fields
+    reset_password_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_password_token_expiry = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.username
