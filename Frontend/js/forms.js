@@ -863,7 +863,6 @@ class Forms {
         const userData = user.getUserData();
         
         console.log('2FA checkbox clicked, checked state:', isChecked);
-        console.log('Current user 2FA status:', userData.is_two_factor_enabled);
         
         // If already in the state we're trying to change to, do nothing
         if ((isChecked && userData.is_two_factor_enabled) || 
@@ -871,320 +870,346 @@ class Forms {
             return;
         }
         
+        // Get the modal element
+        const twoFAModal = document.getElementById('twoFAModal');
+        
+        if (!twoFAModal) {
+            console.error('2FA modal element not found in the DOM!');
+            components.showToast('error', '2FA Error', 'Could not find the 2FA setup interface.');
+            // Reset the checkbox to its previous state
+            this.profile.twoFA.checked = !isChecked;
+            return;
+        }
+        
+        // Common modal setup
+        const modalBody = twoFAModal.querySelector('.modal-body');
+        const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
+        const twoFAForm = document.getElementById('twoFAForm');
+        const buttonText = twoFAForm.querySelector('[data-button-text]');
+        const errorDiv = document.getElementById('twofa-error');
+        
+        // Clear any previous errors
+        if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.add('d-none');
+        }
+        
         if (isChecked) {
-            // Setting up 2FA
-            try {
-                // Show loading state
-                components.showSpinner();
-                console.log('Starting 2FA setup process...');
-                
-                // Call the setup 2FA API
-                const result = await hooks.useSetup2FA();
-                console.log('2FA setup API response:', result);
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Failed to set up 2FA');
-                }
-                
-                // Get the modal element
-                const twoFAModal = document.getElementById('twoFAModal');
-                
-                if (!twoFAModal) {
-                    console.error('2FA modal element not found in the DOM!');
-                    throw new Error('2FA modal not found');
-                }
-                
-                console.log('2FA modal found, updating content with QR code');
-                
-                // Update modal title
-                const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
-                if (modalTitle) {
-                    modalTitle.textContent = 'Set Up Two-Factor Authentication';
-                }
-                
-                // Update modal content with QR code
-                const modalBody = twoFAModal.querySelector('.modal-body');
-                
-                // Remove existing QR code if any
-                const existingQR = modalBody.querySelector('.qr-code-container');
-                if (existingQR) {
-                    existingQR.remove();
-                }
-                
-                // Create QR code container
-                const qrContainer = document.createElement('div');
-                qrContainer.className = 'qr-code-container text-center mb-4';
-                qrContainer.innerHTML = `
-                    <img src="${result.qr_code}" alt="2FA QR Code" class="img-fluid mb-3">
-                    <p class="text-light mb-2">Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</p>
-                    <p class="text-light">Or enter this code manually: <code class="bg-dark text-gold p-1">${result.secret_key}</code></p>
-                `;
-                
-                // Insert QR code at the beginning of modal body
-                const modalIntro = modalBody.querySelector('p');
-                if (modalIntro) {
-                    modalBody.insertBefore(qrContainer, modalIntro);
-                } else {
-                    modalBody.insertBefore(qrContainer, modalBody.firstChild);
-                }
-                
-                // Update verification code label and instruction
-                const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
-                if (codeLabel) {
-                    codeLabel.textContent = 'Verification Code from Authenticator App';
-                }
-                
-                const instructionText = modalBody.querySelector('p.text-light.mb-4');
-                if (instructionText) {
-                    instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to enable 2FA.';
-                }
-                
-                // Update the form action to setup
-                const twoFAForm = document.getElementById('twoFAForm');
-                twoFAForm.dataset.action = 'setup';
-                
-                // Update the button text
-                const buttonText = twoFAForm.querySelector('[data-button-text]');
-                if (buttonText) {
-                    buttonText.textContent = 'Enable 2FA';
-                }
-                
-                // Show the modal using Bootstrap's JS
-                console.log('Attempting to show the 2FA modal...');
-                
-                // Make sure Bootstrap is loaded
-                if (typeof bootstrap === 'undefined') {
-                    console.error('Bootstrap is not defined! Modal cannot be shown.');
-                    // Try an alternative method
-                    twoFAModal.classList.add('show');
-                    twoFAModal.style.display = 'block';
-                    document.body.classList.add('modal-open');
-                    
-                    // Add backdrop
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop fade show';
-                    document.body.appendChild(backdrop);
-                } else {
-                    const bsModal = new bootstrap.Modal(twoFAModal);
-                    bsModal.show();
-                    console.log('Modal show method called');
-                }
-                
-                // Add form submit event handler for verification
-                twoFAForm.onsubmit = async (e) => {
-                    e.preventDefault();
-                    
-                    const code = document.getElementById('twoFACode').value;
-                    if (!code || code.length !== 6) {
-                        // Show validation error
-                        const errorDiv = document.getElementById('twofa-error');
-                        if (errorDiv) {
-                            errorDiv.textContent = 'Please enter a valid 6-digit code';
-                            errorDiv.classList.remove('d-none');
-                        }
-                        return;
-                    }
-                    
-                    // Show loading
-                    const spinner = twoFAForm.querySelector('[data-spinner]');
-                    const btnText = twoFAForm.querySelector('[data-button-text]');
-                    const submitBtn = twoFAForm.querySelector('button[type="submit"]');
-                    
-                    if (spinner) spinner.classList.remove('d-none');
-                    if (btnText) btnText.textContent = 'Verifying...';
-                    if (submitBtn) submitBtn.disabled = true;
-                    
-                    try {
-                        // Call verify API
-                        const verifyResult = await hooks.useVerify2FA(code);
-                        
-                        if (!verifyResult.success) {
-                            throw new Error(verifyResult.error || 'Verification failed');
-                        }
-                        
-                        // Update user data
-                        if (verifyResult.data && verifyResult.data.user) {
-                            user.setUserData(verifyResult.data.user, true);
-                        } else {
-                            // Force refresh user data
-                            await hooks.useFetchUserData(true);
-                        }
-                        
-                        // Show success
-                        components.showToast('success', '2FA Enabled', 'Two-factor authentication has been successfully enabled for your account.');
-                        
-                        // Close modal
-                        if (typeof bootstrap !== 'undefined') {
-                            const bsModal = bootstrap.Modal.getInstance(twoFAModal);
-                            if (bsModal) bsModal.hide();
-                        } else {
-                            twoFAModal.classList.remove('show');
-                            twoFAModal.style.display = 'none';
-                            document.body.classList.remove('modal-open');
-                            const backdrop = document.querySelector('.modal-backdrop');
-                            if (backdrop) backdrop.remove();
-                        }
-                        
-                        // Reset form
-                        twoFAForm.reset();
-                        
-                    } catch (error) {
-                        console.error('2FA verification error:', error);
-                        
-                        // Show error
-                        const errorDiv = document.getElementById('twofa-error');
-                        if (errorDiv) {
-                            errorDiv.textContent = error.message || 'Verification failed. Please try again.';
-                            errorDiv.classList.remove('d-none');
-                        }
-                        
-                        // Uncheck the box since setup failed
-                        this.profile.twoFA.checked = false;
-                        
-                    } finally {
-                        // Reset loading state
-                        if (spinner) spinner.classList.add('d-none');
-                        if (btnText) btnText.textContent = 'Enable 2FA';
-                        if (submitBtn) submitBtn.disabled = false;
-                    }
-                };
-                
-            } catch (error) {
-                console.error('Error setting up 2FA:', error);
-                components.showToast('error', '2FA Setup Failed', error.message || 'Could not initialize two-factor authentication.');
-                
-                // Uncheck the box since setup failed
-                this.profile.twoFA.checked = false;
-            } finally {
-                components.hideSpinner();
+            // ENABLING 2FA
+            modalTitle.textContent = 'Set Up Two-Factor Authentication';
+            
+            // Show initial setup step first
+            const setupIntro = document.createElement('div');
+            setupIntro.className = 'setup-intro text-center mb-4';
+            setupIntro.innerHTML = `
+                <h4 class="text-gold mb-3">Secure Your Account</h4>
+                <p class="text-light">Two-factor authentication adds an extra layer of security to your account.</p>
+                <p class="text-light mb-4">To continue, you'll need an authenticator app like Google Authenticator, Authy, or Microsoft Authenticator.</p>
+                <div class="d-grid">
+                    <button type="button" id="continueSetupBtn" class="btn btn-gold">Continue Setup</button>
+                </div>
+            `;
+            
+            // Remove any existing QR code or intro
+            const existingQR = modalBody.querySelector('.qr-code-container');
+            const existingIntro = modalBody.querySelector('.setup-intro');
+            if (existingQR) existingQR.remove();
+            if (existingIntro) existingIntro.remove();
+            
+            // Hide the form initially
+            twoFAForm.style.display = 'none';
+            
+            // Add the intro section
+            const instructionText = modalBody.querySelector('p.text-light.mb-4');
+            if (instructionText) {
+                modalBody.insertBefore(setupIntro, instructionText);
+                instructionText.style.display = 'none';
+            } else {
+                modalBody.insertBefore(setupIntro, modalBody.firstChild);
             }
-        } else {
-            // Disabling 2FA
-            try {
-                // Get the modal element
-                const twoFAModal = document.getElementById('twoFAModal');
-                
-                if (!twoFAModal) {
-                    throw new Error('2FA modal not found');
-                }
-                
-                // Update modal title
-                const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
-                if (modalTitle) {
-                    modalTitle.textContent = 'Disable Two-Factor Authentication';
-                }
-                
-                // Update modal content
-                const modalBody = twoFAModal.querySelector('.modal-body');
-                
-                // Remove existing QR code if any
-                const existingQR = modalBody.querySelector('.qr-code-container');
-                if (existingQR) {
-                    existingQR.remove();
-                }
-                
-                // Update verification code label and instruction
-                const instructionText = modalBody.querySelector('p.text-light.mb-4');
-                if (instructionText) {
-                    instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to disable 2FA.';
-                }
-                
-                const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
-                if (codeLabel) {
-                    codeLabel.textContent = 'Verification Code';
-                }
-                
-                // Update the form action to disable
-                const twoFAForm = document.getElementById('twoFAForm');
-                twoFAForm.dataset.action = 'disable';
-                
-                // Update the button text
-                const buttonText = twoFAForm.querySelector('[data-button-text]');
-                if (buttonText) {
-                    buttonText.textContent = 'Disable 2FA';
-                }
-                
-                // Show the modal
+            
+            // Show the modal
+            if (typeof bootstrap !== 'undefined') {
                 const bsModal = new bootstrap.Modal(twoFAModal);
                 bsModal.show();
+            } else {
+                // Fallback for when Bootstrap isn't loaded
+                twoFAModal.classList.add('show');
+                twoFAModal.style.display = 'block';
+                document.body.classList.add('modal-open');
                 
-                // Add form submit event handler for verification
-                twoFAForm.onsubmit = async (e) => {
-                    e.preventDefault();
-                    
-                    const code = document.getElementById('twoFACode').value;
-                    if (!code || code.length !== 6) {
-                        // Show validation error
-                        const errorDiv = document.getElementById('twofa-error');
-                        if (errorDiv) {
-                            errorDiv.textContent = 'Please enter a valid 6-digit code';
-                            errorDiv.classList.remove('d-none');
-                        }
-                        return;
-                    }
-                    
-                    // Show loading
-                    const spinner = twoFAForm.querySelector('[data-spinner]');
-                    const btnText = twoFAForm.querySelector('[data-button-text]');
-                    const submitBtn = twoFAForm.querySelector('button[type="submit"]');
-                    
-                    if (spinner) spinner.classList.remove('d-none');
-                    if (btnText) btnText.textContent = 'Verifying...';
-                    if (submitBtn) submitBtn.disabled = true;
-                    
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+            
+            // Set up the continue button event listener
+            const continueBtn = document.getElementById('continueSetupBtn');
+            if (continueBtn) {
+                continueBtn.onclick = async () => {
                     try {
-                        // Call disable API
-                        const disableResult = await hooks.useDisable2FA(code);
+                        // Show loading state
+                        continueBtn.disabled = true;
+                        continueBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
                         
-                        if (!disableResult.success) {
-                            throw new Error(disableResult.error || 'Disabling 2FA failed');
+                        // Now make the API call to set up 2FA
+                        const result = await hooks.useSetup2FA();
+                        
+                        if (!result.success) {
+                            throw new Error(result.error || 'Failed to set up 2FA');
                         }
                         
-                        // Update user data
-                        if (disableResult.data && disableResult.data.user) {
-                            user.setUserData(disableResult.data.user, true);
+                        // Remove the intro section
+                        setupIntro.remove();
+                        
+                        // Display the QR code
+                        const qrContainer = document.createElement('div');
+                        qrContainer.className = 'qr-code-container text-center mb-4';
+                        qrContainer.innerHTML = `
+                            <img src="${result.qr_code}" alt="2FA QR Code" class="img-fluid mb-3">
+                            <p class="text-light mb-2">Scan this QR code with your authenticator app</p>
+                            <p class="text-light">Or enter this code manually: <code class="bg-dark text-gold p-1">${result.secret_key}</code></p>
+                        `;
+                        
+                        // Show the instruction text
+                        if (instructionText) {
+                            instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to enable 2FA.';
+                            instructionText.style.display = 'block';
+                            modalBody.insertBefore(qrContainer, instructionText);
                         } else {
-                            // Force refresh user data
-                            await hooks.useFetchUserData(true);
+                            modalBody.insertBefore(qrContainer, modalBody.firstChild);
                         }
                         
-                        // Show success
-                        components.showToast('success', '2FA Disabled', 'Two-factor authentication has been successfully disabled for your account.');
+                        // Update form and show it
+                        const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
+                        if (codeLabel) {
+                            codeLabel.textContent = 'Verification Code from Authenticator App';
+                        }
                         
-                        // Close modal
-                        bsModal.hide();
+                        twoFAForm.dataset.action = 'setup';
                         
-                        // Reset form
-                        twoFAForm.reset();
+                        if (buttonText) {
+                            buttonText.textContent = 'Enable 2FA';
+                        }
+                        
+                        twoFAForm.style.display = 'block';
                         
                     } catch (error) {
-                        console.error('2FA disabling error:', error);
-                        
-                        // Show error
-                        const errorDiv = document.getElementById('twofa-error');
+                        console.error('Error setting up 2FA:', error);
                         if (errorDiv) {
-                            errorDiv.textContent = error.message || 'Failed to disable 2FA. Please try again.';
+                            errorDiv.textContent = error.message || 'Could not initialize two-factor authentication.';
                             errorDiv.classList.remove('d-none');
                         }
                         
-                        // Check the box again since disabling failed
-                        this.profile.twoFA.checked = true;
+                        // Keep the intro visible but update the button
+                        continueBtn.disabled = false;
+                        continueBtn.textContent = 'Try Again';
                         
-                    } finally {
-                        // Reset loading state
-                        if (spinner) spinner.classList.add('d-none');
-                        if (btnText) btnText.textContent = 'Disable 2FA';
-                        if (submitBtn) submitBtn.disabled = false;
+                        // Reset the checkbox
+                        this.profile.twoFA.checked = false;
                     }
                 };
-                
-            } catch (error) {
-                console.error('Error setting up 2FA disable flow:', error);
-                components.showToast('error', '2FA Error', error.message || 'Could not process your request.');
-                
-                // Check the box again since setup failed
-                this.profile.twoFA.checked = true;
             }
+            
+            // Set up form submission handler
+            twoFAForm.onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const code = document.getElementById('twoFACode').value;
+                if (!code || code.length !== 6) {
+                    // Show validation error
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Please enter a valid 6-digit code';
+                        errorDiv.classList.remove('d-none');
+                    }
+                    return;
+                }
+                
+                // Show loading
+                const spinner = twoFAForm.querySelector('[data-spinner]');
+                const submitBtn = twoFAForm.querySelector('button[type="submit"]');
+                
+                if (spinner) spinner.classList.remove('d-none');
+                if (buttonText) buttonText.textContent = 'Verifying...';
+                if (submitBtn) submitBtn.disabled = true;
+                
+                try {
+                    // Call verify API
+                    const verifyResult = await hooks.useVerify2FA(code);
+                    
+                    if (!verifyResult.success) {
+                        throw new Error(verifyResult.error || 'Verification failed');
+                    }
+                    
+                    // Update user data
+                    if (verifyResult.data && verifyResult.data.user) {
+                        user.setUserData(verifyResult.data.user, true);
+                    } else {
+                        // Force refresh user data
+                        await hooks.useFetchUserData(true);
+                    }
+                    
+                    // Show success
+                    components.showToast('success', '2FA Enabled', 'Two-factor authentication has been successfully enabled for your account.');
+                    
+                    // Close modal
+                    if (typeof bootstrap !== 'undefined') {
+                        const bsModal = bootstrap.Modal.getInstance(twoFAModal);
+                        if (bsModal) bsModal.hide();
+                    } else {
+                        twoFAModal.classList.remove('show');
+                        twoFAModal.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                    }
+                    
+                    // Reset form
+                    twoFAForm.reset();
+                    
+                } catch (error) {
+                    console.error('2FA verification error:', error);
+                    
+                    // Show error
+                    if (errorDiv) {
+                        errorDiv.textContent = error.message || 'Verification failed. Please try again.';
+                        errorDiv.classList.remove('d-none');
+                    }
+                    
+                    // Uncheck the box since setup failed
+                    this.profile.twoFA.checked = false;
+                    
+                } finally {
+                    // Reset loading state
+                    if (spinner) spinner.classList.add('d-none');
+                    if (buttonText) buttonText.textContent = 'Enable 2FA';
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            };
+            
+        } else {
+            // DISABLING 2FA
+            if (modalTitle) {
+                modalTitle.textContent = 'Disable Two-Factor Authentication';
+            }
+            
+            // Remove any existing QR code or intro
+            const existingQR = modalBody.querySelector('.qr-code-container');
+            const existingIntro = modalBody.querySelector('.setup-intro');
+            if (existingQR) existingQR.remove();
+            if (existingIntro) existingIntro.remove();
+            
+            // Update instruction text
+            const instructionText = modalBody.querySelector('p.text-light.mb-4');
+            if (instructionText) {
+                instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to disable 2FA.';
+                instructionText.style.display = 'block';
+            }
+            
+            // Update label
+            const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
+            if (codeLabel) {
+                codeLabel.textContent = 'Verification Code';
+            }
+            
+            // Update form
+            twoFAForm.style.display = 'block';
+            twoFAForm.dataset.action = 'disable';
+            
+            if (buttonText) {
+                buttonText.textContent = 'Disable 2FA';
+            }
+            
+            // Show the modal
+            if (typeof bootstrap !== 'undefined') {
+                const bsModal = new bootstrap.Modal(twoFAModal);
+                bsModal.show();
+            } else {
+                // Fallback for when Bootstrap isn't loaded
+                twoFAModal.classList.add('show');
+                twoFAModal.style.display = 'block';
+                document.body.classList.add('modal-open');
+                
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+            
+            // Set up form submission handler
+            twoFAForm.onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const code = document.getElementById('twoFACode').value;
+                if (!code || code.length !== 6) {
+                    // Show validation error
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Please enter a valid 6-digit code';
+                        errorDiv.classList.remove('d-none');
+                    }
+                    return;
+                }
+                
+                // Show loading
+                const spinner = twoFAForm.querySelector('[data-spinner]');
+                const submitBtn = twoFAForm.querySelector('button[type="submit"]');
+                
+                if (spinner) spinner.classList.remove('d-none');
+                if (buttonText) buttonText.textContent = 'Verifying...';
+                if (submitBtn) submitBtn.disabled = true;
+                
+                try {
+                    // Call disable API
+                    const disableResult = await hooks.useDisable2FA(code);
+                    
+                    if (!disableResult.success) {
+                        throw new Error(disableResult.error || 'Disabling 2FA failed');
+                    }
+                    
+                    // Update user data
+                    if (disableResult.data && disableResult.data.user) {
+                        user.setUserData(disableResult.data.user, true);
+                    } else {
+                        // Force refresh user data
+                        await hooks.useFetchUserData(true);
+                    }
+                    
+                    // Show success
+                    components.showToast('success', '2FA Disabled', 'Two-factor authentication has been successfully disabled for your account.');
+                    
+                    // Close modal
+                    if (typeof bootstrap !== 'undefined') {
+                        const bsModal = bootstrap.Modal.getInstance(twoFAModal);
+                        if (bsModal) bsModal.hide();
+                    } else {
+                        twoFAModal.classList.remove('show');
+                        twoFAModal.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                    }
+                    
+                    // Reset form
+                    twoFAForm.reset();
+                    
+                } catch (error) {
+                    console.error('2FA disabling error:', error);
+                    
+                    // Show error
+                    if (errorDiv) {
+                        errorDiv.textContent = error.message || 'Failed to disable 2FA. Please try again.';
+                        errorDiv.classList.remove('d-none');
+                    }
+                    
+                    // Check the box again since disabling failed
+                    this.profile.twoFA.checked = true;
+                    
+                } finally {
+                    // Reset loading state
+                    if (spinner) spinner.classList.add('d-none');
+                    if (buttonText) buttonText.textContent = 'Disable 2FA';
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            };
         }
     }
 }

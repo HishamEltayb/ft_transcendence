@@ -139,6 +139,9 @@ class Router {
         // Show the page
         pages.showPage(resolvedPage);
         
+        // Apply auth state to newly loaded page content
+        user.updateUIAuthState();
+        
         if (!isInitialCall) {
             components.hideSpinner();
         }
@@ -219,11 +222,17 @@ class Router {
         // Show the page
         pages.showPage(resolvedPage);
         
+        // Apply auth state to newly loaded page content
+        user.updateUIAuthState();
+        
         // Special handling for specific pages
         if (resolvedPage === 'profile') {
             console.log('Router: Loading profile page, initializing forms...');
             // Small delay to ensure DOM is fully loaded
             setTimeout(() => {
+                // Reapply auth state for any elements added by initialization
+                user.updateUIAuthState();
+                
                 if (typeof forms !== 'undefined' && forms.initProfilePage) {
                     forms.initProfilePage();
                 } else {
@@ -234,6 +243,9 @@ class Router {
             console.log('Router: Loading login page, initializing login/register tabs...');
             // Small delay to ensure DOM is fully loaded
             setTimeout(() => {
+                // Reapply auth state for any elements added by initialization
+                user.updateUIAuthState();
+                
                 if (typeof forms !== 'undefined') {
                     // Reinitialize login/register forms
                     forms.initLoginRegisterForms();
@@ -261,6 +273,11 @@ class Router {
         
         // Update URL
         this.updateURL(resolvedPage);
+        
+        // Dispatch a navigation complete event that can be used to ensure auth state is updated
+        document.dispatchEvent(new CustomEvent('navigationComplete', { 
+            detail: { pageName: resolvedPage } 
+        }));
         
         components.hideSpinner();
         

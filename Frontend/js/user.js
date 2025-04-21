@@ -76,63 +76,69 @@ class User {
         
         console.log('User: Updating UI auth state, authenticated =', isAuthenticated);
         
-        // Update UI elements with data-auth attributes
-        const authElements = document.querySelectorAll('[data-auth]');
-        authElements.forEach(element => {
-            const authType = element.dataset.auth;
-            const display = window.getComputedStyle(element).getPropertyValue('display');
-            const defaultDisplay = display === 'none' ? 'block' : display;
+        try {
+            // Update UI elements with data-auth attributes
+            const authElements = document.querySelectorAll('[data-auth]');
+            console.log(`User: Found ${authElements.length} elements with data-auth attribute`);
             
-            if (authType === 'logged-in') {
-                // Elements that should show when logged in
-                if (isAuthenticated) {
-                    if (element.classList.contains('d-flex') || 
-                        element.classList.contains('dropdown') || 
-                        element.classList.contains('flex-row') || 
-                        element.classList.contains('flex-column')) {
-                        element.style.display = 'flex';
-                    } else {
-                        element.style.display = defaultDisplay;
-                    }
-                } else {
-                    element.style.display = 'none';
-                }
-            } else if (authType === 'logged-out') {
-                // Elements that should show when logged out
-                if (isAuthenticated) {
-                    element.style.display = 'none';
-                } else {
-                    if (element.classList.contains('d-flex') || 
-                        element.classList.contains('dropdown') || 
-                        element.classList.contains('flex-row') || 
-                        element.classList.contains('flex-column')) {
-                        element.style.display = 'flex';
-                    } else {
-                        element.style.display = defaultDisplay;
-                    }
-                }
-            }
-        });
-
-        // Handle elements with auth-hide class (hide when authenticated)
-        const authHideElements = document.querySelectorAll('.auth-hide');
-        authHideElements.forEach(element => {
-            if (isAuthenticated) {
-                element.style.display = 'none';
-            } else {
+            authElements.forEach(element => {
+                const authType = element.dataset.auth;
                 const display = window.getComputedStyle(element).getPropertyValue('display');
                 const defaultDisplay = display === 'none' ? 'block' : display;
                 
-                if (element.classList.contains('d-flex') || 
-                    element.classList.contains('dropdown') || 
-                    element.classList.contains('flex-row') || 
-                    element.classList.contains('flex-column')) {
-                    element.style.display = 'flex';
-                } else {
-                    element.style.display = defaultDisplay;
+                if (authType === 'logged-in') {
+                    // Elements that should show when logged in
+                    if (isAuthenticated) {
+                        if (element.classList.contains('d-flex') || 
+                            element.classList.contains('dropdown') || 
+                            element.classList.contains('flex-row') || 
+                            element.classList.contains('flex-column')) {
+                            element.style.display = 'flex';
+                        } else {
+                            element.style.display = defaultDisplay;
+                        }
+                    } else {
+                        element.style.display = 'none';
+                    }
+                } else if (authType === 'logged-out') {
+                    // Elements that should show when logged out
+                    if (isAuthenticated) {
+                        element.style.display = 'none';
+                    } else {
+                        if (element.classList.contains('d-flex') || 
+                            element.classList.contains('dropdown') || 
+                            element.classList.contains('flex-row') || 
+                            element.classList.contains('flex-column')) {
+                            element.style.display = 'flex';
+                        } else {
+                            element.style.display = defaultDisplay;
+                        }
+                    }
                 }
-            }
-        });
+            });
+            
+            // Handle elements with auth-hide class (hide when authenticated)
+            const authHideElements = document.querySelectorAll('.auth-hide');
+            authHideElements.forEach(element => {
+                if (isAuthenticated) {
+                    element.style.display = 'none';
+                } else {
+                    const display = window.getComputedStyle(element).getPropertyValue('display');
+                    const defaultDisplay = display === 'none' ? 'block' : display;
+                    
+                    if (element.classList.contains('d-flex') || 
+                        element.classList.contains('dropdown') || 
+                        element.classList.contains('flex-row') || 
+                        element.classList.contains('flex-column')) {
+                        element.style.display = 'flex';
+                    } else {
+                        element.style.display = defaultDisplay;
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('User: Error updating UI auth state:', error);
+        }
     }
 
     /**
@@ -422,6 +428,12 @@ class User {
                     this.updateUIUserData();
                 }
             }
+        });
+        
+        // Listen for navigation completion
+        document.addEventListener('navigationComplete', (e) => {
+            console.log('User: Navigation complete event detected, updating auth UI');
+            this.updateUIAuthState();
         });
         
         // Refresh user data when page becomes visible after being hidden
