@@ -1,10 +1,14 @@
-/* Header & Navigation Styles */
+/* ===== COMPONENTS.CSS ===== */
+/* Consolidated styles for header, footer, and 2FA modal components */
+
+
+/* ===== HEADER STYLES ===== */
 .navbar {
     background-color: rgba(0, 0, 0, 0.7) !important;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(var(--gold), 0.2);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
     z-index: 1000;
     padding: 10px 15px;
 }
@@ -97,7 +101,125 @@
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28212, 175, 55, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-/* Responsive Adjustments */
+/* Header Avatar Styling */
+.header-avatar {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.header-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+}
+
+#userDropdown {
+    padding: 0;
+    margin: 0 15px;
+    display: flex;
+    align-items: center;
+}
+
+#userDropdown::after {
+    margin-left: 8px;
+    color: var(--gold);
+}
+
+
+/* ===== FOOTER STYLES ===== */
+footer {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--gray);
+    border-top: 1px solid var(--gold-dark);
+    padding: 10px 0;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 50px; /* Fixed height */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Add padding to main content to prevent footer overlap */
+body {
+    padding-bottom: 60px; /* Slightly more than footer height */
+}
+
+
+/* ===== TWO-FACTOR AUTHENTICATION MODAL STYLES ===== */
+.border-gold {
+    border-color: var(--gold) !important;
+}
+
+/* For input fields with border-gold class */
+.form-control.border-gold {
+    border: 1px solid var(--gold);
+}
+
+.form-control.border-gold:focus {
+    border-color: var(--gold-light);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+}
+
+/* Modal styling */
+.modal-content.bg-dark {
+    background-color: #222;
+    color: #e0e0e0;
+    border: 1px solid var(--gold);
+}
+
+.modal .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#twoFAModal .invalid-feedback {
+    color: #e74c3c;
+}
+
+#twoFAModal .alert-danger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Styling for numeric input */
+#twoFACode {
+    letter-spacing: 0.5em;
+    font-family: monospace;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+/* Custom 2FA switch styles for profile page */
+.form-check-input[type="checkbox"] {
+    background-color: #333;
+    border-color: var(--gold);
+}
+
+.form-check-input:checked[type="checkbox"] {
+    background-color: var(--gold);
+    border-color: var(--gold);
+}
+
+.form-switch .form-check-input {
+    height: 1.5em;
+    width: 3em;
+    cursor: pointer;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 991.98px) {
     .navbar-toggler {
         margin-left: 15px;
@@ -143,7 +265,6 @@
     }
 }
 
-/* Ensure proper container padding on mobile */
 @media (max-width: 576px) {
     .navbar {
         padding: 8px 10px;
@@ -156,32 +277,13 @@
     .logo-text {
         font-size: 1.1rem;
     }
-}
-
-/* Header Avatar Styling */
-.header-avatar {
-    width: 36px;
-    height: 36px;
-    object-fit: cover;
-    border: 2px solid var(--gold);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
-    transition: all 0.3s ease;
-    display: block;
-}
-
-.header-avatar:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
-}
-
-#userDropdown {
-    padding: 0;
-    margin: 0 15px;
-    display: flex;
-    align-items: center;
-}
-
-#userDropdown::after {
-    margin-left: 8px;
-    color: var(--gold);
+    
+    footer {
+        height: 40px;
+        font-size: 0.8rem;
+    }
+    
+    body {
+        padding-bottom: 50px;
+    }
 } 

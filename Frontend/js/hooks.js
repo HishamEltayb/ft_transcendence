@@ -280,7 +280,7 @@ class Hooks {
     }
   }
   
-  // Optimized form submission with state preservation
+  // Hook for optimized form submission with state preservation
   async useSubmitForm(formId, formData, endpoint, method = 'POST') {
     try {
       // Save form state to store before submission
@@ -311,6 +311,113 @@ class Hooks {
       return { success: true, data: responseData };
     } catch (error) {
       console.error(`Error submitting form ${formId}:`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for setting up 2FA
+  async useSetup2FA() {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send setup request to backend
+      const setup2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/setup/';
+      
+      const response = await fetch(setup2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to setup 2FA');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, qr_code: data.qr_code, secret_key: data.secret_key };
+    } catch (error) {
+      console.error('Error setting up 2FA:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for disabling 2FA
+  async useDisable2FA(verificationCode) {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send disable request to backend
+      const disable2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/disable/';
+      
+      const response = await fetch(disable2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ otp_token: verificationCode })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to disable 2FA');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error disabling 2FA:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for verifying 2FA code
+  async useVerify2FA(verificationCode) {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send verification request to backend
+      const verify2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/verify/';
+      
+      const response = await fetch(verify2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ otp_token: verificationCode })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to verify 2FA code');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error verifying 2FA code:', error);
       return { success: false, error: error.message };
     }
   }

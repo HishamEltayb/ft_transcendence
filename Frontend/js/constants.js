@@ -11,7 +11,7 @@ export const PAGES = {
 export const COMPONENTS = {
     headerComponent: './components/header.html',
     footerComponent: './components/footer.html',
-    twoFactorModalComponent: './components/twoFactorModal.html'
+    twoFAModalComponent: './components/twoFA.html'
 };
 
 export const ENDPOINTS = {
@@ -26,7 +26,7 @@ export const ENDPOINTS = {
         verifyEmail: '/api/users/auth/verify-email',
         forgotPassword: '/api/users/auth/forgot-password',
         resetPassword: '/api/users/auth/reset-password',
-        twoFactorAuth: '/api/users/auth/2fa',
+        twoFactorAuth: '/api/users/2fa',
     },
     
     // User endpoints

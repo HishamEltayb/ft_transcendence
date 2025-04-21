@@ -87,9 +87,19 @@
                             <label for="settingConfirmPassword" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="settingConfirmPassword">
                         </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="setting2fa">
-                            <label class="form-check-label" for="setting2fa">Enable Two-Factor Authentication</label>
+                        <div class="mb-4 p-3 border rounded bg-dark border-gold">
+                            <div class="d-flex align-items-center">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="setting2fa" style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2 fw-bold text-gold fs-5" for="setting2fa">
+                                        Enable Two-Factor Authentication
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="text-light small mt-2 mb-0">
+                                <i class="bi bi-shield-lock-fill me-1"></i>
+                                Secure your account with an additional layer of protection using an authenticator app.
+                            </p>
                         </div>
                         <button type="submit" class="btn btn-gold" id="saveSettingsBtn">Save Changes</button>
                     </form>

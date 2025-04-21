@@ -294,8 +294,9 @@ footer {
 }
 
 .gold-divider {
-    border-top: 1px solid rgba(212, 175, 55, 0.3);
-    margin: 8px 0;
+    height: 1px;
+    background-color: var(--gold);
+    margin: 20px 0;
 }
 
 /* Add any other custom styling below */ 
