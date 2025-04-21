@@ -158,6 +158,23 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
+/* Remove modal backdrop */
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    background: none !important;
+}
+
+/* Ensure the modal stays on top without backdrop */
+.modal {
+    background: none !important;
+}
+
+.modal-dialog {
+    z-index: 1080 !important;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
 .modal-header.border-gold {
     background-color: rgba(212, 175, 55, 0.1);
 }

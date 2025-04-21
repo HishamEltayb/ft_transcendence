@@ -7,7 +7,7 @@
                 <div class="card-body text-center">
                     <h5 class="card-title mb-3" id="profileUsername">Username</h5>
                     <div class="avatar-container mb-3">
-                        <img src="../public/assets/images/default-avatar.png" class="rounded-circle img-fluid" id="profileAvatar">
+                        <img src="../public/assets/icons/avatar.svg" class="rounded-circle img-fluid" id="profileAvatar">
                     </div>
                     <p class="text-muted mb-3" id="profileIntraLogin"></p>
                     <button class="btn btn-gold btn-sm" id="editProfileBtn">Edit Profile</button>
@@ -87,19 +87,10 @@
                             <label for="settingConfirmPassword" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="settingConfirmPassword">
                         </div>
-                        <div class="mb-4 p-3 border rounded bg-dark border-gold">
-                            <div class="d-flex align-items-center">
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" class="form-check-input" id="setting2fa" style="width: 3em; height: 1.5em;">
-                                    <label class="form-check-label ms-2 fw-bold text-gold fs-5" for="setting2fa">
-                                        Enable Two-Factor Authentication
-                                    </label>
-                                </div>
-                            </div>
-                            <p class="text-light small mt-2 mb-0">
-                                <i class="bi bi-shield-lock-fill me-1"></i>
-                                Secure your account with an additional layer of protection using an authenticator app.
-                            </p>
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-gold" id="setting2fa">
+                                <i class="bi bi-shield-lock-fill me-2"></i>Enable Two-Factor Authentication
+                            </button>
                         </div>
                         <button type="submit" class="btn btn-gold" id="saveSettingsBtn">Save Changes</button>
                     </form>
@@ -134,4 +125,38 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Two-Factor Authentication Modal -->
+<div class="modal fade" id="twoFAModal" tabindex="-1" aria-labelledby="twoFAModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="twoFAModalLabel">Set Up Two-Factor Authentication</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger d-none" id="twofa-error"></div>
+        <p class="text-dark mb-4 fw-bold">To enhance your account security, set up two-factor authentication using an authenticator app.</p>
+        
+        <!-- QR code will be inserted here -->
+        
+        <form id="twoFAForm" class="mt-4">
+          <div class="mb-4 bg-light p-3 rounded border">
+            <label for="twoFACode" class="form-label fw-bold">Verification Code</label>
+            <input type="text" class="form-control form-control-lg" id="twoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="000000" required>
+            <div class="invalid-feedback">Please enter a valid 6-digit code</div>
+            <div class="form-text mt-2">Enter the 6-digit code from your authenticator app (Google Authenticator, Authy, etc.)</div>
+          </div>
+          
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <span class="spinner-border spinner-border-sm d-none" data-spinner></span>
+              <span data-button-text>Generate QR Code</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div> 

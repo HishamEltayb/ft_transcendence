@@ -12,8 +12,7 @@ export const PAGES = {
 
 export const COMPONENTS = {
     headerComponent: './components/header.html',
-    footerComponent: './components/footer.html',
-    twoFAModalComponent: './components/twoFA.html'
+    footerComponent: './components/footer.html'
 };
 
 export const ENDPOINTS = {
