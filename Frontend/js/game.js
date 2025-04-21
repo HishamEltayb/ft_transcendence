@@ -5,6 +5,8 @@
 const startText = document.getElementById('startText');
 const paddle1 = document.getElementById('paddle1');
 const paddle2 = document.getElementById('paddle2');
+const paddle3 = document.getElementById('paddle3');
+const paddle4 = document.getElementById('paddle4');
 const ball = document.getElementById('ball');
 const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
@@ -28,12 +30,15 @@ const howToPlayScreen = document.getElementById('howToPlayScreen');
 // Game Mode Elements
 const pvpButton = document.getElementById('pvpButton');
 const pveButton = document.getElementById('pveButton');
+const multiplayerButton = document.getElementById('multiplayerButton');
 const player2Controls = document.getElementById('player2Controls');
 const winScoreSelect = document.getElementById('winScore');
 const ballSpeedSelect = document.getElementById('ballSpeedSelect');
 const aiDifficultySelect = document.getElementById('aiDifficultySelect');
 const player1NameInput = document.getElementById('player1NameInput');
 const player2NameInput = document.getElementById('player2NameInput');
+const team1NameInput = document.getElementById('team1NameInput');
+const team2NameInput = document.getElementById('team2NameInput');
 const saveSettingsButton = document.getElementById('saveSettingsButton');
 const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
 
@@ -41,10 +46,19 @@ const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton
 let currentBackground = 'classic'; // Default background
 let paddleSizeMultiplier = 1; // Default paddle size multiplier
 
+// Multiplayer variables
+let isMultiplayerMode = false;
+let lastPaddleHit = null; // Track which paddle last hit the ball
+let team1Name = "Left Team";
+let team2Name = "Right Team";
+let team1Score = 0;
+let team2Score = 0;
+
 // DOM Elements - add new elements
 const paddleSizeSelect = document.getElementById('paddleSize');
 const backgroundSelect = document.getElementById('backgroundSelect');
 const videoBackground = document.querySelector('.gameArea .video-background');
+const teamNameSettings = document.querySelectorAll('.setting-team');
 
 /********************************************************************************************************
  * GAME STATE VARIABLES
@@ -65,6 +79,10 @@ let paddle1Speed = 0;
 let paddle1Y = 0;
 let paddle2Speed = 0;
 let paddle2Y = 0;
+let paddle3Speed = 0;
+let paddle3Y = 0;
+let paddle4Speed = 0;
+let paddle4Y = 0;
 
 // Ball Variables
 let ballX = 0;
@@ -149,6 +167,8 @@ function updateGameDimensions() {
     // Properly scale paddle positions
     paddle1Y = Math.min(gameHeight - paddle1.clientHeight, paddle1Y * heightRatio);
     paddle2Y = Math.min(gameHeight - paddle2.clientHeight, paddle2Y * heightRatio);
+    paddle3Y = Math.min(gameHeight - paddle3.clientHeight, paddle3Y * heightRatio);
+    paddle4Y = Math.min(gameHeight - paddle4.clientHeight, paddle4Y * heightRatio);
     
     // Scale ball position
     ballX = Math.min(gameWidth - ball.clientWidth, ballX * widthRatio);
@@ -157,6 +177,8 @@ function updateGameDimensions() {
     // Apply the new positions
     paddle1.style.top = paddle1Y + 'px';
     paddle2.style.top = paddle2Y + 'px';
+    paddle3.style.top = paddle3Y + 'px';
+    paddle4.style.top = paddle4Y + 'px';
     ball.style.left = ballX + 'px';
     ball.style.top = ballY + 'px';
     
@@ -244,19 +266,49 @@ function initializePositions() {
   scaleX = gameWidth / REFERENCE_WIDTH;
   scaleY = gameHeight / REFERENCE_HEIGHT;
   
-  // Position paddles at the center of the game area vertically
-  paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
-  paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
+  // Position paddles at the correct heights
+  if (isMultiplayerMode) {
+    // Position paddles in their respective quarters
+    paddle1Y = gameHeight * 0.25 - paddle1.clientHeight / 2;
+    paddle2Y = gameHeight * 0.25 - paddle2.clientHeight / 2;
+    paddle3Y = gameHeight * 0.75 - paddle3.clientHeight / 2;
+    paddle4Y = gameHeight * 0.75 - paddle4.clientHeight / 2;
+    
+    // Show multiplayer paddles
+    paddle3.style.display = 'block';
+    paddle4.style.display = 'block';
+    
+    // Reset paddle disabled state
+    paddle1.classList.remove('paddle-disabled');
+    paddle2.classList.remove('paddle-disabled');
+    paddle3.classList.remove('paddle-disabled');
+    paddle4.classList.remove('paddle-disabled');
+    
+    // Reset last paddle hit
+    lastPaddleHit = null;
+  } else {
+    // Standard 2-player positioning
+    paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
+    paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
+    
+    // Hide multiplayer paddles in normal mode
+    paddle3.style.display = 'none';
+    paddle4.style.display = 'none';
+  }
   
   // Set the paddle width based on the game area width (responsive)
   const paddleWidth = Math.max(Math.round(0.01 * gameWidth), 6); // at least 6px wide
   paddle1.style.width = paddleWidth + 'px';
   paddle2.style.width = paddleWidth + 'px';
+  paddle3.style.width = paddleWidth + 'px';
+  paddle4.style.width = paddleWidth + 'px';
   
   // Apply the paddle height based on size multiplier (as percentage)
   const paddleHeight = 15 * paddleSizeMultiplier + '%'; // 15% is the base height
   paddle1.style.height = paddleHeight;
   paddle2.style.height = paddleHeight;
+  paddle3.style.height = paddleHeight;
+  paddle4.style.height = paddleHeight;
   
   // Set the ball size based on the game area (responsive)
   const ballSize = Math.max(Math.round(0.02 * Math.min(gameWidth, gameHeight)), 8); // at least 8px
@@ -275,18 +327,28 @@ function initializePositions() {
   // Apply positions to DOM elements
   paddle1.style.left = '0px'; // Ensure paddle1 is at left edge
   paddle2.style.right = '0px'; // Ensure paddle2 is at right edge
+  paddle3.style.left = '0px'; // Ensure paddle3 is at left edge
+  paddle4.style.right = '0px'; // Ensure paddle4 is at right edge
+  
   paddle1.style.top = paddle1Y + 'px';
   paddle2.style.top = paddle2Y + 'px';
-  ball.style.left = ballX + 'px';
-  ball.style.top = ballY + 'px';
+  
+  if (isMultiplayerMode) {
+    paddle3.style.top = paddle3Y + 'px';
+    paddle4.style.top = paddle4Y + 'px';
+  }
   
   // Reset speeds to ensure consistent gameplay
   paddle1Speed = 0;
   paddle2Speed = 0;
+  paddle3Speed = 0;
+  paddle4Speed = 0;
   
   // Ensure all elements are visible
   paddle1.style.display = 'block';
   paddle2.style.display = 'block';
+  paddle3.style.display = 'block';
+  paddle4.style.display = 'block';
   
   // Ball display is controlled separately based on game state
   
@@ -331,16 +393,24 @@ function ensureElementsInBounds() {
   // Check and fix paddle positions
   if (paddle1Y < 0) paddle1Y = 0;
   if (paddle2Y < 0) paddle2Y = 0;
+  if (paddle3Y < 0) paddle3Y = 0;
+  if (paddle4Y < 0) paddle4Y = 0;
   
   const maxPaddle1Y = gameHeight - paddle1.clientHeight;
   const maxPaddle2Y = gameHeight - paddle2.clientHeight;
+  const maxPaddle3Y = gameHeight - paddle3.clientHeight;
+  const maxPaddle4Y = gameHeight - paddle4.clientHeight;
   
   if (paddle1Y > maxPaddle1Y) paddle1Y = maxPaddle1Y;
   if (paddle2Y > maxPaddle2Y) paddle2Y = maxPaddle2Y;
+  if (paddle3Y > maxPaddle3Y) paddle3Y = maxPaddle3Y;
+  if (paddle4Y > maxPaddle4Y) paddle4Y = maxPaddle4Y;
   
   // Apply corrected positions
   paddle1.style.top = paddle1Y + 'px';
   paddle2.style.top = paddle2Y + 'px';
+  paddle3.style.top = paddle3Y + 'px';
+  paddle4.style.top = paddle4Y + 'px';
   
   // Check and fix ball position
   if (ballX < 0) ballX = 0;
@@ -507,6 +577,7 @@ pvpButton.addEventListener('click', () => {
   console.log('PVP button clicked');
   window.isAIMode = false;
   isAIMode = false; // Set both local and global
+  isMultiplayerMode = false;
   console.log('PVP mode selected, isAIMode set to:', isAIMode);
   hideAllScreens();
   
@@ -522,7 +593,25 @@ pveButton.addEventListener('click', () => {
   console.log('PVE button clicked');
   window.isAIMode = true;
   isAIMode = true; // Set both local and global
+  isMultiplayerMode = false;
   console.log('AI mode selected, isAIMode set to:', isAIMode);
+  hideAllScreens();
+  
+  // Apply current settings
+  applySettings();
+  
+  // Reset and start the game immediately
+  resetGame();
+  startGame();
+});
+
+// Add event listener for multiplayer button
+multiplayerButton.addEventListener('click', () => {
+  console.log('Multiplayer button clicked');
+  window.isAIMode = false;
+  isAIMode = false; // Set both local and global
+  isMultiplayerMode = true;
+  console.log('Multiplayer mode selected, isMultiplayerMode set to:', isMultiplayerMode);
   hideAllScreens();
   
   // Apply current settings
@@ -575,6 +664,30 @@ function applySettings() {
   player1Name = player1NameInput.value || "Player 1";
   player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
   
+  // Handle team names for multiplayer mode
+  if (isMultiplayerMode) {
+    team1Name = team1NameInput.value || "Left Team";
+    team2Name = team2NameInput.value || "Right Team";
+    
+    // Update player names to reflect teams in multiplayer
+    player1NameElement.textContent = team1Name;
+    player2NameElement.textContent = team2Name;
+    
+    // Show team name settings
+    teamNameSettings.forEach(setting => {
+      setting.style.display = 'block';
+    });
+  } else {
+    // Hide team name settings in regular modes
+    teamNameSettings.forEach(setting => {
+      setting.style.display = 'none';
+    });
+    
+    // Regular player names display
+    player1NameElement.textContent = player1Name;
+    player2NameElement.textContent = player2Name;
+  }
+  
   // Apply new settings
   if (paddleSizeSelect) {
     const paddleSize = paddleSizeSelect.value;
@@ -621,8 +734,7 @@ function applySettings() {
   }
   
   // Update display
-  player1NameElement.textContent = player1Name;
-  player2NameElement.textContent = player2Name;
+  updateScoreboard();
   
   // Always show AI difficulty settings regardless of mode
   const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
@@ -640,9 +752,11 @@ function updatePaddleSizes() {
   const newHeightPercentage = baseHeight * paddleSizeMultiplier;
   
   // Apply to paddles
-  if (paddle1 && paddle2) {
+  if (paddle1 && paddle2 && paddle3 && paddle4) {
     paddle1.style.height = newHeightPercentage + '%';
     paddle2.style.height = newHeightPercentage + '%';
+    paddle3.style.height = newHeightPercentage + '%';
+    paddle4.style.height = newHeightPercentage + '%';
     
     // Reposition paddles to center them vertically
     resetPaddlePositions();
@@ -651,14 +765,18 @@ function updatePaddleSizes() {
 
 // Function to reset paddle positions (used after size change)
 function resetPaddlePositions() {
-  if (paddle1 && paddle2) {
+  if (paddle1 && paddle2 && paddle3 && paddle4) {
     // Calculate positions to center paddles vertically
     paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
+    paddle3Y = gameHeight / 2 - paddle3.clientHeight / 2;
+    paddle4Y = gameHeight / 2 - paddle4.clientHeight / 2;
     
     // Apply positions
     paddle1.style.top = paddle1Y + 'px';
     paddle2.style.top = paddle2Y + 'px';
+    paddle3.style.top = paddle3Y + 'px';
+    paddle4.style.top = paddle4Y + 'px';
   }
 }
 
@@ -680,6 +798,8 @@ function gameLoop(timestamp) {
   // Update game objects
   updatePaddle1(deltaTime);
   updatePaddle2(deltaTime);
+  updatePaddle3(deltaTime);
+  updatePaddle4(deltaTime);
   moveBall(deltaTime);
   
   lastTime = timestamp;
@@ -698,8 +818,13 @@ function playSound(sound) {
 
 // Update the scoreboard with current scores
 function updateScoreboard() {
-  player1ScoreElement.textContent = player1Score;
-  player2ScoreElement.textContent = player2Score;
+  if (isMultiplayerMode) {
+    player1ScoreElement.textContent = team1Score;
+    player2ScoreElement.textContent = team2Score;
+  } else {
+    player1ScoreElement.textContent = player1Score;
+    player2ScoreElement.textContent = player2Score;
+  }
 }
 
 // Reset the ball position and speed
@@ -736,6 +861,8 @@ function resetGame() {
   // Reset scores
   player1Score = 0;
   player2Score = 0;
+  team1Score = 0;
+  team2Score = 0;
   updateScoreboard();
   
   // Reset paddles and ball
@@ -744,16 +871,32 @@ function resetGame() {
   // Reset speeds
   paddle1Speed = 0;
   paddle2Speed = 0;
+  paddle3Speed = 0;
+  paddle4Speed = 0;
   ballSpeedX = initialBallSpeed;
   ballSpeedY = initialBallSpeed * 0.5;
   
   // Reset game state
   gameRunning = false;
   gameOver = false;
+  lastPaddleHit = null;
+  
+  // Reset paddle states for multiplayer
+  if (isMultiplayerMode) {
+    paddle1.classList.remove('paddle-disabled');
+    paddle2.classList.remove('paddle-disabled');
+    paddle3.classList.remove('paddle-disabled');
+    paddle4.classList.remove('paddle-disabled');
+  }
   
   // Update player names display (ensuring they're always visible)
-  player1NameElement.textContent = player1Name || "Player 1";
-  player2NameElement.textContent = player2Name || "Player 2";
+  if (isMultiplayerMode) {
+    player1NameElement.textContent = team1Name || "Left Team";
+    player2NameElement.textContent = team2Name || "Right Team";
+  } else {
+    player1NameElement.textContent = player1Name || "Player 1";
+    player2NameElement.textContent = player2Name || "Player 2";
+  }
   
   // Hide the ball until game starts
   ball.style.display = 'none';
@@ -798,7 +941,12 @@ function showWinScreen(winnerName) {
   ball.style.display = 'none';
   
   winnerTextElement.textContent = `${winnerName} Wins!`;
-  finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
+  
+  if (isMultiplayerMode) {
+    finalScoreElement.textContent = `${team1Score} - ${team2Score}`;
+  } else {
+    finalScoreElement.textContent = `${player1Score} - ${player2Score}`;
+  }
   
   // Show normal win screen with buttons
   winScreen.style.display = 'block';
@@ -811,19 +959,28 @@ function showWinScreen(winnerName) {
  * PADDLE MOVEMENT FUNCTIONS
  ********************************************************************************************************/
 function updatePaddle1(deltaTime) {
-  // Player 1 controls (W/S keys)
-  if (keysPressed['w'] || keysPressed['W']) {
-    paddle1Speed -= paddleAcceleration;
-  } else if (keysPressed['s'] || keysPressed['S']) {
-    paddle1Speed += paddleAcceleration;
+  // Only control if not disabled in multiplayer mode
+  const isDisabled = isMultiplayerMode && lastPaddleHit === 'paddle1';
+  
+  if (!isDisabled) {
+    // Player 1 controls (W/S keys)
+    if (keysPressed['w'] || keysPressed['W']) {
+      paddle1Speed -= paddleAcceleration;
+    } else if (keysPressed['s'] || keysPressed['S']) {
+      paddle1Speed += paddleAcceleration;
+    } else {
+      // Apply deceleration when no keys are pressed
+      if (paddle1Speed > 0) paddle1Speed = Math.max(0, paddle1Speed - paddleDeceleration);
+      if (paddle1Speed < 0) paddle1Speed = Math.min(0, paddle1Speed + paddleDeceleration);
+    }
+
+    // Clamp paddle speed to maximum
+    paddle1Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle1Speed));
   } else {
-    // Apply deceleration when no keys are pressed
+    // Slowly decelerate if disabled
     if (paddle1Speed > 0) paddle1Speed = Math.max(0, paddle1Speed - paddleDeceleration);
     if (paddle1Speed < 0) paddle1Speed = Math.min(0, paddle1Speed + paddleDeceleration);
   }
-
-  // Clamp paddle speed to maximum
-  paddle1Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle1Speed));
   
   // Scale paddle speed based on game area height
   // This makes movement feel consistent regardless of screen size
@@ -846,9 +1003,9 @@ function updatePaddle1(deltaTime) {
 }
 
 function updatePaddle2(deltaTime) {
-  console.log('updatePaddle2 called, isAIMode:', isAIMode);
+  // Handle AI mode separately
   if (isAIMode) {
-    // Update AI decisions
+    // Use existing AI logic
     updateAIDecisions();
     
     // Apply the AI's simulated key presses to control the paddle
@@ -865,13 +1022,22 @@ function updatePaddle2(deltaTime) {
       }
     }
   } else {
-    // Player 2 controls (Arrow keys)
-    if (keysPressed['ArrowUp']) {
-      paddle2Speed -= paddleAcceleration;
-    } else if (keysPressed['ArrowDown']) {
-      paddle2Speed += paddleAcceleration;
+    // Check if paddle is disabled in multiplayer mode
+    const isDisabled = isMultiplayerMode && lastPaddleHit === 'paddle2';
+    
+    if (!isDisabled) {
+      // Player 2 controls (Arrow keys)
+      if (keysPressed['ArrowUp']) {
+        paddle2Speed -= paddleAcceleration;
+      } else if (keysPressed['ArrowDown']) {
+        paddle2Speed += paddleAcceleration;
+      } else {
+        // Apply deceleration when no keys are pressed
+        if (paddle2Speed > 0) paddle2Speed = Math.max(0, paddle2Speed - paddleDeceleration);
+        if (paddle2Speed < 0) paddle2Speed = Math.min(0, paddle2Speed + paddleDeceleration);
+      }
     } else {
-      // Apply deceleration when no keys are pressed
+      // Slowly decelerate if disabled
       if (paddle2Speed > 0) paddle2Speed = Math.max(0, paddle2Speed - paddleDeceleration);
       if (paddle2Speed < 0) paddle2Speed = Math.min(0, paddle2Speed + paddleDeceleration);
     }
@@ -898,6 +1064,98 @@ function updatePaddle2(deltaTime) {
   }
   
   paddle2.style.top = paddle2Y + 'px';
+}
+
+// Function to handle paddle3 movement (Player 3, left side, E/D keys)
+function updatePaddle3(deltaTime) {
+  if (!isMultiplayerMode) return; // Only active in multiplayer mode
+  
+  // Only control if not disabled in multiplayer mode
+  const isDisabled = lastPaddleHit === 'paddle3';
+  
+  if (!isDisabled) {
+    // Player 3 controls (E/D keys)
+    if (keysPressed['e'] || keysPressed['E']) {
+      paddle3Speed -= paddleAcceleration;
+    } else if (keysPressed['d'] || keysPressed['D']) {
+      paddle3Speed += paddleAcceleration;
+    } else {
+      // Apply deceleration when no keys are pressed
+      if (paddle3Speed > 0) paddle3Speed = Math.max(0, paddle3Speed - paddleDeceleration);
+      if (paddle3Speed < 0) paddle3Speed = Math.min(0, paddle3Speed + paddleDeceleration);
+    }
+
+    // Clamp paddle speed to maximum
+    paddle3Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle3Speed));
+  } else {
+    // Slowly decelerate if disabled
+    if (paddle3Speed > 0) paddle3Speed = Math.max(0, paddle3Speed - paddleDeceleration);
+    if (paddle3Speed < 0) paddle3Speed = Math.min(0, paddle3Speed + paddleDeceleration);
+  }
+  
+  // Scale paddle speed based on game area height
+  const effectiveSpeed = paddle3Speed * scaleY * deltaTime;
+  
+  // Update position
+  paddle3Y += effectiveSpeed;
+  
+  // Boundary checks
+  if (paddle3Y < 0) {
+    paddle3Y = 0;
+    paddle3Speed = 0;
+  }
+  if (paddle3Y > gameHeight - paddle3.clientHeight) {
+    paddle3Y = gameHeight - paddle3.clientHeight;
+    paddle3Speed = 0;
+  }
+  
+  paddle3.style.top = paddle3Y + 'px';
+}
+
+// Function to handle paddle4 movement (Player 4, right side, I/K keys)
+function updatePaddle4(deltaTime) {
+  if (!isMultiplayerMode) return; // Only active in multiplayer mode
+  
+  // Only control if not disabled in multiplayer mode
+  const isDisabled = lastPaddleHit === 'paddle4';
+  
+  if (!isDisabled) {
+    // Player 4 controls (I/K keys)
+    if (keysPressed['i'] || keysPressed['I']) {
+      paddle4Speed -= paddleAcceleration;
+    } else if (keysPressed['k'] || keysPressed['K']) {
+      paddle4Speed += paddleAcceleration;
+    } else {
+      // Apply deceleration when no keys are pressed
+      if (paddle4Speed > 0) paddle4Speed = Math.max(0, paddle4Speed - paddleDeceleration);
+      if (paddle4Speed < 0) paddle4Speed = Math.min(0, paddle4Speed + paddleDeceleration);
+    }
+
+    // Clamp paddle speed to maximum
+    paddle4Speed = Math.max(-maxPaddleSpeed, Math.min(maxPaddleSpeed, paddle4Speed));
+  } else {
+    // Slowly decelerate if disabled
+    if (paddle4Speed > 0) paddle4Speed = Math.max(0, paddle4Speed - paddleDeceleration);
+    if (paddle4Speed < 0) paddle4Speed = Math.min(0, paddle4Speed + paddleDeceleration);
+  }
+  
+  // Scale paddle speed based on game area height
+  const effectiveSpeed = paddle4Speed * scaleY * deltaTime;
+  
+  // Update position
+  paddle4Y += effectiveSpeed;
+  
+  // Boundary checks
+  if (paddle4Y < 0) {
+    paddle4Y = 0;
+    paddle4Speed = 0;
+  }
+  if (paddle4Y > gameHeight - paddle4.clientHeight) {
+    paddle4Y = gameHeight - paddle4.clientHeight;
+    paddle4Speed = 0;
+  }
+  
+  paddle4.style.top = paddle4Y + 'px';
 }
 
 /********************************************************************************************************
@@ -1079,85 +1337,51 @@ function moveBall(deltaTime) {
   // Get the actual left paddle edge position - more accurate after resize
   const paddle1Right = paddle1.clientWidth;
   
-  // IMPROVED LEFT PADDLE COLLISION DETECTION
-  // Check if the ball is moving left (toward left paddle)
+  // Left paddles collision detection (paddle1 and paddle3)
+  // First, check if the ball is moving left (toward left paddles)
   if (ballSpeedX < 0) {
-    // Trajectory-based collision detection for left paddle
-    // This calculates if the ball crossed the paddle boundary between frames
+    // Check for paddle1 collision
+    checkLeftPaddleCollision(paddle1, paddle1Y, paddle1Right, 'paddle1');
     
-    // Only check if the ball was to the right of the paddle in the last frame
-    // and now is at or to the left of the paddle's right edge
-    if (ballX <= paddle1Right && ballLastX > paddle1Right) {
-      // Calculate the y position at the time of intersection using linear interpolation
-      const ratio = (paddle1Right - ballLastX) / (ballX - ballLastX);
-      const intersectY = ballLastY + ratio * (ballY - ballLastY);
-      
-      // Check if this y position is within the paddle's height bounds
-      if (intersectY + ball.clientHeight >= paddle1Y &&
-          intersectY <= paddle1Y + paddle1.clientHeight) {
-        // Valid collision - set ball position to the edge of paddle
-        ballX = paddle1Right;
-        adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
-      }
-    }
-    // Backup collision check for slower balls or edge cases
-    // Bounding box collision detection as fallback - with extra buffer for resize issues
-    else if (
-      ballX <= paddle1Right + 2 && // Add small buffer for resize issues
-      ballX + ball.clientWidth >= 0 && // Make sure ball isn't completely past paddle
-      ballY + ball.clientHeight >= paddle1Y - 2 && // Add small buffer
-      ballY <= paddle1Y + paddle1.clientHeight + 2 // Add small buffer
-    ) {
-      ballX = paddle1Right; // Snap to paddle edge
-      adjustBallDirection(paddle1Y, paddle1.clientHeight, true);
+    // Check for paddle3 collision in multiplayer mode
+    if (isMultiplayerMode) {
+      checkLeftPaddleCollision(paddle3, paddle3Y, paddle1Right, 'paddle3');
     }
   }
 
   // Get the actual right paddle position - more accurate after resize
   const rightPaddleLeft = gameWidth - paddle2.clientWidth;
   
-  // IMPROVED RIGHT PADDLE COLLISION DETECTION
-  // Check if the ball is moving right (toward right paddle)
+  // Right paddles collision detection (paddle2 and paddle4)
+  // Check if the ball is moving right (toward right paddles)
   if (ballSpeedX > 0) {
-    // Trajectory-based collision detection
-    // Only check if the ball was to the left of the paddle in the last frame
-    // and now is at or beyond the paddle's left edge
-    if (ballX + ball.clientWidth >= rightPaddleLeft && ballLastX + ball.clientWidth < rightPaddleLeft) {
-      // Calculate the y position at the time of intersection using linear interpolation
-      const ratio = (rightPaddleLeft - (ballLastX + ball.clientWidth)) / 
-                    ((ballX + ball.clientWidth) - (ballLastX + ball.clientWidth));
-      const intersectY = ballLastY + ratio * (ballY - ballLastY);
-      
-      // Check if this y position is within the paddle's height bounds
-      if (intersectY + ball.clientHeight >= paddle2Y &&
-          intersectY <= paddle2Y + paddle2.clientHeight) {
-        // Valid collision - set ball position to the edge of paddle
-        ballX = rightPaddleLeft - ball.clientWidth;
-        adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
-      }
-    }
-    // Backup collision check for slower balls or edge cases - with extra buffer for resize issues
-    // Bounding box collision detection as fallback
-    else if (
-      ballX + ball.clientWidth >= rightPaddleLeft - 2 && // Add small buffer for resize issues
-      ballX < rightPaddleLeft + paddle2.clientWidth && // Make sure ball isn't completely past paddle
-      ballY + ball.clientHeight >= paddle2Y - 2 && // Add small buffer
-      ballY <= paddle2Y + paddle2.clientHeight + 2 // Add small buffer
-    ) {
-      ballX = rightPaddleLeft - ball.clientWidth; // Snap to paddle edge
-      adjustBallDirection(paddle2Y, paddle2.clientHeight, false);
+    // Check for paddle2 collision
+    checkRightPaddleCollision(paddle2, paddle2Y, rightPaddleLeft, 'paddle2');
+    
+    // Check for paddle4 collision in multiplayer mode
+    if (isMultiplayerMode) {
+      checkRightPaddleCollision(paddle4, paddle4Y, rightPaddleLeft, 'paddle4');
     }
   }
 
   // Out-of-bounds (scoring conditions)
   if (ballX <= 0) {
-    player2Score++;
+    if (isMultiplayerMode) {
+      team2Score++;
+    } else {
+      player2Score++;
+    }
     playSound(lossSound);
     updateScoreboard();
     
     // Check for win condition
-    if (player2Score >= pointsToWin) {
-      showWinScreen(player2Name);
+    if ((isMultiplayerMode && team2Score >= pointsToWin) || 
+        (!isMultiplayerMode && player2Score >= pointsToWin)) {
+      if (isMultiplayerMode) {
+        showWinScreen(team2Name);
+      } else {
+        showWinScreen(player2Name);
+      }
     } else {
       resetBall();
     }
@@ -1165,13 +1389,22 @@ function moveBall(deltaTime) {
   }
   
   if (ballX >= gameWidth - ball.clientWidth) {
-    player1Score++;
+    if (isMultiplayerMode) {
+      team1Score++;
+    } else {
+      player1Score++;
+    }
     playSound(lossSound);
     updateScoreboard();
     
     // Check for win condition
-    if (player1Score >= pointsToWin) {
-      showWinScreen(player1Name);
+    if ((isMultiplayerMode && team1Score >= pointsToWin) || 
+        (!isMultiplayerMode && player1Score >= pointsToWin)) {
+      if (isMultiplayerMode) {
+        showWinScreen(team1Name);
+      } else {
+        showWinScreen(player1Name);
+      }
     } else {
       resetBall();
     }
@@ -1187,7 +1420,7 @@ function moveBall(deltaTime) {
  * BALL PHYSICS HELPERS
  ********************************************************************************************************/
 // Function to adjust the ball's direction and speed after it hits a paddle
-function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
+function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle, paddleId = null) {
   // Calculate the vertical center of the paddle
   const paddleCenter = paddleY + paddleHeight / 2;
 
@@ -1198,9 +1431,6 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   const relativeIntersectY = ballCenter - paddleCenter;
 
   // Normalize the intersection value to a range of -1 to 1
-  // -1 means the ball hit the top edge of the paddle
-  //  0 means the ball hit the center of the paddle
-  //  1 means the ball hit the bottom edge of the paddle
   const normalizedRelativeIntersectionY = relativeIntersectY / (paddleHeight / 2);
 
   // Define the maximum bounce angle (45 degrees or π/4 radians)
@@ -1216,8 +1446,6 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   speed = Math.min(speed * speedIncreaseFactor, maxSpeed);
 
   // Adjust the ball's horizontal speed based on the paddle side and bounce angle
-  // If the ball hit the left paddle, it moves to the right (positive X direction)
-  // If the ball hit the right paddle, it moves to the left (negative X direction)
   ballSpeedX = (isLeftPaddle ? 1 : -1) * speed * Math.cos(bounceAngle);
 
   // Adjust the ball's vertical speed based on the bounce angle
@@ -1231,13 +1459,135 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle) {
   // Also add a tiny random factor to horizontal speed to vary gameplay
   ballSpeedX += (Math.random() * 2 - 1) * speed * 0.05;
 
-  // If right paddle (AI) hit the ball, we want the AI to return to center
-  if (!isLeftPaddle) {
-    shouldReturnToCenter = true;
+  // If in multiplayer mode, handle tag-team mechanics
+  if (isMultiplayerMode && paddleId) {
+    console.log(`${paddleId} hit the ball`);
+    
+    // Store the last paddle that hit the ball
+    lastPaddleHit = paddleId;
+    
+    // Apply visual cue to show which paddle is disabled
+    resetPaddleVisuals();
   }
 
   // Play a sound effect to indicate the ball hit the paddle
   playSound(paddleSound);
+}
+
+// Function to reset paddle visuals (remove disabled state)
+function resetPaddleVisuals() {
+  // Check if we're in multiplayer mode
+  if (!isMultiplayerMode) return;
+  
+  // Reset visual appearance of all paddles
+  paddle1.classList.remove('paddle-disabled');
+  paddle2.classList.remove('paddle-disabled');
+  paddle3.classList.remove('paddle-disabled');
+  paddle4.classList.remove('paddle-disabled');
+  
+  // Apply disabled visual to the last hit paddle's team
+  if (lastPaddleHit === 'paddle1' || lastPaddleHit === 'paddle3') {
+    // If a left paddle hit last, disable both left paddles
+    if (lastPaddleHit === 'paddle1') {
+      paddle1.classList.add('paddle-disabled');
+    } else {
+      paddle3.classList.add('paddle-disabled');
+    }
+  } else if (lastPaddleHit === 'paddle2' || lastPaddleHit === 'paddle4') {
+    // If a right paddle hit last, disable both right paddles
+    if (lastPaddleHit === 'paddle2') {
+      paddle2.classList.add('paddle-disabled');
+    } else {
+      paddle4.classList.add('paddle-disabled');
+    }
+  }
+}
+
+// Helper function to check collision with left paddles
+function checkLeftPaddleCollision(paddle, paddleY, paddleRight, paddleId) {
+  // Skip the paddle if it's disabled in multiplayer mode
+  if (isMultiplayerMode) {
+    // If this paddle is from the same side (left) as the last hit paddle, skip collision
+    if ((lastPaddleHit === 'paddle1' && paddleId === 'paddle3') || 
+        (lastPaddleHit === 'paddle3' && paddleId === 'paddle1')) {
+      return false;
+    }
+  }
+  
+  // Trajectory-based collision detection for left paddle
+  // Only check if the ball was to the right of the paddle in the last frame
+  // and now is at or to the left of the paddle's right edge
+  if (ballX <= paddleRight && ballLastX > paddleRight) {
+    // Calculate the y position at the time of intersection using linear interpolation
+    const ratio = (paddleRight - ballLastX) / (ballX - ballLastX);
+    const intersectY = ballLastY + ratio * (ballY - ballLastY);
+    
+    // Check if this y position is within the paddle's height bounds
+    if (intersectY + ball.clientHeight >= paddleY &&
+        intersectY <= paddleY + paddle.clientHeight) {
+      // Valid collision - set ball position to the edge of paddle
+      ballX = paddleRight;
+      adjustBallDirection(paddleY, paddle.clientHeight, true, paddleId);
+      return true;
+    }
+  }
+  // Backup collision check for slower balls or edge cases
+  else if (
+    ballX <= paddleRight + 2 && // Add small buffer for resize issues
+    ballX + ball.clientWidth >= 0 && // Make sure ball isn't completely past paddle
+    ballY + ball.clientHeight >= paddleY - 2 && // Add small buffer
+    ballY <= paddleY + paddle.clientHeight + 2 // Add small buffer
+  ) {
+    ballX = paddleRight; // Snap to paddle edge
+    adjustBallDirection(paddleY, paddle.clientHeight, true, paddleId);
+    return true;
+  }
+  
+  return false;
+}
+
+// Helper function to check collision with right paddles
+function checkRightPaddleCollision(paddle, paddleY, paddleLeft, paddleId) {
+  // Skip the paddle if it's disabled in multiplayer mode
+  if (isMultiplayerMode) {
+    // If this paddle is from the same side (right) as the last hit paddle, skip collision
+    if ((lastPaddleHit === 'paddle2' && paddleId === 'paddle4') || 
+        (lastPaddleHit === 'paddle4' && paddleId === 'paddle2')) {
+      return false;
+    }
+  }
+  
+  // Trajectory-based collision detection
+  // Only check if the ball was to the left of the paddle in the last frame
+  // and now is at or beyond the paddle's left edge
+  if (ballX + ball.clientWidth >= paddleLeft && ballLastX + ball.clientWidth < paddleLeft) {
+    // Calculate the y position at the time of intersection using linear interpolation
+    const ratio = (paddleLeft - (ballLastX + ball.clientWidth)) / 
+                 ((ballX + ball.clientWidth) - (ballLastX + ball.clientWidth));
+    const intersectY = ballLastY + ratio * (ballY - ballLastY);
+    
+    // Check if this y position is within the paddle's height bounds
+    if (intersectY + ball.clientHeight >= paddleY &&
+        intersectY <= paddleY + paddle.clientHeight) {
+      // Valid collision - set ball position to the edge of paddle
+      ballX = paddleLeft - ball.clientWidth;
+      adjustBallDirection(paddleY, paddle.clientHeight, false, paddleId);
+      return true;
+    }
+  }
+  // Backup collision check for slower balls or edge cases
+  else if (
+    ballX + ball.clientWidth >= paddleLeft - 2 && // Add small buffer for resize issues
+    ballX < paddleLeft + paddle.clientWidth && // Make sure ball isn't completely past paddle
+    ballY + ball.clientHeight >= paddleY - 2 && // Add small buffer
+    ballY <= paddleY + paddle.clientHeight + 2 // Add small buffer
+  ) {
+    ballX = paddleLeft - ball.clientWidth; // Snap to paddle edge
+    adjustBallDirection(paddleY, paddle.clientHeight, false, paddleId);
+    return true;
+  }
+  
+  return false;
 }
 
 // Export key game functions and variables to global window object for SPA context
@@ -1252,6 +1602,8 @@ window.handleKeyDown = handleKeyDown;
 window.handleKeyUp = handleKeyUp;
 window.updatePaddle1 = updatePaddle1;
 window.updatePaddle2 = updatePaddle2;
+window.updatePaddle3 = updatePaddle3;
+window.updatePaddle4 = updatePaddle4;
 window.updateAIDecisions = updateAIDecisions; // Export AI function
 window.updateGameDimensions = updateGameDimensions;
 window.initializePositions = initializePositions;

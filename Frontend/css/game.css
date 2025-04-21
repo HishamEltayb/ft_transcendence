@@ -147,7 +147,7 @@
     height: 100%;
     z-index: 1; /* Above the base gameArea background */
     overflow: hidden;
-    display: blcok;
+    display: block;
     z-index: 1;
 }
 
@@ -182,23 +182,58 @@
     height: 15%; /* Responsive height */
     width: 1%; /* Slightly wider paddles for better visibility */
     position: absolute;
-    top: 50%; /* Center vertically */
-    /*transform: translateY(-50%); /* Ensure true vertical centering */
     border-radius: 4px;
-    /*min-height: 30px; /* Ensure minimum height */
-    /*min-width: 10px; /* Ensure minimum width */
+    z-index: 5; /* Above video and overlay */
 }
 
 .paddle1 {
     background-color: var(--gold);
     left: 0%; /* Position paddle on the left */
-    /* box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); */
+    /* Remove top positioning to avoid conflict with JS */
 }
 
 .paddle2 {
     background-color: var(--gold);
     right: 0%; /* Position paddle on the right */
-    /* box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); */
+    /* Remove top positioning to avoid conflict with JS */
+}
+
+/* New paddles for multiplayer mode */
+.paddle3 {
+    background-color: #FF9900; /* Orange-gold for paddle3 */
+    left: 0%; /* Position paddle on the left */
+    /* Remove top positioning to avoid conflict with JS */
+}
+
+.paddle4 {
+    background-color: #66CCFF; /* Light blue for paddle4 */
+    right: 0%; /* Position paddle on the right */
+    /* Remove top positioning to avoid conflict with JS */
+}
+
+/* Add a class for disabled paddles */
+.paddle-disabled {
+    opacity: 0.3; /* Make it semi-transparent */
+    /* Keep pointer events so we can still move the paddle */
+}
+
+/* Team score display styles */
+.teamScore {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.teamName {
+    font-size: 14px;
+    color: var(--gold-light);
+    margin-bottom: 5px;
+}
+
+/* Settings for team name inputs */
+.setting-team {
+    display: none; /* Hidden by default, shown in multiplayer mode */
 }
 
 .ball {

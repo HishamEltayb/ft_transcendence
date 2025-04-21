@@ -8,6 +8,7 @@
     <div class="gameSelection">
         <button class="modeButton" id="pvpButton">1 vs 1</button>
         <button class="modeButton" id="pveButton">1 vs AI</button>
+        <button class="modeButton" id="multiplayerButton">4 Players</button>
         <button class="modeButton" id="settingsLink">Game Settings</button>
         <button class="modeButton" id="howToPlayLink">How to Play</button>
     </div>
@@ -36,6 +37,14 @@
                 <div class="setting">
                     <label for="player2NameInput">Player 2 Name:</label>
                     <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
+                </div>
+                <div class="setting setting-team" id="teamNameSetting">
+                    <label for="team1NameInput">Left Team Name:</label>
+                    <input type="text" id="team1NameInput" placeholder="Left Team" maxlength="10">
+                </div>
+                <div class="setting setting-team" id="team2NameSetting">
+                    <label for="team2NameInput">Right Team Name:</label>
+                    <input type="text" id="team2NameInput" placeholder="Right Team" maxlength="10">
                 </div>
             </div>
             <div class="settings-column">
@@ -84,12 +93,16 @@
                 <h4>Controls:</h4>
                 <p>Player 1: W (up) and S (down)</p>
                 <p>Player 2: ↑ (up) and ↓ (down)</p>
+                <p>In Multiplayer Mode:</p>
+                <p>Player 3: E (up) and D (down)</p>
+                <p>Player 4: I (up) and K (down)</p>
             </div>
             <div class="instructionSection">
                 <h4>Gameplay:</h4>
                 <p>Hit the ball with your paddle to return it to your opponent.</p>
                 <p>Score points when your opponent misses the ball.</p>
                 <p>First player to reach the win score wins the game!</p>
+                <p><strong>Multiplayer (4P) Mode:</strong> In this tag-team mode, when a paddle hits the ball, it becomes inactive until its teammate hits the ball. Teams score points together.</p>
             </div>
             <div class="instructionSection">
                 <h4>Tips:</h4>
@@ -129,6 +142,8 @@
             
             <div class="paddle1 paddle" id="paddle1"></div>
             <div class="paddle2 paddle" id="paddle2"></div>
+            <div class="paddle3 paddle" id="paddle3" style="display: none;"></div>
+            <div class="paddle4 paddle" id="paddle4" style="display: none;"></div>
             <div class="ball" id="ball"></div>
             <div class="net"></div>
         </div>
