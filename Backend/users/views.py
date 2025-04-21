@@ -6,7 +6,9 @@ from rest_framework_simplejwt import authentication, tokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer
+from .serializers import (UserSerializer, RegisterSerializer, PlayerProfileSerializer, 
+                          PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+                          ChangePasswordSerializer)
 from .models import User, PlayerProfile
 import requests
 import os
@@ -20,6 +22,11 @@ import json
 from django.shortcuts import redirect
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.parsers import MultiPartParser
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from datetime import timedelta
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -364,6 +371,115 @@ class UploadProfileImage(generics.UpdateAPIView):
         profile.save()
         return Response(self.get_serializer(profile).data)
 
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = User.objects.get(email=email)
+                # Generate a unique reset token
+                reset_token = get_random_string(64)
+                # Set token expiry to 24 hours from now
+                expiry_time = timezone.now() + timedelta(hours=24)
+                
+                # Store token and expiry in the user model
+                user.reset_password_token = reset_token
+                user.reset_password_token_expiry = expiry_time
+                user.save()
+                
+                # Send email with reset token
+                reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+                send_mail(
+                    subject="Reset Your Password - ft_transcendence",
+                    message=f"Click the link below to reset your password:\n\n{reset_url}\n\nThis link is valid for 24 hours.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                
+                return Response({
+                    'message': 'Password reset email has been sent if the email exists in our system.'
+                }, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                # Don't reveal that the email doesn't exist for security reasons
+                pass
+            
+            # Even if email not found, return success message to prevent user enumeration
+            return Response({
+                'message': 'Password reset email has been sent if the email exists in our system.'
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data['token']
+            password = serializer.validated_data['password']
+            
+            try:
+                # Find user with this token
+                user = User.objects.get(
+                    reset_password_token=token,
+                    reset_password_token_expiry__gt=timezone.now()  # Token must not be expired
+                )
+                
+                # Reset the password
+                user.set_password(password)
+                # Clear the token
+                user.reset_password_token = None
+                user.reset_password_token_expiry = None
+                user.save()
+                
+                # Create new JWT tokens for this user
+                refresh = RefreshToken.for_user(user)
+                
+                return Response({
+                    'message': 'Password has been reset successfully.',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token)
+                }, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({
+                    'error': 'Invalid or expired token.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            new_password = serializer.validated_data['new_password']
+            
+            # Set new password
+            user.set_password(new_password)
+            user.save()
+            
+            # Create new JWT tokens to prevent logout on password change
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'Password has been updated successfully.',
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     """
 This file contains all the views for the users app.
 
@@ -422,3 +538,4 @@ The views are:
 	1. Retrieve the top 10 players from the database
 	2. Return a JSON response with the players' details
 """ 
+
