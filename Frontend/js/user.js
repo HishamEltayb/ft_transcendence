@@ -399,10 +399,6 @@ class User {
         store.clearUserData();
         this.updateUIAuthState(false);
         
-        // Show toast notification
-        components.showToast('info', 'Logged Out', 'You have been logged out successfully.', 3000);
-        
-        // Redirect to home page
         window.location.href = '/';
     }
 

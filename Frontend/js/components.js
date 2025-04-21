@@ -30,9 +30,6 @@ class Components {
 
     async loadAllComponents() {
         try {
-            console.log('Components: Loading all components');
-            
-            // Load components using hooks
             const componentsHtml = await hooks.useFetchAllComponents();
             
             if (!componentsHtml) {
@@ -283,6 +280,6 @@ class Components {
 
 const components = new Components();
 
-// Expose components globally
-window.components = components;
+// // Expose components globally
+// window.components = components;
 export default components; 

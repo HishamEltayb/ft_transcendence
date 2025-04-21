@@ -117,6 +117,7 @@ class Store {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
         localStorage.removeItem('userDataTimestamp');
+        localStorage.removeItem('appState');
         this.saveState();
     }
 

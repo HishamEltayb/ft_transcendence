@@ -3,23 +3,16 @@ import components from './components.js';
 import user from './user.js';
 import store from './store.js';
 import forms from './forms.js';
+import { PROTECTED_PAGES } from './constants.js';
 
-/**
- * Router class for SPA navigation
- * Uses the store as the central state manager for navigation
- */
 class Router {
     constructor() {
         this.initialized = false;
     }
 
-    /**
-     * Initialize the router
-     */
     init() {
-        if (this.initialized) {
+        if (this.initialized)
             return this;
-        }
         
         // Listen for popstate events (browser back/forward)
         window.addEventListener('popstate', this.handleURL.bind(this));
@@ -182,12 +175,8 @@ class Router {
         return true;
     }
     
-    /**
-     * Check if page requires authentication
-     */
     isProtectedPage(pageName) {
-        const protectedPages = ['profile', 'settings', 'dashboard'];
-        return protectedPages.includes(pageName.toLowerCase());
+        return PROTECTED_PAGES.includes(pageName.toLowerCase());
     }
     
     /**

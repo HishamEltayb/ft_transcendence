@@ -1,5 +1,7 @@
 export const AVAILABLE_PAGES = ['home', 'game', 'login', 'profile', 'notFound'];
 
+export const PROTECTED_PAGES = ['profile'];
+
 export const PAGES = {
     homePage: './pages/home.html',
     gamePage: './pages/game.html',

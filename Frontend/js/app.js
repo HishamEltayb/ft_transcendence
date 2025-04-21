@@ -2,8 +2,8 @@ import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
 import user from './user.js';
-import store from './store.js';
 import forms from './forms.js';
+// import store from './store.js';
 
 class App {
     constructor() {
@@ -15,7 +15,6 @@ class App {
     async init() {
         console.log("App: Initializing...");
         
-        // Get app container
         this.appContainer = document.getElementById('App');
         
         if (!this.appContainer) {
@@ -24,18 +23,13 @@ class App {
         }
         
         try {
-            // Show spinner during initialization
-            components.showSpinner();
-            
-            // Reset app container
             this.resetAppContainer();
             
-            // Initialize all modules in sequence
-            // First initialize components
             components.init(this.appContainer);
             await components.loadAllComponents();
             
-            // Then initialize pages
+            components.showSpinner();
+        
             pages.init(this.appContainer);
             await pages.loadAllPages();
             
@@ -52,7 +46,7 @@ class App {
             
             // Initialize forms
             console.log("App: Initializing forms...");
-            await forms.init();
+            forms.init();
             
             // Mark app as initialized
             this.isInitialized = true;
@@ -68,73 +62,33 @@ class App {
         } catch (error) {
             console.error("App: Failed to initialize application:", error);
             components.hideSpinner();
-            this.showInitError(error);
+            components.showToast(
+                'error',
+                'Application Error',
+                'There was a problem loading the application. Please refresh the page.',
+                5000  
+            );
             return false;
         }
     }
-    
 
     resetAppContainer() {
         while (this.appContainer.firstChild) {
             this.appContainer.removeChild(this.appContainer.firstChild);
         }
     }
- 
-    showInitError(error) {
-        components.showToast(
-            'error',
-            'Application Error',
-            'There was a problem loading the application. Please refresh the page.',
-            5000  
-        );
-        
-        this.resetAppContainer();
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'container mt-5 text-center';
-        errorDiv.innerHTML = `
-            <div class="alert alert-danger">
-                <h4>Application Error</h4>
-                <p>${error.message || 'Unknown error'}</p>
-            </div>
-            <button class="btn btn-outline-primary mt-3" onclick="window.location.reload()">
-                <i class="bi bi-arrow-clockwise"></i> Retry
-            </button>
-        `;
-        this.appContainer.appendChild(errorDiv);
-    }
-    
-    /**
-     * Check if app is initialized
-     */
+
     isReady() {
         return this.isInitialized;
     }
 }
 
-// Create and initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM loaded, creating App instance");
-    
-    // Show spinner during initialization
-    const spinnerContainer = document.getElementById('spinnerContainer');
-    if (spinnerContainer) {
-        spinnerContainer.classList.remove('d-none');
-    }
-    
-    // Create app instance
     const app = new App();
     
     try {
-        // Initialize app
         await app.init();
         
-        // Make app globally available (for debugging)
-        window.App = app;
-        
-        console.log("App initialization complete");
-        
-        // Initialize profile page if we're on that page
         const currentPath = window.location.pathname;
         if (currentPath.includes('profile')) {
             console.log("App: On profile page, initializing profile...");
@@ -146,12 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 100);
         }
     } catch (error) {
-        console.error("App initialization failed:", error);
-        
-        // Hide spinner if initialization fails
-        if (spinnerContainer) {
-            spinnerContainer.classList.add('d-none');
-        }
+        components.hideSpinner()
     }
 });
 
