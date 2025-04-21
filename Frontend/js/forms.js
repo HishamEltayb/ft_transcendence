@@ -1,9 +1,42 @@
 import hooks from './hooks.js';
 import components from './components.js';
 import user from './user.js';
+import store from './store.js';
 
 class Forms {
     constructor() {
+        
+        // Flag to prevent multiple simultaneous initializations
+        this.isProfileInitializing = false;
+        
+        // Don't try to access DOM elements here
+        // They might not exist yet, especially when the app is first initialized
+        
+        // We'll fetch DOM elements when needed in specific methods
+        this.login = {};
+        this.register = {};
+        this.profile = {};
+        this.profileStats = {};
+        this.matchHistoryTable = null;
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            this.init();
+        });
+    }
+
+    init() {
+        
+        // Now it's safe to query for DOM elements if the page is loaded
+        this.initLoginRegisterForms();
+        
+        // Don't initialize profile yet - will be done when profile page is shown
+        // Don't add profile event listeners yet either
+    }
+    
+    initLoginRegisterForms() {
+        
+        // Login form elements
         this.login = {
             tab: document.getElementById('loginTab'),
             container: document.getElementById('loginFormContainer'),
@@ -12,6 +45,7 @@ class Forms {
             login42Link: document.getElementById('login42Link')
         };
         
+        // Register form elements
         this.register = {
             tab: document.getElementById('registerTab'),
             container: document.getElementById('registerFormContainer'),
@@ -19,80 +53,22 @@ class Forms {
             submitBtn: document.getElementById('registerBtn')
         };
         
-        this.profile = {
-            form: document.getElementById('settingsForm'),
-            displayName: document.getElementById('settingDisplayName'),
-            email: document.getElementById('settingEmail'),
-            password: document.getElementById('settingPassword'),
-            confirmPassword: document.getElementById('settingConfirmPassword'),
-            twoFA: document.getElementById('setting2fa'),
-            submitBtn: document.getElementById('saveSettingsBtn'),
-            avatar: document.getElementById('profileAvatar'),
-            avatarUrl: document.getElementById('avatarUrl'),
-            username: document.getElementById('profileUsername'),
-            intraLogin: document.getElementById('profileIntraLogin'),
-            editBtn: document.getElementById('editProfileBtn')
-        };
-
-        // Profile stats elements
-        this.profileStats = {
-            totalGames: document.getElementById('statsTotalGames'),
-            wins: document.getElementById('statsWins'),
-            losses: document.getElementById('statsLosses'),
-            winRate: document.getElementById('statsWinRate'),
-            rank: document.getElementById('statsRank')
-        };
-        
-        // Match history table
-        this.matchHistoryTable = document.getElementById('matchHistoryTable');
-        
-        this.isProfileInitializing = false;
-        
-        this.init();
-    }
-
-    init() {
+        // Add event listeners for login/register
         if (this.login.form) {
             this.login.form.addEventListener('submit', this.submitLoginForm.bind(this));
-        } else {
-            console.warn('Login form not found in the DOM');
         }
         
-        // Update 42 login button handling
         if (this.login.login42Link) {
-            console.log('Found 42 login button, attaching event handler');
-            
-            // Need to bind the function directly
-            console.log('handleLogin42');
             this.login.login42Link.onclick = this.handleLogin42.bind(this);
-            console.log('handleLogin42 22');
-            console.log('42 login handler attached successfully');
-        } else {
-            console.warn('Login with 42 button not found in the DOM');
         }
-
+        
         if (this.register.form) {
             this.register.form.addEventListener('submit', this.submitRegisterForm.bind(this));
-        } else {
-            console.warn('Register form not found in the DOM');
         }
         
         if (this.login.tab && this.register.tab) {
             this.login.tab.addEventListener('click', this.showLoginForm.bind(this));
             this.register.tab.addEventListener('click', this.showRegisterForm.bind(this));
-        } else {
-            console.warn('Login/register tabs not found in the DOM');
-        }
-
-        // Initialize profile form if present
-        if (this.profile.form) {
-            this.profile.form.addEventListener('submit', this.submitProfileForm.bind(this));
-            this.initProfilePage();
-        }
-
-        // Add event listener for profile edit button
-        if (this.profile.editBtn) {
-            this.profile.editBtn.addEventListener('click', this.toggleProfileEditMode.bind(this));
         }
     }
 
@@ -120,6 +96,9 @@ class Forms {
             return;
         }
         
+        // Re-fetch DOM elements, as they might not be in the DOM when the class was initialized
+        this.refreshProfileDOMElements();
+        
         try {
             // Get user data - first check store, then fetch if needed
             const storeState = store.getState();
@@ -129,7 +108,9 @@ class Forms {
                 // Use cached data from store
                 console.log('Forms: Using cached user data from store for profile page');
                 userData = storeState.user;
-                this.populateProfileForm(userData);
+                this.populateAccountSettings(userData);
+                this.populatePlayerStatistics(userData);
+                this.populateMatchHistory(userData);
             } else {
                 // Force fetch fresh user data
                 console.log('Forms: Fetching fresh user data for profile page');
@@ -137,14 +118,18 @@ class Forms {
                 
                 if (result.success) {
                     userData = result.userData;
-                    this.populateProfileForm(userData);
+                    this.populateAccountSettings(userData);
+                    this.populatePlayerStatistics(userData);
+                    this.populateMatchHistory(userData);
                 } else {
                     console.error('Failed to fetch user data for profile:', result.error);
                     // Try using cached data as fallback
                     if (storeState.user) {
                         console.log('Forms: Using cached user data as fallback');
                         userData = storeState.user;
-                        this.populateProfileForm(userData);
+                        this.populateAccountSettings(userData);
+                        this.populatePlayerStatistics(userData);
+                        this.populateMatchHistory(userData);
                     } else {
                         components.showToast('error', 'Data Error', 'Failed to load your profile data.');
                     }
@@ -166,58 +151,111 @@ class Forms {
         }
     }
     
-    populateProfileForm(userData) {
+    /**
+     * Refresh the DOM element references for the profile page
+     * This ensures we have the latest DOM elements after page navigation
+     */
+    refreshProfileDOMElements() {
+        console.log('Forms: Refreshing profile DOM element references');
         
-        // Set username
-        if (this.profile.username) {
-            this.profile.username.textContent = userData.username || 'Unknown User';
-        }
+        // Check if needed elements exist in the DOM
+        const settingsForm = document.getElementById('settingsForm');
+        const displayNameInput = document.getElementById('settingDisplayName');
+        const emailInput = document.getElementById('settingEmail');
+        const passwordInput = document.getElementById('settingPassword');
+        const confirmPasswordInput = document.getElementById('settingConfirmPassword');
+        const twoFACheckbox = document.getElementById('setting2fa');
+        const saveBtn = document.getElementById('saveSettingsBtn');
         
-        // Set intra login - show only the value without prefix
-        if (this.profile.intraLogin) {
-            this.profile.intraLogin.textContent = userData.intra_login || 'N/A';
-        }
+        // Log what we found
+        console.log('Forms: DOM elements found:', {
+            settingsForm: settingsForm ? 'Yes' : 'No',
+            displayNameInput: displayNameInput ? 'Yes' : 'No',
+            emailInput: emailInput ? 'Yes' : 'No',
+            passwordInput: passwordInput ? 'Yes' : 'No',
+            confirmPasswordInput: confirmPasswordInput ? 'Yes' : 'No',
+            twoFACheckbox: twoFACheckbox ? 'Yes' : 'No',
+            saveBtn: saveBtn ? 'Yes' : 'No'
+        });
         
-        // Handle avatar image and URL
-        if (this.profile.avatar) {
-            if (userData.profile_image) {
-                // Set the avatar image source directly to what the backend returns
-                this.profile.avatar.src = userData.profile_image;
-                
-                // Display the avatar URL
-                if (this.profile.avatarUrl) {
-                    this.profile.avatarUrl.textContent = userData.profile_image;
-                }
-            } else {
-                // If there's no profile_image, don't show any text
-                if (this.profile.avatarUrl) {
-                    this.profile.avatarUrl.textContent = '';
-                }
-            }
+        // Update profile form elements
+        this.profile = {
+            form: settingsForm,
+            displayName: displayNameInput,
+            email: emailInput,
+            password: passwordInput,
+            confirmPassword: confirmPasswordInput,
+            twoFA: twoFACheckbox,
+            submitBtn: saveBtn,
+            avatar: document.getElementById('profileAvatar'),
+            avatarUrl: document.getElementById('avatarUrl'),
+            username: document.getElementById('profileUsername'),
+            intraLogin: document.getElementById('profileIntraLogin'),
+            editBtn: document.getElementById('editProfileBtn')
+        };
+        
+        // Update profile stats elements
+        this.profileStats = {
+            totalGames: document.getElementById('statsTotalGames'),
+            wins: document.getElementById('statsWins'),
+            losses: document.getElementById('statsLosses'),
+            winRate: document.getElementById('statsWinRate'),
+            rank: document.getElementById('statsRank')
+        };
+        
+        // Update match history table
+        this.matchHistoryTable = document.getElementById('matchHistoryTable');
+        
+        // Add listeners for form and edit button
+        if (this.profile.form) {
+            // Remove any existing listeners to avoid duplicates
+            const newForm = this.profile.form.cloneNode(true);
+            this.profile.form.parentNode.replaceChild(newForm, this.profile.form);
+            this.profile.form = newForm;
             
-            // Add error handler for the image - if loading fails, keep the default avatar
-            this.profile.avatar.onerror = function() {
-                this.src = '../public/assets/images/default-avatar.png';
-            };
+            // Get updated references to form elements after the clone
+            this.profile.displayName = this.profile.form.querySelector('#settingDisplayName');
+            this.profile.email = this.profile.form.querySelector('#settingEmail');
+            this.profile.password = this.profile.form.querySelector('#settingPassword');
+            this.profile.confirmPassword = this.profile.form.querySelector('#settingConfirmPassword');
+            this.profile.twoFA = this.profile.form.querySelector('#setting2fa');
+            this.profile.submitBtn = this.profile.form.querySelector('#saveSettingsBtn');
+            
+            // Add submit listener
+            this.profile.form.addEventListener('submit', this.submitProfileForm.bind(this));
         }
         
-        // Set form fields
-        if (this.profile.displayName) {
-            this.profile.displayName.value = userData.display_name || userData.username || '';
-        }
-        
-        if (this.profile.email) {
-            this.profile.email.value = userData.email || '';
-        }
-        
-        // Two-factor authentication
-        if (this.profile.twoFA) {
-            this.profile.twoFA.checked = userData.two_factor_enabled || false;
+        if (this.profile.editBtn) {
+            // Remove any existing listeners to avoid duplicates
+            const newEditBtn = this.profile.editBtn.cloneNode(true);
+            this.profile.editBtn.parentNode.replaceChild(newEditBtn, this.profile.editBtn);
+            this.profile.editBtn = newEditBtn;
+            
+            // Add click listener
+            this.profile.editBtn.addEventListener('click', this.toggleProfileEditMode.bind(this));
         }
     }
     
-    // Populate profile statistics
-    populateProfileStats(userData) {
+  
+    // Populate player statistics
+    populatePlayerStatistics(userData) {
+        console.log('Forms: Populating profile stats with data:', userData);
+        
+        if (!userData || !this.profileStats) {
+            console.warn('Forms: Cannot populate profile stats - missing data or elements');
+            return;
+        }
+        
+        // Debug element finding
+        console.log('Forms: Stats elements:',
+            this.profileStats.totalGames ? 'totalGames found' : 'totalGames missing',
+            this.profileStats.wins ? 'wins found' : 'wins missing',
+            this.profileStats.losses ? 'losses found' : 'losses missing',
+            this.profileStats.winRate ? 'winRate found' : 'winRate missing',
+            this.profileStats.rank ? 'rank found' : 'rank missing'
+        );
+        
+        // Make sure stats object exists
         const stats = userData.stats || {
             total_games: 0,
             wins: 0,
@@ -252,11 +290,140 @@ class Forms {
         }
     }
     
+    populateAccountSettings(userData) {
+        // Add more detailed logging to see exactly what data we're getting
+        console.log('Forms: ACCOUNT SETTINGS DATA:', JSON.stringify(userData, null, 2));
+        
+        // Check if userData is null or undefined
+        if (!userData) {
+            console.error('Forms: userData is null or undefined');
+            return;
+        }
+        
+        // Check if we have the form elements before trying to populate them
+        if (!this.profile.displayName) {
+            console.error('Forms: Display name input not found');
+        }
+        
+        if (!this.profile.email) {
+            console.error('Forms: Email input not found');
+        }
+        
+        if (!this.profile.twoFA) {
+            console.error('Forms: Two-Factor checkbox not found');
+        }
+        
+        // Debugging element IDs
+        console.log('Forms: Looking for form elements with IDs:', 
+            'settingDisplayName,', 
+            'settingEmail,', 
+            'settingPassword,',
+            'settingConfirmPassword,',
+            'setting2fa'
+        );
+        
+        // Set username
+        if (this.profile.username) {
+            this.profile.username.textContent = userData.username || 'Unknown User';
+        }
+        
+        // Set intra login
+        if (this.profile.intraLogin) {
+            this.profile.intraLogin.textContent = userData.intra_login || 'N/A';
+        }
+        
+        // Handle avatar image and URL
+        if (this.profile.avatar) {
+            if (userData.profile_image) {
+                // Set the avatar image source
+                this.profile.avatar.src = userData.profile_image;
+                
+                // Display the avatar URL
+                if (this.profile.avatarUrl) {
+                    this.profile.avatarUrl.textContent = userData.profile_image;
+                }
+            } else {
+                // If there's no profile_image, don't show any text
+                if (this.profile.avatarUrl) {
+                    this.profile.avatarUrl.textContent = '';
+                }
+            }
+            
+            // Add error handler for the image
+            this.profile.avatar.onerror = function() {
+                this.src = '../public/assets/images/default-avatar.png';
+            };
+        }
+        
+        // Set form fields - using a more robust approach
+        try {
+            // Try to use getElementById directly if our element references are broken
+            const displayNameInput = this.profile.displayName || document.getElementById('settingDisplayName');
+            const emailInput = this.profile.email || document.getElementById('settingEmail');
+            const passwordInput = this.profile.password || document.getElementById('settingPassword');
+            const confirmPasswordInput = this.profile.confirmPassword || document.getElementById('settingConfirmPassword');
+            const twoFAInput = this.profile.twoFA || document.getElementById('setting2fa');
+            
+            // Set display name/username
+            if (displayNameInput) {
+                console.log('Forms: Setting display name to:', userData.username || '');
+                displayNameInput.value = userData.username || '';
+            }
+            
+            // Set email
+            if (emailInput) {
+                console.log('Forms: Setting email to:', userData.email || '');
+                emailInput.value = userData.email || '';
+            }
+            
+            // Password fields should be empty for security
+            if (passwordInput) {
+                passwordInput.value = '';
+            }
+            
+            if (confirmPasswordInput) {
+                confirmPasswordInput.value = '';
+            }
+            
+            // Two-factor authentication
+            if (twoFAInput) {
+                console.log('Forms: Setting 2FA checkbox to:', userData.is_two_factor_enabled ? 'checked' : 'unchecked');
+                twoFAInput.checked = userData.is_two_factor_enabled === true;
+            }
+            
+            // Make sure the submit button is visible
+            if (this.profile.submitBtn) {
+                this.profile.submitBtn.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Forms: Error while setting form values:', error);
+        }
+    }
+    
+
     // Populate match history table
     populateMatchHistory(userData) {
+        
+        if (!userData) {
+            console.warn('Forms: Cannot populate match history - missing user data');
+            return;
+        }
+        
+        if (!this.matchHistoryTable) {
+            console.warn('Forms: Cannot populate match history - match history table element not found');
+            return;
+        }
+        
         const matchHistory = userData.match_history || [];
         
-        if (matchHistory.length === 0 || !this.matchHistoryTable) {
+        
+        if (matchHistory.length === 0) {
+            // Show a "no matches" message
+            this.matchHistoryTable.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">No match history available</td>
+                </tr>
+            `;
             return;
         }
         
@@ -311,12 +478,30 @@ class Forms {
     async submitProfileForm(event) {
         event.preventDefault();
         
-        // Get form values
-        const displayName = this.profile.displayName ? this.profile.displayName.value : '';
-        const email = this.profile.email ? this.profile.email.value : '';
-        const password = this.profile.password ? this.profile.password.value : '';
-        const confirmPassword = this.profile.confirmPassword ? this.profile.confirmPassword.value : '';
-        const twoFA = this.profile.twoFA ? this.profile.twoFA.checked : false;
+        console.log('Forms: Profile form submission started');
+        
+        // Get form values - try both our object references and direct getElementById
+        const displayName = (this.profile.displayName ? this.profile.displayName.value : '') || 
+                            (document.getElementById('settingDisplayName') ? document.getElementById('settingDisplayName').value : '');
+        
+        const email = (this.profile.email ? this.profile.email.value : '') || 
+                     (document.getElementById('settingEmail') ? document.getElementById('settingEmail').value : '');
+        
+        const password = (this.profile.password ? this.profile.password.value : '') || 
+                        (document.getElementById('settingPassword') ? document.getElementById('settingPassword').value : '');
+        
+        const confirmPassword = (this.profile.confirmPassword ? this.profile.confirmPassword.value : '') || 
+                               (document.getElementById('settingConfirmPassword') ? document.getElementById('settingConfirmPassword').value : '');
+        
+        const twoFA = (this.profile.twoFA ? this.profile.twoFA.checked : false) || 
+                     (document.getElementById('setting2fa') ? document.getElementById('setting2fa').checked : false);
+        
+        console.log('Forms: Form values collected:', {
+            displayName, 
+            email, 
+            passwordProvided: password ? 'Yes' : 'No',
+            twoFA
+        });
         
         // Validate email format if provided
         if (email) {
@@ -338,17 +523,20 @@ class Forms {
         // Show loading state
         this.setLoading(this.profile.submitBtn, true);
         
-        // Create profile update data object
+        // Create profile update data object with correct field names
+        // matching the UserSerializer in the backend
         const profileData = {
-            display_name: displayName,
+            username: displayName,
             email: email,
-            two_factor_enabled: twoFA
+            is_two_factor_enabled: twoFA
         };
         
         // Add password if provided
         if (password) {
             profileData.password = password;
         }
+        
+        console.log('Forms: Sending profile data:', JSON.stringify(profileData, null, 2));
         
         // Store form data in case submission fails
         const formDataForStore = { ...profileData };
@@ -524,7 +712,6 @@ class Forms {
     }
 
     async handleLogin42(event) {
-        console.log('LOGIN 42 BUTTON CLICKED - HANDLER EXECUTED');
         
         if (event) {
             event.preventDefault();
@@ -535,7 +722,6 @@ class Forms {
         components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
         
         try {
-            console.log('Starting 42 OAuth process...');
             
             // Call the backend directly to get the auth URL - NOTE: adding trailing slash back
             const response = await fetch('/api/users/oauth/42/', {
@@ -545,7 +731,6 @@ class Forms {
                 }
             });
             
-            console.log('42 OAuth response status:', response.status);
             
             if (!response.ok) {
                 return response.text().then(text => {
@@ -555,7 +740,6 @@ class Forms {
             }
             
             const data = await response.json();
-            console.log('42 OAuth successful, redirecting to:', data.auth_url);
             
             if (!data.auth_url) {
                 throw new Error('No authorization URL received from server');
@@ -576,6 +760,37 @@ class Forms {
         } catch (error) {
             console.error('42 login error:', error);
             components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');
+        }
+    }
+
+    /**
+     * Restore saved form data to a form
+     * @param {HTMLFormElement} form - The form element to restore data to
+     * @param {Object} formData - The form data to restore
+     */
+    restoreFormData(form, formData) {
+        if (!form || !formData) return;
+        
+        try {
+            // Restore each field
+            Object.entries(formData).forEach(([key, value]) => {
+                const input = form.querySelector(`[name="${key}"], #${key}`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = value === true || value === 'true';
+                    } else if (input.tagName === 'SELECT') {
+                        const option = input.querySelector(`option[value="${value}"]`);
+                        if (option) {
+                            option.selected = true;
+                        }
+                    } else {
+                        input.value = value;
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error('Forms: Error restoring form data:', error);
         }
     }
 }

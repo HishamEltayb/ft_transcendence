@@ -1,94 +1,91 @@
 import hooks from './hooks.js';
+import store from './store.js';
+import components from './components.js';
 
+/**
+ * User class that handles user authentication and UI updates
+ * Utilizes the store as the single source of truth for user data
+ */
 class User {
     constructor() {
-        this.token = null;
-        this.userData = null;
-        this.isAuthenticated = false;
-        
+        // Register this instance with hooks
         hooks.setUserInstance(this);
     }
 
+    /**
+     * Initialize user authentication state
+     */
     async init() {
-        
-        // Set up event listeners first
+        // Set up event listeners
         this.setupEventListeners();
         
         // Special handling for OAuth callback page
         if (this.isOAuthCallbackPage()) {
-            // Let the event listener handle the callback, just return
+            console.log('User: OAuth callback page detected');
             return { success: true, message: 'OAuth callback page detected' };
         }
         
-        // Check if we have an auth token
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            this.isAuthenticated = false;
-            this.updateUIAuthState(); // Update UI for unauthenticated state
+        // Check if authenticated
+        if (!store.hasAuthToken()) {
+            this.updateUIAuthState(false);
             return { success: false, error: 'No auth token' };
         }
         
-        // We have a token, consider the user authenticated initially
-        this.token = token;
-        this.isAuthenticated = true;
-        
-        // Try to load user data from localStorage
+        // We have a token, try to get user data
         try {
-            const storedUserData = localStorage.getItem('userData');
-            if (storedUserData) {
-                this.userData = JSON.parse(storedUserData);
-                this.updateUIUserData(); // Update UI with cached data immediately
+            let userData = store.getUserData();
+            
+            if (userData) {
+                // We have cached user data, update UI immediately
+                this.updateUIUserData(userData);
                 
-                // Check when the data was last updated
-                const timestamp = localStorage.getItem('userDataTimestamp');
-                const dataAge = timestamp ? Date.now() - parseInt(timestamp) : Infinity;
-                
-                // If data is too old (> 30 minutes), refresh it
-                if (dataAge > 30 * 60 * 1000) {
-                    await this.refreshUserData();
-                } else {
+                // Check if we need to refresh from server
+                if (store.shouldRefreshUserData()) {
+                    console.log('User: Refreshing user data from server');
+                    await this.refreshUserData(true);
                 }
-                
-                // Update UI with up-to-date auth state
-                this.updateUIAuthState();
-                return { success: true, userData: this.userData };
             } else {
                 // No cached data, fetch from server
-                const result = await hooks.useFetchUserData();
+                console.log('User: No cached user data, fetching from server');
+                const result = await this.fetchUserData();
                 
-                if (result.success) {
-                    this.userData = result.userData;
-                    this.updateUIAuthState();
-                    this.updateUIUserData();
-                    return { success: true, userData: this.userData };
-                } else {
-                    console.error('User: Failed to fetch user data:', result.error);
-                    // Handle invalid token or other auth errors
-                    if (result.error === 'Unauthorized' || result.error === 'Invalid token') {
-                        this.logout();
-                    }
+                if (!result.success) {
+                    // Failed to get user data, consider not authenticated
+                    this.logout();
                     return { success: false, error: result.error };
                 }
             }
+            
+            // Update UI auth state
+            this.updateUIAuthState(true);
+            return { success: true, userData: store.getUserData() };
         } catch (error) {
             console.error('User: Error during initialization:', error);
             return { success: false, error: error.message };
         }
     }
 
-    updateUIAuthState() {
+    /**
+     * Update UI elements based on authentication state
+     */
+    updateUIAuthState(isAuthenticated = null) {
+        // If not explicitly provided, get from store
+        if (isAuthenticated === null) {
+            isAuthenticated = store.isAuthenticated();
+        }
         
-        // Update UI elements based on authentication state
+        console.log('User: Updating UI auth state, authenticated =', isAuthenticated);
+        
+        // Update UI elements with data-auth attributes
         const authElements = document.querySelectorAll('[data-auth]');
         authElements.forEach(element => {
             const authType = element.dataset.auth;
             const display = window.getComputedStyle(element).getPropertyValue('display');
-            const defaultDisplay = display === 'none' ? 'block' : display; // Use flex if it was flex
+            const defaultDisplay = display === 'none' ? 'block' : display;
             
             if (authType === 'logged-in') {
                 // Elements that should show when logged in
-                if (this.isAuthenticated) {
-                    // Check if element was originally a flex container
+                if (isAuthenticated) {
                     if (element.classList.contains('d-flex') || 
                         element.classList.contains('dropdown') || 
                         element.classList.contains('flex-row') || 
@@ -102,10 +99,9 @@ class User {
                 }
             } else if (authType === 'logged-out') {
                 // Elements that should show when logged out
-                if (this.isAuthenticated) {
+                if (isAuthenticated) {
                     element.style.display = 'none';
                 } else {
-                    // Check if element was originally a flex container
                     if (element.classList.contains('d-flex') || 
                         element.classList.contains('dropdown') || 
                         element.classList.contains('flex-row') || 
@@ -119,51 +115,70 @@ class User {
         });
     }
 
-    updateUIUserData() {
-        if (!this.userData) {
-            console.warn('No user data available for UI update');
+    /**
+     * Update UI elements with user data
+     */
+    updateUIUserData(userData = null) {
+        // If not provided, get from store
+        if (!userData) {
+            userData = store.getUserData();
+        }
+        
+        if (!userData) {
+            console.warn('User: No user data available for UI update');
             return;
         }
         
+        console.log('User: Updating UI with user data');
         
-        // Update user-specific elements
+        // Update elements with data-user attributes
         const userDataElements = document.querySelectorAll('[data-user]');
         userDataElements.forEach(element => {
             const dataField = element.dataset.user;
-            if (dataField && this.userData[dataField]) {
-                element.textContent = this.userData[dataField];
+            if (dataField && userData[dataField]) {
+                element.textContent = userData[dataField];
             }
         });
         
-        // Update user avatar in header
+        // Update header avatar
         const headerAvatar = document.getElementById('headerUserAvatar');
         if (headerAvatar) {
-            if (this.userData.profile_image) {
-                headerAvatar.src = this.userData.profile_image;
+            if (userData.profile_image) {
+                headerAvatar.src = userData.profile_image;
             } else {
-                // If no profile image, use default
                 headerAvatar.src = '../public/assets/images/default-avatar.png';
             }
             
-            // Add error handler for the image
             headerAvatar.onerror = function() {
                 this.src = '../public/assets/images/default-avatar.png';
             };
         }
     }
 
+    /**
+     * Check if current page is OAuth callback
+     */
     isOAuthCallbackPage() {
         return window.location.pathname.includes('/oauth/callback');
     }
 
+    /**
+     * Handle OAuth callback
+     */
     handleOAuthCallback() {
         const statusMsg = document.getElementById('statusMsg');
         const progressBar = document.getElementById('authProgress');
 
-        this.startProgressAnimation(progressBar);
+        if (progressBar) {
+            this.startProgressAnimation(progressBar);
+        }
+        
         this.processAuthentication(statusMsg);
     }
 
+    /**
+     * Start progress animation for OAuth process
+     */
     startProgressAnimation(progressBar) {
         if (!progressBar) return;
         
@@ -179,6 +194,9 @@ class User {
         }, 100);
     }
 
+    /**
+     * Process authentication after OAuth callback
+     */
     processAuthentication(statusMsg) {
         const accessToken = this.getAccessToken();
         
@@ -189,10 +207,13 @@ class User {
         }
     }
 
+    /**
+     * Extract access token from URL
+     */
     getAccessToken() {
         let accessToken = this.getUrlParameter('access_token');
         
-        // If not in search params, try the hash (some OAuth providers use this)
+        // If not in search params, try the hash
         if (!accessToken && window.location.hash) {
             const hashToken = window.location.hash.match(/access_token=([^&]*)/);
             if (hashToken) {
@@ -203,6 +224,9 @@ class User {
         return accessToken;
     }
 
+    /**
+     * Get URL parameter by name
+     */
     getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -210,10 +234,12 @@ class User {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
+    /**
+     * Handle successful authentication
+     */
     async handleSuccessfulAuth(accessToken, statusMsg) {
-        localStorage.setItem('authToken', accessToken);
-        this.token = accessToken;
-        this.isAuthenticated = true;
+        // Store the token using the store
+        store.setAuthToken(accessToken);
         
         if (statusMsg) {
             statusMsg.textContent = 'Login successful! Fetching your profile...';
@@ -221,50 +247,41 @@ class User {
         }
         
         try {
-            // Simply call the hook which will update this instance directly
-            const result = await hooks.useFetchUserData(true); // Force refresh to get fresh data
+            // Fetch user data
+            const result = await this.fetchUserData(true);
             
             if (result.success) {
-                this.userData = result.userData;
-                // Ensure the userData is saved to localStorage
-                localStorage.setItem('userData', JSON.stringify(this.userData));
-                localStorage.setItem('userDataTimestamp', Date.now().toString());
-                // Update UI with user data
-                this.updateUIUserData();
-            } else {
-                console.error('User: Failed to fetch user data after authentication:', result.error);
-            }
-            
-            if (statusMsg) {
-                statusMsg.textContent = 'Profile loaded! Redirecting...';
-            }
-            
-            // Check if there's a redirect after login
-            const redirectPage = localStorage.getItem('redirectAfterLogin');
-            
-            setTimeout(() => {
-                if (redirectPage) {
-                    localStorage.removeItem('redirectAfterLogin');
-                    window.location.href = `/${redirectPage}`;
-                } else {
-                    window.location.href = '/';
+                if (statusMsg) {
+                    statusMsg.textContent = 'Profile loaded! Redirecting...';
                 }
-            }, 1000);
-
+                
+                // Handle redirect after login
+                const redirectPage = store.getRedirectAfterLogin();
+                
+                setTimeout(() => {
+                    if (redirectPage) {
+                        store.clearRedirectAfterLogin();
+                        window.location.href = `/${redirectPage}`;
+                    } else {
+                        window.location.href = '/';
+                    }
+                }, 1000);
+            } else {
+                throw new Error(result.error || 'Failed to fetch user data');
+            }
         } catch (error) {
-            console.error('Error fetching user data:', error);
+            console.error('User: Error during authentication:', error);
             
             // Still redirect even if profile fetch fails
             if (statusMsg) {
-                statusMsg.textContent = 'Login successful! Redirecting...';
+                statusMsg.textContent = 'Login successful, but profile fetch failed. Redirecting...';
             }
             
-            // Check if there's a redirect after login
-            const redirectPage = localStorage.getItem('redirectAfterLogin');
+            const redirectPage = store.getRedirectAfterLogin();
             
             setTimeout(() => {
                 if (redirectPage) {
-                    localStorage.removeItem('redirectAfterLogin');
+                    store.clearRedirectAfterLogin();
                     window.location.href = `/${redirectPage}`;
                 } else {
                     window.location.href = '/';
@@ -273,179 +290,143 @@ class User {
         }
     }
 
+    /**
+     * Handle failed authentication
+     */
     handleFailedAuth(statusMsg) {
-        // No token found
-        console.error('No access token found in URL');
+        console.error('User: No access token found in URL');
+        
         if (statusMsg) {
             statusMsg.textContent = 'Authentication failed. Redirecting to login...';
             statusMsg.style.color = '#e74c3c';
         }
         
-        // Clear any existing auth data
+        // Clear auth data
         this.logout();
         
-        // Redirect to home page after a short delay
+        // Redirect to home
         setTimeout(() => {
             window.location.href = '/';
         }, 2000);
     }
 
-    checkAuthentication() {
-        // Get token from localStorage
-        const token = localStorage.getItem('authToken');
-        
-        if (token) {
-            this.token = token;
-            this.isAuthenticated = true;
-            
-            // Try to get user data from localStorage
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                try {
-                    this.userData = JSON.parse(userData);
-                } catch (e) {
-                    console.error('Error parsing user data from localStorage:', e);
-                    // Clear the corrupted data
-                    localStorage.removeItem('userData');
-                }
-            }
-            
-            return true;
-        }
-        
-        this.isAuthenticated = false;
-        this.token = null;
-        this.userData = null;
-        return false;
-    }
-
-    async refreshUserData(forceRefresh = false) {
-        if (!this.isAuthenticated) {
-            return { success: false, error: 'Not authenticated' };
-        }
-
+    /**
+     * Fetch user data from the server
+     */
+    async fetchUserData(forceRefresh = false) {
         try {
             const result = await hooks.useFetchUserData(forceRefresh);
             
             if (result.success) {
-                this.userData = result.userData;
+                // Update store
+                store.setUserData(result.userData, true);
                 
-                // Save to localStorage for persistence
-                localStorage.setItem('userData', JSON.stringify(this.userData));
-                localStorage.setItem('userDataTimestamp', Date.now().toString());
+                // Update UI
+                this.updateUIUserData(result.userData);
+                this.updateUIAuthState(true);
                 
-                // Update UI with fresh user data
-                this.updateUIUserData();
-                return { success: true, userData: this.userData };
+                return { success: true, userData: result.userData };
             } else {
-                console.error('User: Failed to refresh user data:', result.error);
                 return { success: false, error: result.error };
             }
         } catch (error) {
-            console.error('User: Error refreshing user data:', error);
-            return { success: false, error };
+            console.error('User: Error fetching user data:', error);
+            return { success: false, error: error.message };
         }
     }
 
-    getUserData() {
-        // If we don't have userData in memory but have a token, try to load from localStorage
-        if (!this.userData && this.isAuthenticated) {
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                try {
-                    this.userData = JSON.parse(userData);
-                } catch (e) {
-                    console.error('Error parsing user data from localStorage in getUserData:', e);
-                }
-            }
-        }
-        return this.userData;
+    /**
+     * Refresh user data
+     */
+    async refreshUserData(forceRefresh = false) {
+        return this.fetchUserData(forceRefresh);
     }
-    
-    // Update user data
+
+    /**
+     * Set user data and update UI
+     */
     setUserData(userData, updateUI = false) {
-        this.userData = userData;
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('userDataTimestamp', Date.now().toString());
+        store.setUserData(userData, true);
         
         if (updateUI) {
-            this.updateUIUserData();
+            this.updateUIUserData(userData);
+            this.updateUIAuthState(true);
         }
     }
 
+    /**
+     * Get authentication status
+     */
     getAuthStatus() {
+        const userData = store.getUserData();
         return {
-            isAuthenticated: this.isAuthenticated,
-            token: this.token,
-            hasUserData: !!this.userData
+            isAuthenticated: store.isAuthenticated(),
+            token: store.getAuthToken(),
+            hasUserData: !!userData
         };
     }
 
+    /**
+     * Logout the user
+     */
     logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('userDataTimestamp');
-        this.token = null;
-        this.userData = null;
-        this.isAuthenticated = false;
+        store.clearUserData();
+        this.updateUIAuthState(false);
         
-        // Update UI to reflect logged-out state
-        this.updateUIUserData();
+        // Show toast notification
+        components.showToast('info', 'Logged Out', 'You have been logged out successfully.', 3000);
         
         // Redirect to home page
         window.location.href = '/';
     }
 
-    // Setup event listeners for page load and visibility
+    /**
+     * Set up event listeners
+     */
     setupEventListeners() {
+        // Handle OAuth callback
         if (this.isOAuthCallbackPage()) {
             document.addEventListener('DOMContentLoaded', () => {
                 this.handleOAuthCallback();
             });
-        } else {
-            document.addEventListener('DOMContentLoaded', async () => {
-                // Update UI elements based on auth status
-                this.updateUIAuthState();
-                
-                if (this.isAuthenticated) {
-                    try {
-                        // Check if we need to refresh data
-                        const storedTime = localStorage.getItem('userDataTimestamp');
-                        const dataAge = storedTime ? (Date.now() - parseInt(storedTime)) : Infinity;
-                        
-                        if (dataAge > 5 * 60 * 1000) { // 5 minutes
-                            await this.refreshUserData();
-                        } else {
-                            // Still update UI with user data we have
-                            this.updateUIUserData();
-                        }
-                    } catch (error) {
-                        console.error('Error fetching user data during initialization:', error);
-                        // Try to recover using local data
-                        if (this.userData) {
-                            this.updateUIUserData();
-                        }
-                    }
-                }
-            });
         }
-
-        // Add event listeners for page visibility changes
+        
+        // Update UI when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            this.updateUIAuthState();
+            
+            if (store.isAuthenticated()) {
+                if (store.shouldRefreshUserData()) {
+                    await this.refreshUserData();
+                } else {
+                    this.updateUIUserData();
+                }
+            }
+        });
+        
+        // Refresh user data when page becomes visible after being hidden
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && this.isAuthenticated) {
-                // Check if we need to refresh data
-                const storedTime = localStorage.getItem('userDataTimestamp');
-                const dataAge = storedTime ? (Date.now() - parseInt(storedTime)) : Infinity;
-                
-                if (dataAge > 5 * 60 * 1000) { // 5 minutes
+            if (document.visibilityState === 'visible' && store.isAuthenticated()) {
+                if (store.shouldRefreshUserData()) {
                     this.refreshUserData();
                 }
             }
         });
+        
+        // Listen for store changes that might affect UI
+        window.addEventListener('appStateChanged', () => {
+            this.updateUIAuthState();
+            this.updateUIUserData();
+        });
     }
 }
 
+// Create a singleton instance
 const user = new User();
-user.init();
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    user.init();
+});
 
 export default user;

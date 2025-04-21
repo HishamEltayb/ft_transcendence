@@ -2,26 +2,49 @@ import pages from './pages.js';
 import components from './components.js';
 import user from './user.js';
 import store from './store.js';
+import forms from './forms.js';
 
+/**
+ * Router class for SPA navigation
+ * Uses the store as the central state manager for navigation
+ */
 class Router {
     constructor() {
         this.initialized = false;
     }
 
+    /**
+     * Initialize the router
+     */
     init() {
+        if (this.initialized) {
+            return this;
+        }
+        
+        // Listen for popstate events (browser back/forward)
         window.addEventListener('popstate', this.handleURL.bind(this));
+        
+        // Initialize navigation event listeners
         this.initNavigationEvents();
+        
+        // Mark as initialized
         this.initialized = true;
-        this.handleURL(true);  
+        
+        // Handle initial URL
+        this.handleURL(true);
+        
+        // Debug
+        console.log('Router: Initialized');
         
         return this;
     }
-    // .bind(this) is crucial here because it ensures that when handleURL is called, 
-    // the this keyword inside that function will still refer to your original object/class 
-    // instance rather than the Window object that fired the event
     
+    /**
+     * Initialize navigation event listeners
+     */
     initNavigationEvents() {
         document.body.addEventListener('click', (e) => {
+            // Handle nav button clicks
             if (e.target.id && e.target.id.startsWith('nav')) {
                 e.preventDefault();
                 const pageName = e.target.id.replace('nav', '').toLowerCase();
@@ -36,11 +59,12 @@ class Router {
                 e.preventDefault();
                 console.log('Router: Profile link clicked directly');
                 
-                // Force immediate fetch of fresh user data from server before navigation
+                // Force reload of user data before navigating to profile
                 this.forceFetchUserDataAndNavigate();
                 return;
             }
             
+            // Handle data-page attributes
             const pageElement = e.target.closest('[data-page]');
             if (pageElement) {
                 e.preventDefault();
@@ -48,287 +72,225 @@ class Router {
                 return;
             }
             
+            // Handle logo clicks
             if (e.target.id === 'logo' || e.target.closest('#logo')) {
                 e.preventDefault();
                 this.navigateTo('home');
                 return;
             }
             
+            // Handle logout button clicks
             if (e.target.id === 'logoutBtn' || e.target.closest('[data-action="logout"]')) {
                 e.preventDefault();
-                // Call the user logout function
+                // Call user logout function
                 user.logout();
-                // Then navigate to home page
-                this.navigateTo('home');
             }
         });
     }
     
+    /**
+     * Handle URL changes and navigate to appropriate page
+     */
     handleURL(isInitialCall = false) {
         if (!this.initialized && !isInitialCall) {
-            console.warn("Router not initialized yet. Initializing now...");
+            console.warn("Router: Not initialized yet. Initializing now...");
             this.init();
             return;
         }
 
-        if (!isInitialCall) 
+        if (!isInitialCall) {
             components.showSpinner();
+        }
         
+        // Get page from URL
         const path = window.location.pathname;
         let pageName = 'home';
         
-        // Special handling for OAuth callback - don't try to handle it in the router
+        // Special handling for OAuth callback
         if (path && path.includes('/oauth/callback')) {
-            console.log('Router: Detected OAuth callback URL - not handling in router');
+            console.log('Router: Detected OAuth callback URL');
             if (!isInitialCall) components.hideSpinner();
             return 'oauth-callback';
         }
         
-        if (path && path !== '/')
+        if (path && path !== '/') {
             pageName = path.split('/')[1] || '';
+        }
         
-        
+        // Resolve to valid page name
         const resolvedPage = pages.getPageName(pageName);
         
-        // Update the store with current page
+        // Update store with current page
         store.setCurrentPage(resolvedPage);
         
+        // Wait for pages to load if needed
         if (!pages.isLoaded()) {
-            console.warn("Pages not fully loaded yet, showing spinner");
+            console.warn("Router: Pages not fully loaded yet, showing spinner");
             return resolvedPage;
         }
         
-        // Ensure user authentication state is refreshed and UI is updated
-        this.checkAuthStateForPage(resolvedPage);
+        // Check authentication state for protected pages
+        const authCheck = this.checkAuthStateForPage(resolvedPage);
+        if (authCheck !== true) {
+            if (!isInitialCall) components.hideSpinner();
+            return authCheck;
+        }
         
+        // Show the page
         pages.showPage(resolvedPage);
         
-        if (!isInitialCall)
+        if (!isInitialCall) {
             components.hideSpinner();
+        }
         
         return resolvedPage;
     }
     
+    /**
+     * Check if user is authorized to access the page
+     * @returns {Boolean|String} True if authorized, or the page to redirect to
+     */
     checkAuthStateForPage(pageName) {
-        // Always check authentication state when navigating to a new page
-        const authStatus = user.getAuthStatus();
-        
-        // Refresh user data if authenticated (happens asynchronously)
-        if (authStatus.isAuthenticated && store.shouldRefreshUserData()) {
+        // Check if user data refresh is needed
+        if (store.isAuthenticated() && store.shouldRefreshUserData()) {
             console.log('Router: Refreshing user data during navigation');
-            user.refreshUserData(false); // Use non-forcing refresh during regular navigation
+            user.refreshUserData(false);
         }
         
-        // Handle protected pages
-        if (this.isProtectedPage(pageName) && !authStatus.isAuthenticated) {
-            console.warn(`Page ${pageName} requires authentication. Redirecting to login...`);
-            // Store the intended destination for post-login redirect
-            localStorage.setItem('redirectAfterLogin', pageName);
-            this.navigateTo('login');
+        // Check if page is protected and requires auth
+        if (this.isProtectedPage(pageName) && !store.isAuthenticated()) {
+            console.warn(`Router: Page ${pageName} requires authentication. Redirecting to login...`);
+            
+            // Store intended destination for post-login redirect
+            store.setRedirectAfterLogin(pageName);
+            
+            // Navigate to login page
+            this.navigateTo('login', false);
+            
+            // Show notification
             components.showToast('warning', 'Authentication Required', 'Please log in to access this page.');
-            return false;
+            
+            return 'login';
         }
         
-        // Update UI to match authentication state
+        // Update UI for current auth state
         user.updateUIAuthState();
         
         return true;
     }
     
+    /**
+     * Check if page requires authentication
+     */
     isProtectedPage(pageName) {
-        // List of pages that require authentication
         const protectedPages = ['profile', 'settings', 'dashboard'];
         return protectedPages.includes(pageName.toLowerCase());
     }
     
-    async navigateTo(pageName) {
+    /**
+     * Navigate to a specific page
+     */
+    async navigateTo(pageName, saveState = true) {
         if (!this.initialized) {
-            console.warn("Router not initialized yet. Initializing now...");
+            console.warn("Router: Not initialized yet. Initializing now...");
             this.init();
         }
 
         components.showSpinner();
         
+        // Resolve to valid page name
         const resolvedPage = pages.getPageName(pageName);
         
-        // Save previous page state if needed (for forms, etc.)
-        this.saveCurrentPageState();
-        
-        // Special handling for profile page navigation
-        if (resolvedPage === 'profile') {
-            console.log('Router: Special handling for profile page navigation');
-            
-            // Check if user is authenticated
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-                console.warn('Router: No auth token for profile page, redirecting to login');
-                localStorage.setItem('redirectAfterLogin', 'profile');
-                this.updateURL('login');
-                if (pages.isLoaded()) {
-                    pages.showPage('login');
-                }
-                components.hideSpinner();
-                components.showToast('warning', 'Authentication Required', 'Please log in to access this page.');
-                return;
-            }
-            
-            try {
-                // Only force fresh fetch if the data is stale
-                if (store.shouldRefreshUserData()) {
-                    // Force fetch fresh user data directly from server - don't rely on localStorage
-                    console.log('Router: Forcefully fetching fresh user data for profile page');
-                    await import('./hooks.js').then(async (hooksModule) => {
-                        const hooks = hooksModule.default;
-                        if (hooks && typeof hooks.useFetchUserData === 'function') {
-                            const result = await hooks.useFetchUserData();
-                            if (result.success) {
-                                console.log('Router: Successfully fetched fresh user data for profile page');
-                                
-                                // Use the user's setUserData method which updates the store
-                                user.setUserData(result.userData, true);
-                            } else {
-                                console.error('Router: Failed to fetch fresh user data for profile page');
-                            }
-                        }
-                    });
-                } else {
-                    console.log('Router: Using cached user data from store for profile page');
-                }
-            } catch (error) {
-                console.error('Router: Error fetching fresh user data:', error);
-            }
-        }
-        
-        // Continue with regular navigation
-        if (!await this.checkAuthStateForPage(resolvedPage)) {
-            // If authentication check fails, stop navigation to this page
-            components.hideSpinner();
-            return;
-        }
-        
-        this.updateURL(pageName || 'home');
-        
-        // Update the store with current page
+        // Update store
         store.setCurrentPage(resolvedPage);
         
-        if (!pages.isLoaded()) {
-            console.warn("Pages not fully loaded yet, showing spinner");
-            return resolvedPage;
+        // Save current page state if needed
+        if (saveState) {
+            this.saveCurrentPageState();
         }
         
-        // Display the page
+        // Check auth state
+        const authCheck = this.checkAuthStateForPage(resolvedPage);
+        if (authCheck !== true) {
+            components.hideSpinner();
+            return authCheck;
+        }
+        
+        // Show the page
         pages.showPage(resolvedPage);
         
-        // For profile page, also ensure forms.initProfilePage is called directly 
-        // after the page is displayed
+        // Special handling for profile page
         if (resolvedPage === 'profile') {
-            import('./forms.js').then(formsModule => {
-                const forms = formsModule.default;
-                if (forms && typeof forms.initProfilePage === 'function') {
-                    console.log('Router: Directly calling forms.initProfilePage after navigation');
+            console.log('Router: Loading profile page, initializing forms...');
+            // Small delay to ensure DOM is fully loaded
+            setTimeout(() => {
+                if (typeof forms !== 'undefined' && forms.initProfilePage) {
                     forms.initProfilePage();
+                } else {
+                    console.warn('Router: forms.js not loaded or initProfilePage not found');
                 }
-            }).catch(error => {
-                console.error('Router: Error loading forms module after profile navigation:', error);
-            });
+            }, 100);
         }
         
+        // Update URL
+        this.updateURL(resolvedPage);
+        
         components.hideSpinner();
+        
         return resolvedPage;
     }
     
+    /**
+     * Update browser URL without reloading page
+     */
     updateURL(pageName) {
         let url = '/';
-        if (pageName !== 'home')
+        if (pageName !== 'home') {
             url = `/${pageName}`;
+        }
         
         history.pushState({ page: pageName }, document.title, url);
     }
 
-    // Special method to force fetch user data from server and then navigate to profile
+    /**
+     * Force fetch user data from server before navigation
+     */
     async forceFetchUserDataAndNavigate() {
         components.showSpinner();
-        console.log('Router: Force fetching fresh user data from server before profile navigation');
+        
+        // Check if authenticated
+        if (!store.hasAuthToken()) {
+            store.setRedirectAfterLogin('profile');
+            this.navigateTo('login');
+            components.hideSpinner();
+            return;
+        }
         
         try {
-            // Check for auth token
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-                console.warn('Router: No auth token found for profile navigation');
-                localStorage.setItem('redirectAfterLogin', 'profile');
-                this.navigateTo('login');
-                components.hideSpinner();
-                return;
+            // Force fetch fresh user data
+            const result = await user.fetchUserData(true);
+            
+            if (result.success) {
+                console.log('Router: Successfully refreshed user data before profile navigation');
+            } else {
+                console.warn('Router: Failed to refresh user data before profile navigation');
             }
             
-            // Make a direct fetch to the server API - not using hooks or other cached methods
-            const response = await fetch('/api/users/me/', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache, no-store, must-revalidate'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch user data: ${response.status}`);
-            }
-            
-            const userData = await response.json();
-            console.log('Router: Successfully fetched fresh user data before profile navigation');
-            
-            // Save fresh data to localStorage
-            localStorage.setItem('userData', JSON.stringify(userData));
-            
-            // Update user object with fresh data
-            import('./user.js').then(userModule => {
-                const user = userModule.default;
-                if (user) {
-                    if (typeof user.setUserData === 'function') {
-                        user.setUserData(userData, true);
-                    } else {
-                        user.userData = userData;
-                        user.isAuthenticated = true;
-                        user.token = authToken;
-                        user.updateUIAuthState();
-                        user.updateUIUserData();
-                    }
-                }
-            });
-            
-            // Now navigate to profile page with fresh data already loaded
-            this.updateURL('profile');
-            
-            if (pages.isLoaded()) {
-                pages.showPage('profile');
-                
-                // Also explicitly initialize the profile page with fresh data
-                import('./forms.js').then(formsModule => {
-                    const forms = formsModule.default;
-                    if (forms && typeof forms.initProfilePage === 'function') {
-                        console.log('Router: Directly calling forms.initProfilePage after navigation');
-                        forms.initProfilePage();
-                    }
-                });
-            }
-            
+            // Navigate to profile
+            this.navigateTo('profile');
         } catch (error) {
-            console.error('Router: Error fetching fresh user data before profile navigation:', error);
-            // Still try to navigate to profile - it will use localStorage as fallback
-            this.updateURL('profile');
-            if (pages.isLoaded()) {
-                pages.showPage('profile');
-            }
+            console.error('Router: Error fetching user data before profile navigation:', error);
+            this.navigateTo('profile');
         } finally {
             components.hideSpinner();
         }
     }
 
-    // New method to save state of the current page before navigation
+    /**
+     * Save state of the current page before navigation
+     */
     saveCurrentPageState() {
-        const currentState = store.getState();
-        const currentPage = currentState.currentPage;
+        const currentPage = store.getCurrentPage();
         
         if (!currentPage) return;
         
@@ -340,10 +302,14 @@ class Router {
         } else if (currentPage === 'game') {
             this.saveGameState();
         }
-        // Add other page-specific state saving as needed
+        
+        // Save overall state
+        store.saveState();
     }
     
-    // Save profile form state
+    /**
+     * Save profile form state
+     */
     saveProfileFormState() {
         try {
             const profileForm = document.getElementById('profileForm');
@@ -363,23 +329,26 @@ class Router {
         }
     }
     
-    // Save game state
+    /**
+     * Save game state
+     */
     saveGameState() {
         try {
-            // Get any game state from DOM or variables
+            // Get game state from DOM or variables
             const gameState = {
-                // Add game-specific state here
+                // Add game-specific state 
                 timestamp: Date.now()
             };
             
             // Save to store
-            store.setState({ gameState });
+            store.saveGameState(gameState);
         } catch (error) {
             console.error('Router: Error saving game state:', error);
         }
     }
 }
 
+// Create singleton instance
 const router = new Router();
 
 export default router;

@@ -233,74 +233,62 @@ class Pages {
     
     // Initialize profile page with user data
     initializeProfilePage() {
+        console.log('Pages: initializeProfilePage called');
         
-        // Get user data
+        // Get user data from store
         const appState = store.getState();
         const userData = appState.user;
         
         if (!userData) {
             console.warn('Pages: No user data available for profile page');
-            return;
-        }
-        
-        // Populate profile form
-        const profileForm = document.getElementById('profileForm');
-        if (profileForm) {
-            // First, populate with current user data
-            Object.entries(userData).forEach(([key, value]) => {
-                const input = profileForm.querySelector(`[name="${key}"]`);
-                if (input && value !== null && value !== undefined) {
-                    if (input.tagName === 'SELECT') {
-                        // For select elements, find the matching option
-                        const option = input.querySelector(`option[value="${value}"]`);
-                        if (option) {
-                            option.selected = true;
-                        }
-                    } else {
-                        input.value = value;
-                    }
-                }
-            });
+        } else {
+            console.log('Pages: User data available, applying basic profile data');
             
-            // Then, check if there's any saved form state that's newer
-            const savedFormData = store.getFormData('profileForm');
-            if (savedFormData) {
-                Object.entries(savedFormData).forEach(([key, value]) => {
-                    const input = profileForm.querySelector(`[name="${key}"]`);
-                    if (input && value !== null && value !== undefined) {
-                        input.value = value;
-                    }
-                });
+            // Update profile avatar - this is something we can do without the Forms module
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (profileAvatar) {
+                if (userData.profile_image) {
+                    profileAvatar.src = userData.profile_image;
+                    profileAvatar.alt = `${userData.username}'s avatar`;
+                }
+                
+                // Add error handler for the image
+                profileAvatar.onerror = function() {
+                    this.src = '../public/assets/images/default-avatar.png';
+                };
             }
             
-            // Set up form change tracking
-            profileForm.addEventListener('input', (e) => {
-                const form = e.currentTarget;
-                if (form.id) {
-                    const formData = new FormData(form);
-                    const formDataObj = {};
-                    
-                    for (const [key, value] of formData.entries()) {
-                        formDataObj[key] = value;
-                    }
-                    
-                    // Save to store as user types
-                    store.saveFormData(form.id, formDataObj);
-                }
-            });
+            // Update username - something else we can do directly
+            const profileUsername = document.getElementById('profileUsername');
+            if (profileUsername) {
+                profileUsername.textContent = userData.username || 'Unknown User';
+            }
+            
+            // Update intra login
+            const profileIntraLogin = document.getElementById('profileIntraLogin');
+            if (profileIntraLogin) {
+                profileIntraLogin.textContent = userData.intra_login || 'N/A';
+            }
         }
         
-        // Update profile avatar
-        const profileAvatar = document.getElementById('profileAvatar');
-        if (profileAvatar && userData.profile_image) {
-            profileAvatar.src = userData.profile_image;
-            profileAvatar.alt = `${userData.username}'s avatar`;
-            
-            // Add error handler for the image
-            profileAvatar.onerror = function() {
-                this.src = '../public/assets/images/default-avatar.png';
-            };
-        }
+        // Now load the Forms module to handle the rest of the profile initialization
+        console.log('Pages: Loading Forms module for full profile initialization');
+        import('./forms.js')
+            .then(formsModule => {
+                const forms = formsModule.default;
+                if (forms && typeof forms.initProfilePage === 'function') {
+                    console.log('Pages: Calling forms.initProfilePage() from pages.js');
+                    // Add a small delay to ensure the DOM is ready
+                    setTimeout(() => {
+                        forms.initProfilePage();
+                    }, 100);
+                } else {
+                    console.error('Pages: forms.initProfilePage is not available');
+                }
+            })
+            .catch(error => {
+                console.error('Pages: Error loading Forms module:', error);
+            });
     }
     
     // Initialize game page with game state
