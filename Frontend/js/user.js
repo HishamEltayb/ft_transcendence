@@ -396,10 +396,22 @@ class User {
      * Logout the user
      */
     logout() {
+        // Get user data before clearing
+        const userData = store.getUserData();
+        const displayName = userData?.intra_login || userData?.username || 'user';
+        
+        // Clear user data
         store.clearUserData();
         this.updateUIAuthState(false);
         
-        window.location.href = '/';
+        // Show goodbye toast notification
+        components.showToast('info', 'Logged Out', `Bye bye ${displayName}! You have been logged out successfully.`, 3000);
+        
+        // Redirect to home page with a small delay to allow toast to be seen
+        setTimeout(() => {
+            // Use window.location.href with a timestamp parameter to ensure a fresh page load
+            window.location.href = '/?t=' + Date.now();
+        }, 1500);
     }
 
     /**
