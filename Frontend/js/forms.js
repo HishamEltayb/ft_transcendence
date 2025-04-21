@@ -463,7 +463,6 @@ class Forms {
         }
     }
     
-
     // Populate match history table
     populateMatchHistory(userData) {
         
@@ -778,7 +777,7 @@ class Forms {
         
         if (event) {
             event.preventDefault();
-            event.stopPropagation();
+            // event.stopPropagation();
         }
         
         // Show loading message
@@ -818,8 +817,7 @@ class Forms {
             }
             
             // Simply redirect to the auth URL
-            window.location.href = data.auth_url;
-            
+            window.location.href = data.auth_url;            
         } catch (error) {
             console.error('42 login error:', error);
             components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');

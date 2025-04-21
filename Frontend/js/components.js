@@ -84,12 +84,12 @@ class Components {
     }
 
     appendFooter() {
-        if (this.footerComponent) {
+        if (this.components && this.components.footerComponent) {
             const existingFooter = document.querySelector('footer');
             if (existingFooter) 
                 existingFooter.remove();
             
-            this.appContainer.appendChild(this.footerComponent);
+            this.appContainer.appendChild(this.components.footerComponent);
             
         } else {
             console.error("Footer component not available to append");
