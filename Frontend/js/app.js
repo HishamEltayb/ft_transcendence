@@ -3,25 +3,15 @@ import pages from './pages.js';
 import router from './router.js';
 import user from './user.js';
 import store from './store.js';
-// Explicitly import forms to ensure it's loaded
 import forms from './forms.js';
 
-/**
- * Main App class for initializing and coordinating the SPA
- * Uses store as the single source of truth
- */
 class App {
     constructor() {
         this.appContainer = null;
         this.isInitialized = false;
-        
-        // Debug log
         console.log('App: Created instance');
     }
     
-    /**
-     * Initialize the application
-     */
     async init() {
         console.log("App: Initializing...");
         
@@ -83,18 +73,13 @@ class App {
         }
     }
     
-    /**
-     * Clear the app container
-     */
+
     resetAppContainer() {
         while (this.appContainer.firstChild) {
             this.appContainer.removeChild(this.appContainer.firstChild);
         }
     }
-    
-    /**
-     * Show initialization error
-     */
+ 
     showInitError(error) {
         components.showToast(
             'error',

@@ -26,9 +26,29 @@ class Forms {
     }
 
     init() {
+        console.log('Forms: Initializing forms');
         
         // Now it's safe to query for DOM elements if the page is loaded
         this.initLoginRegisterForms();
+        
+        // Check if we're on the login page
+        if (window.location.pathname.includes('login')) {
+            console.log('Forms: On login page, initializing login/register tabs');
+            
+            // Set up login/register tabs
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            
+            if (loginTab && registerTab) {
+                // Default to showing login form
+                this.showLoginForm();
+                
+                // Add explicit console logs for debugging
+                console.log('Forms: Login page tabs found and initialized');
+            } else {
+                console.warn('Forms: Login page tabs not found');
+            }
+        }
         
         // Don't initialize profile yet - will be done when profile page is shown
         // Don't add profile event listeners yet either
@@ -70,6 +90,62 @@ class Forms {
             this.login.tab.addEventListener('click', this.showLoginForm.bind(this));
             this.register.tab.addEventListener('click', this.showRegisterForm.bind(this));
         }
+    }
+
+    // Method to show the login form tab
+    showLoginForm() {
+        console.log('Forms: Switching to login tab');
+        
+        if (!this.login.tab || !this.login.container || !this.register.tab || !this.register.container) {
+            console.warn('Forms: Cannot switch tabs - missing elements:', {
+                loginTab: !!this.login.tab,
+                loginContainer: !!this.login.container,
+                registerTab: !!this.register.tab,
+                registerContainer: !!this.register.container
+            });
+            return;
+        }
+        
+        // Activate login tab
+        this.login.tab.classList.add('active');
+        this.register.tab.classList.remove('active');
+        
+        // Show login form, hide register form
+        this.login.container.classList.add('show', 'active');
+        this.login.container.classList.remove('fade');
+        
+        this.register.container.classList.remove('show', 'active');
+        this.register.container.classList.add('fade');
+        
+        console.log('Forms: Successfully switched to login tab');
+    }
+    
+    // Method to show the register form tab
+    showRegisterForm() {
+        console.log('Forms: Switching to register tab');
+        
+        if (!this.login.tab || !this.login.container || !this.register.tab || !this.register.container) {
+            console.warn('Forms: Cannot switch tabs - missing elements:', {
+                loginTab: !!this.login.tab,
+                loginContainer: !!this.login.container,
+                registerTab: !!this.register.tab,
+                registerContainer: !!this.register.container
+            });
+            return;
+        }
+        
+        // Activate register tab
+        this.register.tab.classList.add('active');
+        this.login.tab.classList.remove('active');
+        
+        // Show register form, hide login form
+        this.register.container.classList.add('show', 'active');
+        this.register.container.classList.remove('fade');
+        
+        this.login.container.classList.remove('show', 'active');
+        this.login.container.classList.add('fade');
+        
+        console.log('Forms: Successfully switched to register tab');
     }
 
     async initProfilePage() {

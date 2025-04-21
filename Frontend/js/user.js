@@ -113,6 +113,26 @@ class User {
                 }
             }
         });
+
+        // Handle elements with auth-hide class (hide when authenticated)
+        const authHideElements = document.querySelectorAll('.auth-hide');
+        authHideElements.forEach(element => {
+            if (isAuthenticated) {
+                element.style.display = 'none';
+            } else {
+                const display = window.getComputedStyle(element).getPropertyValue('display');
+                const defaultDisplay = display === 'none' ? 'block' : display;
+                
+                if (element.classList.contains('d-flex') || 
+                    element.classList.contains('dropdown') || 
+                    element.classList.contains('flex-row') || 
+                    element.classList.contains('flex-column')) {
+                    element.style.display = 'flex';
+                } else {
+                    element.style.display = defaultDisplay;
+                }
+            }
+        });
     }
 
     /**
