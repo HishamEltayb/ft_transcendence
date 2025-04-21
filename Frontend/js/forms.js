@@ -96,26 +96,38 @@ class Forms {
     showLoginForm() {
         console.log('Forms: Switching to login tab');
         
-        if (!this.login.tab || !this.login.container || !this.register.tab || !this.register.container) {
+        // Try to get fresh references to elements, as they might have changed due to navigation
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContainer = document.getElementById('loginFormContainer');
+        const registerContainer = document.getElementById('registerFormContainer');
+        
+        // Use either our stored references or the fresh ones
+        const tab1 = this.login.tab || loginTab;
+        const tab2 = this.register.tab || registerTab;
+        const container1 = this.login.container || loginContainer;
+        const container2 = this.register.container || registerContainer;
+        
+        if (!tab1 || !container1 || !tab2 || !container2) {
             console.warn('Forms: Cannot switch tabs - missing elements:', {
-                loginTab: !!this.login.tab,
-                loginContainer: !!this.login.container,
-                registerTab: !!this.register.tab,
-                registerContainer: !!this.register.container
+                loginTab: !!tab1,
+                loginContainer: !!container1,
+                registerTab: !!tab2,
+                registerContainer: !!container2
             });
             return;
         }
         
         // Activate login tab
-        this.login.tab.classList.add('active');
-        this.register.tab.classList.remove('active');
+        tab1.classList.add('active');
+        tab2.classList.remove('active');
         
         // Show login form, hide register form
-        this.login.container.classList.add('show', 'active');
-        this.login.container.classList.remove('fade');
+        container1.classList.add('show', 'active');
+        container1.classList.remove('fade');
         
-        this.register.container.classList.remove('show', 'active');
-        this.register.container.classList.add('fade');
+        container2.classList.remove('show', 'active');
+        container2.classList.add('fade');
         
         console.log('Forms: Successfully switched to login tab');
     }
@@ -124,26 +136,38 @@ class Forms {
     showRegisterForm() {
         console.log('Forms: Switching to register tab');
         
-        if (!this.login.tab || !this.login.container || !this.register.tab || !this.register.container) {
+        // Try to get fresh references to elements, as they might have changed due to navigation
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContainer = document.getElementById('loginFormContainer');
+        const registerContainer = document.getElementById('registerFormContainer');
+        
+        // Use either our stored references or the fresh ones
+        const tab1 = this.login.tab || loginTab;
+        const tab2 = this.register.tab || registerTab;
+        const container1 = this.login.container || loginContainer;
+        const container2 = this.register.container || registerContainer;
+        
+        if (!tab1 || !container1 || !tab2 || !container2) {
             console.warn('Forms: Cannot switch tabs - missing elements:', {
-                loginTab: !!this.login.tab,
-                loginContainer: !!this.login.container,
-                registerTab: !!this.register.tab,
-                registerContainer: !!this.register.container
+                loginTab: !!tab1,
+                loginContainer: !!container1,
+                registerTab: !!tab2,
+                registerContainer: !!container2
             });
             return;
         }
         
         // Activate register tab
-        this.register.tab.classList.add('active');
-        this.login.tab.classList.remove('active');
+        tab2.classList.add('active');
+        tab1.classList.remove('active');
         
         // Show register form, hide login form
-        this.register.container.classList.add('show', 'active');
-        this.register.container.classList.remove('fade');
+        container2.classList.add('show', 'active');
+        container2.classList.remove('fade');
         
-        this.login.container.classList.remove('show', 'active');
-        this.login.container.classList.add('fade');
+        container1.classList.remove('show', 'active');
+        container1.classList.add('fade');
         
         console.log('Forms: Successfully switched to register tab');
     }

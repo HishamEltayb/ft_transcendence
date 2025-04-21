@@ -219,7 +219,7 @@ class Router {
         // Show the page
         pages.showPage(resolvedPage);
         
-        // Special handling for profile page
+        // Special handling for specific pages
         if (resolvedPage === 'profile') {
             console.log('Router: Loading profile page, initializing forms...');
             // Small delay to ensure DOM is fully loaded
@@ -228,6 +228,33 @@ class Router {
                     forms.initProfilePage();
                 } else {
                     console.warn('Router: forms.js not loaded or initProfilePage not found');
+                }
+            }, 100);
+        } else if (resolvedPage === 'login') {
+            console.log('Router: Loading login page, initializing login/register tabs...');
+            // Small delay to ensure DOM is fully loaded
+            setTimeout(() => {
+                if (typeof forms !== 'undefined') {
+                    // Reinitialize login/register forms
+                    forms.initLoginRegisterForms();
+                    
+                    // Access tab elements directly
+                    const loginTab = document.getElementById('loginTab');
+                    const registerTab = document.getElementById('registerTab');
+                    
+                    if (loginTab && registerTab) {
+                        // Set up click events again
+                        loginTab.addEventListener('click', forms.showLoginForm.bind(forms));
+                        registerTab.addEventListener('click', forms.showRegisterForm.bind(forms));
+                        
+                        // Default to showing login form
+                        forms.showLoginForm();
+                        console.log('Router: Login/register tabs initialized');
+                    } else {
+                        console.warn('Router: Login/register tabs not found');
+                    }
+                } else {
+                    console.warn('Router: forms.js not loaded');
                 }
             }, 100);
         }
