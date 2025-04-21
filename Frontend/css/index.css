@@ -91,8 +91,10 @@ body, html {
 /* ========== Toast Component Styles ========== */
 .toast-component {
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
+    left: auto;
+    transform: none;
     width: 350px;
     background-color: var(--bg-dark, #212529);
     border-radius: 6px;

@@ -1,16 +1,16 @@
 import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
-import { AVAILABLE_PAGES } from './constant.js';
+import user from './user.js';
 
 class App {
     constructor() {
         this.appContainer = null;
+        this.isInitialized = false;
     }
     
     async init() {
-        console.log("Initializing application");
-        
+        console.log("Initializing app...");
         this.appContainer = document.getElementById('App');
         
         if (!this.appContainer) {
@@ -19,6 +19,7 @@ class App {
         }
         
         try {
+            components.showSpinner();
             this.resetAppContainer();
             
             components.init(this.appContainer);
@@ -28,19 +29,22 @@ class App {
             await pages.loadAllPages();
             
             components.appendFooter();
-
-            // Initialize router after pages are fully loaded
-            router.init();
-            const initialPage = router.handleURL();
-            console.log("Router initialized with initial page:", initialPage);
             
-            this.initNavigationEvents();
+            router.init();
+
+            user.init(); 
+            
+            this.isInitialized = true;
+            
+            components.hideSpinner();
             
             document.dispatchEvent(new Event('appInitialized'));
             
             return true;
         } catch (error) {
             console.error("Failed to initialize application:", error);
+            components.hideSpinner();
+            this.showInitError();
             return false;
         }
     }
@@ -51,47 +55,41 @@ class App {
         }
     }
     
-    initNavigationEvents() {
-        const navElements = document.querySelectorAll('[data-page]');
-        navElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.preventDefault();
-                const pageName = element.getAttribute('data-page');
-                router.navigateTo(pageName);
-            });
-        });
+    showInitError() {
+        components.showToast(
+            'error',
+            'Application Error',
+            'There was a problem loading the application. Please refresh the page.',
+            5000  
+        );
         
-        const homeLinks = document.querySelectorAll('.navbar-brand, a[href="/"]');
-        homeLinks.forEach(link => {
-            if (!link.hasAttribute('data-page')) {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    router.navigateTo('home');
-                });
-            }
-        });
-        
-        const logoutButtons = document.querySelectorAll('[data-action="logout"]');
-        logoutButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                router.navigateTo('home');
-            });
-        });
+        this.resetAppContainer();
+        const retryDiv = document.createElement('div');
+        retryDiv.className = 'text-center mt-5';
+        retryDiv.innerHTML = `
+            <button class="btn btn-outline-primary" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Retry
+            </button>
+        `;
+        this.appContainer.appendChild(retryDiv);
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM fully loaded and parsed");
+    
+    const spinnerContainer = document.getElementById('spinnerContainer');
+    if (spinnerContainer)
+        spinnerContainer.classList.remove('d-none');
     
     const app = new App();
     
     try {
-        const success = await app.init();
-        console.log("App initialization " + (success ? "complete" : "failed"));
+        await app.init();
         window.App = app;
     } catch (error) {
         console.error("App initialization failed:", error);
+        if (spinnerContainer)
+            spinnerContainer.classList.add('d-none');
     }
 });
 
@@ -103,9 +101,5 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
-
-window.navigateTo = function(pageName) {
-    router.navigateTo(pageName);
-};
 
 export default App; 
