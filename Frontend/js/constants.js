@@ -18,15 +18,14 @@ export const COMPONENTS = {
 export const ENDPOINTS = {
     // Authentication endpoints
     auth: {
-        auth42: '/api/users/oauth/42/',
-
-        login: '/api/users/auth/login',
-        register: '/api/users/auth/register',
-        logout: '/api/users/auth/logout',
-        refreshToken: '/api/users/auth/refresh-token',
-        verifyEmail: '/api/users/auth/verify-email',
-        forgotPassword: '/api/users/auth/forgot-password',
-        resetPassword: '/api/users/auth/reset-password',
+        auth42: '/api/users/oauth/42',
+        login: '/api/users/login',
+        register: '/api/users/register/',
+        logout: '/api/users/logout',
+        refreshToken: '/api/users/refresh-token',
+        verifyEmail: '/api/users/verify-email',
+        forgotPassword: '/api/users/forgot-password',
+        resetPassword: '/api/users/reset-password',
         twoFactorAuth: '/api/users/2fa',
     },
     

@@ -119,6 +119,9 @@ class Hooks {
         },
         body: JSON.stringify(registerData)
       });
+
+      console.log('Hooks: Registration response:', response);
+      
       
       if (!response.ok) {
         throw new Error('Registration failed');
