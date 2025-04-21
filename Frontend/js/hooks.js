@@ -252,13 +252,26 @@ class Hooks {
         throw new Error('No authentication token found');
       }
       
+      // Make a copy of the profileData to ensure we're not modifying the original
+      const dataToSend = { ...profileData };
+      
+      // Remove any properties that should not be sent to the backend
+      // This depends on your backend API, but typically you'd want to exclude
+      // derived or computed properties. Adjust this list as needed.
+      const excludedProps = ['created_at', 'updated_at', 'last_login', 'match_history', 'id'];
+      excludedProps.forEach(prop => {
+        if (dataToSend.hasOwnProperty(prop)) {
+          delete dataToSend[prop];
+        }
+      });
+      
       const response = await fetch(updateProfileEndpoint, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(dataToSend)
       });
       
       if (!response.ok) {
@@ -268,15 +281,26 @@ class Hooks {
       
       const updatedData = await response.json();
       
-      // Update localStorage with new user data
-      localStorage.setItem('userData', JSON.stringify(updatedData));
+      // Merge the new data with any existing data to ensure all fields are preserved
+      const existingData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const mergedData = {
+        ...existingData,
+        ...updatedData
+      };
+      
+      // Update localStorage with merged user data
+      localStorage.setItem('userData', JSON.stringify(mergedData));
       
       // Update user instance if it exists
       if (userInstance && userInstance.userData) {
-        userInstance.userData = updatedData;
+        // Ensure we preserve all fields from the existing user data
+        userInstance.userData = {
+          ...userInstance.userData,
+          ...mergedData
+        };
       }
       
-      return { success: true, userData: updatedData };
+      return { success: true, userData: mergedData };
     } catch (error) {
       console.error('Error updating profile:', error);
       return { success: false, error: error.message };
@@ -421,6 +445,61 @@ class Hooks {
       return { success: true, data };
     } catch (error) {
       console.error('Error verifying 2FA code:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for uploading profile image
+  async useUploadProfileImage(imageFile) {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Check if we have a file
+      if (!imageFile) {
+        throw new Error('No image file provided');
+      }
+      
+      // Create FormData object for file upload
+      const formData = new FormData();
+      formData.append('avatar', imageFile);
+      
+      // Send the upload request
+      const uploadEndpoint = ENDPOINTS.user.avatar;
+      
+      const response = await fetch(uploadEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // Don't set Content-Type header when using FormData
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to upload profile image');
+      }
+      
+      const data = await response.json();
+      
+      // Update user data in localStorage with new image path
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      userData.profile_image = data.profile_image || data.avatar || data.image_url;
+      localStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Update user instance if it exists
+      if (userInstance && userInstance.userData) {
+        userInstance.userData.profile_image = userData.profile_image;
+      }
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
       return { success: false, error: error.message };
     }
   }

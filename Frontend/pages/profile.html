@@ -10,7 +10,6 @@
                         <img src="../public/assets/icons/avatar.svg" class="rounded-circle img-fluid" id="profileAvatar">
                     </div>
                     <p class="text-muted mb-3" id="profileIntraLogin"></p>
-                    <button class="btn btn-gold btn-sm" id="editProfileBtn">Edit Profile</button>
                 </div>
             </div>
         </div>
@@ -72,6 +71,17 @@
                 <div class="card-body">
                     <form id="settingsForm">
                         <div class="mb-3">
+                            <label for="profileImageUpload" class="form-label">Profile Image</label>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar-preview-container me-3" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid var(--gold);">
+                                    <img id="profileImagePreview" src="../public/assets/icons/avatar.svg" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control" id="profileImageUpload" accept="image/*" style="background-color: rgba(0, 0, 0, 0.3); border-color: rgba(212, 175, 55, 0.3);">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label for="settingDisplayName" class="form-label">Display Name</label>
                             <input type="text" class="form-control" id="settingDisplayName">
                             <div class="d-flex justify-content-end">
@@ -80,10 +90,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="settingEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="settingEmail">
-                            <div class="d-flex justify-content-end">
-                                <small class="text-white char-count">0/50</small>
-                            </div>
+                            <input type="email" class="form-control" id="settingEmail" disabled style="background-color: #343a40; cursor: not-allowed; opacity: 0.8;">
                         </div>
                         <div class="mb-3">
                             <label for="settingPassword" class="form-label">New Password</label>

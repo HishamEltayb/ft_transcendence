@@ -314,17 +314,15 @@ class Forms {
         this.profile.twoFA = document.getElementById('setting2fa');
         this.profile.submitBtn = document.getElementById('saveSettingsBtn');
         
+        // Get new profile image elements
+        this.profile.imageUpload = document.getElementById('profileImageUpload');
+        this.profile.imagePreview = document.getElementById('profileImagePreview');
+        
         // Add input validation for profile form fields
         if (this.profile.displayName) {
             this.profile.displayName.maxLength = VALIDATION_INPUTS.username.maxLength;
             this.profile.displayName.addEventListener('input', this.validateInputLength.bind(this, 'username'));
             this.initializeCharCount(this.profile.displayName, 'username');
-        }
-        
-        if (this.profile.email) {
-            this.profile.email.maxLength = VALIDATION_INPUTS.email.maxLength;
-            this.profile.email.addEventListener('input', this.validateInputLength.bind(this, 'email'));
-            this.initializeCharCount(this.profile.email, 'email');
         }
         
         if (this.profile.password) {
@@ -339,15 +337,54 @@ class Forms {
             this.initializeCharCount(this.profile.confirmPassword, 'password');
         }
         
+        // Add profile image preview functionality
+        if (this.profile.imageUpload && this.profile.imagePreview) {
+            this.profile.imageUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // File size validation (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        components.showToast('warning', 'File Too Large', 'Profile image must be under 2MB.');
+                        event.target.value = ''; // Clear the input
+                        return;
+                    }
+                    
+                    // Preview the image
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.profile.imagePreview.src = e.target.result;
+                        
+                        // Also update main profile avatar if it exists
+                        if (this.profile.avatar) {
+                            this.profile.avatar.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
         // Add event listeners
         if (this.profile.submitBtn) {
             this.profile.submitBtn.addEventListener('click', this.submitProfileForm.bind(this));
         }
         
-        // Add edit profile button event listener
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', this.toggleProfileEditMode.bind(this));
+        // Make form fields editable by default (except email which is always disabled)
+        const formFields = [
+            this.profile.displayName,
+            this.profile.password,
+            this.profile.confirmPassword
+        ];
+        
+        formFields.forEach(field => {
+            if (field) {
+                field.readOnly = false;
+            }
+        });
+        
+        // Show submit button
+        if (this.profile.submitBtn) {
+            this.profile.submitBtn.style.display = 'block';
         }
         
         // Add 2FA checkbox change event listener
@@ -438,6 +475,11 @@ class Forms {
                 // Set the avatar image source
                 this.profile.avatar.src = userData.profile_image;
                 
+                // Also set the preview image in account settings
+                if (this.profile.imagePreview) {
+                    this.profile.imagePreview.src = userData.profile_image;
+                }
+                
                 // Display the avatar URL
                 if (this.profile.avatarUrl) {
                     this.profile.avatarUrl.textContent = userData.profile_image;
@@ -451,8 +493,15 @@ class Forms {
             
             // Add error handler for the image
             this.profile.avatar.onerror = function() {
-                this.src = '../public/assets/images/default-avatar.png';
+                this.src = '../public/assets/icons/avatar.svg';
             };
+            
+            // Add error handler for the preview image
+            if (this.profile.imagePreview) {
+                this.profile.imagePreview.onerror = function() {
+                    this.src = '../public/assets/icons/avatar.svg';
+                };
+            }
         }
         
         // Set form fields - using a more robust approach
@@ -551,44 +600,30 @@ class Forms {
         this.matchHistoryTable.innerHTML = tableContent;
     }
     
-    // Toggle profile edit mode
+    // Toggle profile edit mode - now a no-op since edit button is removed
     toggleProfileEditMode() {
-        const formFields = [
-            this.profile.displayName,
-            this.profile.email,
-            this.profile.password,
-            this.profile.confirmPassword,
-            this.profile.twoFA
-        ];
-        
-        // Toggle readonly state
-        formFields.forEach(field => {
-            if (field) {
-                if (field.readOnly) {
-                    field.readOnly = false;
-                } else {
-                    field.readOnly = true;
-                }
-            }
-        });
-        
-        // Toggle submit button visibility
-        if (this.profile.submitBtn) {
-            this.profile.submitBtn.style.display = 
-                this.profile.submitBtn.style.display === 'none' ? 'block' : 'none';
-        }
+        // No longer needed as the form is always in edit mode
+        // and there's no "Edit Profile" button
+        console.log('Profile is always in edit mode');
     }
     
     // Handle profile form submission
     async submitProfileForm(event) {
         event.preventDefault();
         
+        // Get the current user data first
+        const userData = store.getUserData();
+        if (!userData) {
+            components.showToast('error', 'User Data Missing', 'Could not retrieve your profile information.');
+            return;
+        }
+        
         // Get form values - try both our object references and direct getElementById
         const displayName = (this.profile.displayName ? this.profile.displayName.value : '') || 
                             (document.getElementById('settingDisplayName') ? document.getElementById('settingDisplayName').value : '');
         
-        const email = (this.profile.email ? this.profile.email.value : '') || 
-                     (document.getElementById('settingEmail') ? document.getElementById('settingEmail').value : '');
+        // Keep the email from existing userData
+        const email = userData.email;
         
         const password = (this.profile.password ? this.profile.password.value : '') || 
                         (document.getElementById('settingPassword') ? document.getElementById('settingPassword').value : '');
@@ -596,9 +631,13 @@ class Forms {
         const confirmPassword = (this.profile.confirmPassword ? this.profile.confirmPassword.value : '') || 
                                (document.getElementById('settingConfirmPassword') ? document.getElementById('settingConfirmPassword').value : '');
         
-        // Get 2FA state from user data (we can't change it through the form)
-        const userData = store.getUserData();
-        const twoFA = userData ? userData.is_two_factor_enabled : false;
+        // Get profile image file if available
+        const imageFile = this.profile.imageUpload && this.profile.imageUpload.files && 
+                         this.profile.imageUpload.files.length > 0 ? 
+                         this.profile.imageUpload.files[0] : null;
+        
+        // Get 2FA state from user data
+        const twoFA = userData.is_two_factor_enabled;
         
         // Validate username length
         if (displayName && displayName.length < VALIDATION_INPUTS.username.minLength) {
@@ -611,22 +650,6 @@ class Forms {
             components.showToast('warning', 'Invalid Display Name', 
                 `Display name cannot exceed ${VALIDATION_INPUTS.username.maxLength} characters.`);
             return;
-        }
-        
-        // Validate email length
-        if (email && email.length > VALIDATION_INPUTS.email.maxLength) {
-            components.showToast('warning', 'Invalid Email', 
-                `Email cannot exceed ${VALIDATION_INPUTS.email.maxLength} characters.`);
-            return;
-        }
-        
-        // Validate email format if provided
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                components.showToast('warning', 'Invalid Email', 'Please enter a valid email address.');
-                return;
-            }
         }
         
         // Validate password length
@@ -653,31 +676,75 @@ class Forms {
         // Show loading state
         this.setLoading(this.profile.submitBtn, true);
         
-        // Create profile update data object with correct field names
-        // matching the UserSerializer in the backend
-        const profileData = {
-            username: displayName,
-            email: email,
-            is_two_factor_enabled: twoFA
-        };
-        
-        // Add password if provided
-        if (password) {
-            profileData.password = password;
-        }
-        
-        // Store form data in case submission fails
-        const formDataForStore = { ...profileData };
-        delete formDataForStore.password; // Don't store password
-        store.saveFormData('profileForm', formDataForStore);
-        
         try {
+            // First upload the profile image if one was selected
+            let imageUploadResult = { success: true };
+            let newProfileImageUrl = null;
+            
+            if (imageFile) {
+                imageUploadResult = await hooks.useUploadProfileImage(imageFile);
+                if (!imageUploadResult.success) {
+                    components.showToast('error', 'Image Upload Failed', 
+                        imageUploadResult.error || 'Failed to upload profile image. Please try again.');
+                    this.setLoading(this.profile.submitBtn, false);
+                    return;
+                }
+                
+                // Get the new image URL from the response
+                if (imageUploadResult.data && imageUploadResult.data.profile_image) {
+                    newProfileImageUrl = imageUploadResult.data.profile_image;
+                } else if (imageUploadResult.data && imageUploadResult.data.avatar) {
+                    newProfileImageUrl = imageUploadResult.data.avatar;
+                } else if (imageUploadResult.data && imageUploadResult.data.image_url) {
+                    newProfileImageUrl = imageUploadResult.data.image_url;
+                }
+            }
+            
+            // Create a complete profileData object that maintains all original data
+            // and only updates the fields that have changed
+            const profileData = { ...userData };  // Start with a copy of all current user data
+            
+            // Update only the fields that have changed
+            profileData.username = displayName;
+            profileData.email = email;
+            profileData.is_two_factor_enabled = twoFA;
+            
+            // Update profile image URL if a new one was uploaded
+            if (newProfileImageUrl) {
+                profileData.profile_image = newProfileImageUrl;
+            }
+            
+            // Add password only if provided (don't include empty password)
+            if (password) {
+                profileData.password = password;
+            }
+            
+            // Store form data in case submission fails (excluding sensitive data)
+            const formDataForStore = { 
+                username: profileData.username,
+                email: profileData.email,
+                is_two_factor_enabled: profileData.is_two_factor_enabled
+            };
+            store.saveFormData('profileForm', formDataForStore);
+            
             // Use the hook to submit the profile update
             const result = await hooks.useUpdateUserProfile(profileData);
             
             if (result.success) {
                 // Update user data in memory and store
-                user.setUserData(result.userData, true);
+                // Create merged user data that maintains all fields
+                const updatedUserData = {
+                    ...userData,  // Start with original user data  
+                    ...result.userData  // Update with returned values
+                };
+                
+                // If we uploaded an image and it wasn't included in the result, add it
+                if (newProfileImageUrl && !updatedUserData.profile_image) {
+                    updatedUserData.profile_image = newProfileImageUrl;
+                }
+                
+                // Update user data using the merged object
+                user.setUserData(updatedUserData, true);
                 
                 // Reset password fields
                 if (this.profile.password) this.profile.password.value = '';
@@ -692,9 +759,6 @@ class Forms {
                 
                 // Show success toast
                 components.showToast('success', 'Profile Updated', 'Your profile has been successfully updated.');
-                
-                // Toggle back to view mode
-                this.toggleProfileEditMode();
             } else {
                 components.showToast('error', 'Update Failed', result.error || 'Failed to update your profile. Please try again.');
             }
@@ -1265,6 +1329,7 @@ class Forms {
             this.register.confirmPasswordField.classList.add('is-invalid');
             this.register.confirmPasswordField.classList.remove('is-valid');
         }
+
     }
 
     // Add method to initialize character counts
@@ -1277,7 +1342,7 @@ class Forms {
             const maxLength = VALIDATION_INPUTS[fieldType].maxLength;
             charCountElement.textContent = `${currentLength}/${maxLength}`;
             
-            // Set appropriate color while keeping text white
+            // Change color when approaching the limit, keeping text visible
             if (maxLength - currentLength <= 5) {
                 charCountElement.classList.add('text-danger');
                 charCountElement.classList.remove('text-white');
