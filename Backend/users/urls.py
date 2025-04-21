@@ -1,10 +1,11 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
-    RegisterView, LoginView,UserDetailView,
+    RegisterView, LoginView, UserDetailView,
     FortyTwoLoginView, FortyTwoCallbackView,
     Setup2FAView, Verify2FAView, Disable2FAView,
-    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage
+    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage,
+    PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView
 )
 
 urlpatterns = [
@@ -26,5 +27,10 @@ urlpatterns = [
     path('profile/update/', PlayerProfileUpdateView.as_view(), name='player-profile-update'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
     path('profile/upload-avatar/', UploadProfileImage.as_view(), name='upload-avatar'),
+
+    # Password reset endpoints
+    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('password/change/', ChangePasswordView.as_view(), name='password-change'),
 ]
 
