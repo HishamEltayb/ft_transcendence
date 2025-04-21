@@ -4,7 +4,7 @@ from .views import (
     RegisterView, LoginView,UserDetailView,
     FortyTwoLoginView, FortyTwoCallbackView,
     Setup2FAView, Verify2FAView, Disable2FAView,
-    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView
+    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage
 )
 
 urlpatterns = [
@@ -25,4 +25,6 @@ urlpatterns = [
     path('profile/', PlayerProfileDetailView.as_view(), name='player-profile'),
     path('profile/update/', PlayerProfileUpdateView.as_view(), name='player-profile-update'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
+    path('profile/upload-avatar/', UploadProfileImage.as_view(), name='upload-avatar'),
 ]
+

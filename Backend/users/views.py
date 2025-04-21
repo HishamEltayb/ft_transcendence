@@ -17,11 +17,9 @@ import base64
 import qrcode
 import io
 import json
-from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.conf import settings
-from django_otp import devices_for_user
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from rest_framework.parsers import MultiPartParser
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -345,6 +343,26 @@ class LeaderboardView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlayerProfileSerializer
     queryset = PlayerProfile.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
+
+
+class UploadProfileImage(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser]
+    serializer_class = PlayerProfileSerializer
+    queryset = PlayerProfile.objects.all()
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def update(self, request, *args, **kwargs):
+        profile = self.get_object()
+        if 'avatar' not in request.data:
+            return Response({'error': 'No avatar provided'}, status=status.HTTP_400_BAD_REQUEST)
+        if profile.avatar:
+            profile.avatar.delete()
+        profile.avatar = request.data.get('avatar')
+        profile.save()
+        return Response(self.get_serializer(profile).data)
 
     """
 This file contains all the views for the users app.

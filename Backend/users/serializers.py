@@ -29,8 +29,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 class PlayerProfileSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
     win_rate = serializers.ReadOnlyField()
+    avatar = serializers.ImageField()
     
     class Meta:
         model = PlayerProfile
-        fields = ['id', 'username', 'total_games', 'wins', 'losses', 'rank', 'win_rate']
+        fields = ['id', 'username', 'total_games', 'wins', 'losses', 'rank', 'win_rate', 'avatar']
         read_only_fields = ['id', 'win_rate']
