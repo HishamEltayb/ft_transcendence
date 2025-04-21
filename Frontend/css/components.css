@@ -4,11 +4,8 @@
 
 /* ===== HEADER STYLES ===== */
 .navbar {
-    background-color: rgba(0, 0, 0, 0.7) !important;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    background-color: #000000;
+    border-bottom: 2px solid var(--gold);
     z-index: 1000;
     padding: 10px 15px;
 }
@@ -17,63 +14,39 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 }
 
 .logo {
     font-weight: bold;
     color: var(--gold) !important;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    text-decoration: none;
 }
 
 .logo-text {
     color: var(--gold);
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 .nav-link-gold {
-    color: rgba(255, 255, 255, 0.85) !important;
-    position: relative;
-    padding: 0.5rem 1rem !important;
-    transition: color 0.3s ease;
+    color: #ffffff !important;
+    padding: 8px 15px !important;
+    margin: 0 5px;
 }
 
 .nav-link-gold:hover, .nav-link-gold.active {
     color: var(--gold) !important;
 }
 
-.nav-link-gold:after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 50%;
-    background-color: var(--gold);
-    transition: all 0.3s ease;
-}
-
-.nav-link-gold:hover:after, .nav-link-gold.active:after {
-    width: 80%;
-    left: 10%;
-}
-
-.site-header {
-    padding: 20px 0;
-    margin-bottom: 30px;
-}
-
-.logo img.logo {
-    height: 40px;
-    margin-right: 10px;
+/* Simple underline instead of animated one */
+.nav-link-gold.active {
+    border-bottom: 2px solid var(--gold);
 }
 
 .navbar-dark .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0 10px;
+    color: #ffffff;
     font-weight: 500;
-    transition: all 0.3s ease;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover,
@@ -82,48 +55,34 @@
 }
 
 .navbar-toggler {
-    margin-left: auto;
-    margin-right: 0;
+    border: 1px solid var(--gold);
     padding: 6px 10px;
 }
 
 .navbar-toggler:focus {
-    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
     outline: none;
-}
-
-.navbar-toggler {
-    border-color: rgba(212, 175, 55, 0.3);
-    padding: 6px 10px;
+    box-shadow: none;
 }
 
 .navbar-dark .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28212, 175, 55, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
+/* Simple dropdown divider */
 .dropdown-divider {
-    margin: -1px 0;
+    margin: 4px 0;
+    border-top: 1px solid var(--gold);
 }
 
-/* Header Avatar Styling */
+/* Simple header avatar */
 .header-avatar {
-    width: 36px;
-    height: 36px;
-    object-fit: cover;
-    border: 2px solid var(--gold);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
-    transition: all 0.3s ease;
-    display: block;
-}
-
-.header-avatar:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--gold);
 }
 
 #userDropdown {
-    padding: 0;
-    margin: 0 15px;
+    padding: 5px;
     display: flex;
     align-items: center;
 }
@@ -133,6 +92,20 @@
     color: var(--gold);
 }
 
+/* Simple dropdown menu */
+.dropdown-menu {
+    background-color: #222;
+    border: 1px solid var(--gold);
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background-color: #333;
+    color: var(--gold);
+}
 
 /* ===== FOOTER STYLES ===== */
 footer {
@@ -185,62 +158,112 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-.modal-header.border-gold {
-    background-color: rgba(212, 175, 55, 0.1);
+/* Remove modal backdrop */
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    background: none !important;
 }
 
-.modal .btn-close-white {
-    filter: invert(1) grayscale(100%) brightness(200%);
+/* Ensure the modal stays on top without backdrop */
+.modal {
+    background: none !important;
 }
 
-#twoFAModal .invalid-feedback {
-    color: #e74c3c;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
+.modal-dialog {
+    z-index: 1080 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    max-width: 500px;
+    margin: 3rem auto;
 }
 
-#twoFAModal .alert-danger {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-    border-color: #e74c3c;
-    padding: 0.75rem;
+.modal-content {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+}
+
+.modal-header {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.3)) !important;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--gold);
+}
+
+.modal-header .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gold) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.modal-body {
+    padding: 2rem !important;
+}
+
+/* Form styling within modal */
+#twoFAForm .mb-4 {
+    background-color: #252525 !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    border: 1px solid #333 !important;
+    margin-top: 2rem !important;
+}
+
+#twoFAForm .form-label {
+    color: var(--gold) !important;
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: 1rem;
 }
 
-/* Styling for numeric input */
-#twoFACode {
-    letter-spacing: 0.5em;
-    font-family: monospace;
-    font-size: 1.2em;
-    text-align: center;
-    height: 3rem;
-    background-color: #252525;
-    color: var(--gold);
-    border: 2px solid var(--gold);
-    transition: all 0.3s ease;
+#twoFAForm .form-text {
+    color: #aaa !important;
+    font-size: 0.9rem;
+    margin-top: 1rem;
 }
 
-#twoFACode:focus {
-    background-color: #2a2a2a;
-    border-color: var(--gold-light);
-    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+/* Button styling */
+#twoFAForm button[type="submit"] {
+    background: linear-gradient(to bottom, var(--gold), var(--gold-dark)) !important;
+    border: none !important;
+    padding: 1rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+#twoFAForm button[type="submit"]:hover {
+    background: linear-gradient(to bottom, var(--gold-light), var(--gold)) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+#twoFAForm button[type="submit"]:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* QR code container styling */
 .qr-code-container {
-    background-color: #252525;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    margin: 1.5rem 0;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    background-color: #2a2a2a;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    margin: 2rem auto;
+    border: 2px solid var(--gold);
+    max-width: 330px;
+    text-align: center;
 }
 
 .qr-code-container img {
-    max-width: 200px;
+    max-width: 220px;
     margin: 0 auto;
-    border: 10px solid white;
-    border-radius: 0.5rem;
+    border: 12px solid white;
+    border-radius: 0.75rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 /* Setup intro styling */
@@ -293,69 +316,94 @@ body {
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 991.98px) {
-    .navbar-toggler {
-        margin-left: 15px;
-        border: 1px solid rgba(212, 175, 55, 0.5);
-    }
-    
+    /* Collapsed navbar styling */
     .navbar-collapse {
+        background-color: #000;
+        padding: 10px;
         margin-top: 10px;
     }
     
-    .container {
-        padding-left: 15px;
-        padding-right: 15px;
+    .nav-item {
+        margin: 5px 0;
     }
     
-    .navbar .container {
-        position: relative;
+    /* Center all items in collapsed menu */
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    /* Make dropdown centered and full width */
+    .dropdown-menu {
+        width: 100%;
+        text-align: center;
     }
 }
 
 @media (max-width: 768px) {
-    .site-header {
-        padding: 10px 0;
-    }
-    
-    .logo {
+    /* Simplify on smaller screens */
+    .logo-text {
         font-size: 1.2rem;
     }
     
-    .logo-text {
-        margin-right: 20px; /* Add extra space to the right of the logo */
-    }
-    
-    .logo img.logo {
-        height: 30px;
-    }
-    
-    .navbar-toggler {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
+    .nav-link-gold {
+        padding: 6px 10px !important;
     }
 }
 
 @media (max-width: 576px) {
     .navbar {
-        padding: 8px 10px;
-    }
-    
-    .navbar .container {
-        padding-right: 50px; /* Ensure space for the toggle button */
+        padding: 8px;
     }
     
     .logo-text {
         font-size: 1.1rem;
     }
-    
-    footer {
-        height: 40px;
-        font-size: 0.8rem;
-    }
-    
-    body {
-        padding-bottom: 50px;
-    }
+}
+
+/* Styling for numeric input */
+#twoFACode {
+    letter-spacing: 0.5em;
+    font-family: monospace;
+    font-size: 1.4em;
+    text-align: center;
+    height: 3.5rem;
+    background-color: #2a2a2a;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+#twoFACode:focus {
+    background-color: #333333;
+    border-color: var(--gold-light);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+/* Keep original alert and invalid feedback styles */
+#twoFAModal .invalid-feedback {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+#twoFAModal .alert-danger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: #e74c3c;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.modal-header.border-gold {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.3)) !important;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--gold);
+}
+
+.modal .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
 } 

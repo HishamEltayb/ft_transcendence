@@ -55,23 +55,6 @@ class Components {
                 console.error('Components: Header component not loaded');
             }
             
-            // Check if the 2FA modal component was loaded
-            if (this.components.twoFAModalComponent) {
-                // Append the 2FA modal to the DOM
-                document.body.appendChild(this.components.twoFAModalComponent);
-                console.log('Components: 2FA modal component inserted into DOM');
-                
-                // Check it's actually in the DOM
-                const twoFAModalCheck = document.getElementById('twoFAModal');
-                if (twoFAModalCheck) {
-                    console.log('Components: 2FA modal successfully added to the DOM');
-                } else {
-                    console.error('Components: 2FA modal not found in DOM after insertion!');
-                }
-            } else {
-                console.error('Components: 2FA modal component not loaded');
-            }
-            
             console.log('Components: All components loaded successfully');
             return this.components;
         } catch (error) {
@@ -91,110 +74,6 @@ class Components {
         } else {
             console.error("Footer component not available to append");
         }
-    }
-    
-    // Initialize the 2FA modal
-    initializeTwoFAModal() {
-        const twoFAForm = document.querySelector('#twoFAForm');
-        const verificationCodeInput = document.querySelector('#verificationCode');
-        const feedbackElement = document.querySelector('#twoFAFeedback');
-        
-        if (!twoFAForm || !verificationCodeInput) {
-            console.error('Two-Factor Authentication form elements not found');
-            return;
-        }
-        
-        // Add input validation for numeric 6-digit code
-        verificationCodeInput.addEventListener('input', (event) => {
-            const value = event.target.value;
-            
-            // Allow only numeric input and limit to 6 digits
-            if (!/^\d*$/.test(value)) {
-                event.target.value = value.replace(/\D/g, '');
-            }
-            
-            if (value.length > 6) {
-                event.target.value = value.slice(0, 6);
-            }
-            
-            // Validate as user types - show feedback when 6 digits entered
-            if (value.length === 6) {
-                verificationCodeInput.classList.remove('is-invalid');
-                verificationCodeInput.classList.add('is-valid');
-            } else if (value.length > 0) {
-                verificationCodeInput.classList.remove('is-valid');
-                verificationCodeInput.classList.add('is-invalid');
-                feedbackElement.textContent = 'Please enter a 6-digit verification code';
-                feedbackElement.classList.add('text-danger');
-            } else {
-                verificationCodeInput.classList.remove('is-valid', 'is-invalid');
-                feedbackElement.textContent = '';
-            }
-        });
-        
-        twoFAForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            
-            const verificationCode = verificationCodeInput.value.trim();
-            
-            // Basic validation
-            if (verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
-                verificationCodeInput.classList.add('is-invalid');
-                feedbackElement.textContent = 'Please enter a valid 6-digit verification code';
-                feedbackElement.classList.add('text-danger');
-                return;
-            }
-            
-            // Show loading state
-            const submitButton = twoFAForm.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.innerHTML;
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
-            
-            try {
-                // Use the Hooks useVerify2FA method to verify the code
-                const hooks = new Hooks();
-                const result = await hooks.useVerify2FA(verificationCode);
-                
-                if (result.success) {
-                    // Show success message
-                    feedbackElement.textContent = 'Verification successful';
-                    feedbackElement.classList.remove('text-danger');
-                    feedbackElement.classList.add('text-success');
-                    
-                    // Reset form and close modal after a short delay
-                    setTimeout(() => {
-                        // Close the modal
-                        const twoFAModal = bootstrap.Modal.getInstance(document.getElementById('twoFAModal'));
-                        if (twoFAModal) {
-                            twoFAModal.hide();
-                        }
-                        
-                        // Reset the form
-                        twoFAForm.reset();
-                        verificationCodeInput.classList.remove('is-valid', 'is-invalid');
-                        feedbackElement.textContent = '';
-                        
-                        // Optionally redirect or update UI based on successful verification
-                        // For example, redirect to profile or dashboard
-                        window.location.href = '/#/profile';
-                    }, 1500);
-                } else {
-                    // Show error message
-                    feedbackElement.textContent = result.error || 'Verification failed. Please try again.';
-                    feedbackElement.classList.add('text-danger');
-                    verificationCodeInput.classList.add('is-invalid');
-                }
-            } catch (error) {
-                console.error('Error during 2FA verification:', error);
-                feedbackElement.textContent = 'An error occurred during verification. Please try again.';
-                feedbackElement.classList.add('text-danger');
-            } finally {
-                // Reset button state
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalButtonText;
-            }
-        });
     }
     
     showToast(type, title, message, duration = 5000) {

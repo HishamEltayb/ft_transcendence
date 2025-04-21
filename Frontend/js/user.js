@@ -396,10 +396,30 @@ class User {
      * Logout the user
      */
     logout() {
+        // Clear local storage and store state
         store.clearUserData();
+        
+        // Update UI
         this.updateUIAuthState(false);
         
+        // Redirect to home page
         window.location.href = '/';
+    }
+
+    /**
+     * Get user data from store
+     */
+    getUserData() {
+        return store.getUserData();
+    }
+
+    /**
+     * Check if the current user has 2FA enabled
+     * @returns {boolean} True if 2FA is enabled, false otherwise
+     */
+    is2FAEnabled() {
+        const userData = this.getUserData();
+        return userData && userData.is_two_factor_enabled === true;
     }
 
     /**

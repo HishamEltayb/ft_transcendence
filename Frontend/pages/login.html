@@ -20,10 +20,16 @@
                         <div class="mb-3">
                             <label for="loginUsername" class="form-label">Username</label>
                             <input type="text" class="form-control" id="loginUsername" required>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/25</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Password</label>
                             <input type="password" class="form-control" id="loginPassword" required>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/25</small>
+                            </div>
                         </div>
                         <div class="mb-3 text-end">
                             <button type="button" id="login42Link" class="btn btn-outline-gold btn-sm">Login with 42</button>
@@ -40,18 +46,31 @@
                         <div class="mb-3">
                             <label for="registerUsername" class="form-label">Username</label>
                             <input type="text" class="form-control" id="registerUsername" required>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/25</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="registerEmail" class="form-label">Email</label>
                             <input type="email" class="form-control" id="registerEmail" required>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/50</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="registerPassword" class="form-label">Password</label>
                             <input type="password" class="form-control" id="registerPassword" required>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/25</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="confirmPassword" required>
+                            <div id="passwordMatchStatus" class="form-text mt-1"></div>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-white char-count">0/25</small>
+                            </div>
                         </div>
                         <div class="d-grid">
                             <button id="registerBtn" type="submit" class="btn btn-gold">Create Account</button>

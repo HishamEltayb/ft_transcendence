@@ -12,22 +12,20 @@ export const PAGES = {
 
 export const COMPONENTS = {
     headerComponent: './components/header.html',
-    footerComponent: './components/footer.html',
-    twoFAModalComponent: './components/twoFA.html'
+    footerComponent: './components/footer.html'
 };
 
 export const ENDPOINTS = {
     // Authentication endpoints
     auth: {
-        auth42: '/api/users/oauth/42/',
-
-        login: '/api/users/auth/login',
-        register: '/api/users/auth/register',
-        logout: '/api/users/auth/logout',
-        refreshToken: '/api/users/auth/refresh-token',
-        verifyEmail: '/api/users/auth/verify-email',
-        forgotPassword: '/api/users/auth/forgot-password',
-        resetPassword: '/api/users/auth/reset-password',
+        auth42: '/api/users/oauth/42',
+        login: '/api/users/login',
+        register: '/api/users/register/',
+        logout: '/api/users/logout',
+        refreshToken: '/api/users/refresh-token',
+        verifyEmail: '/api/users/verify-email',
+        forgotPassword: '/api/users/forgot-password',
+        resetPassword: '/api/users/reset-password',
         twoFactorAuth: '/api/users/2fa',
     },
     
@@ -64,3 +62,17 @@ export const ENDPOINTS = {
         send: '/api/chat/send'
     }
 }; 
+
+export const VALIDATION_INPUTS = {
+    username: {
+        minLength: 3,
+        maxLength: 25,
+    },
+    email: {
+        maxLength: 50,
+    },
+    password: {
+        minLength: 3,
+        maxLength: 25
+    }
+};

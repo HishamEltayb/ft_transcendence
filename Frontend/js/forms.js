@@ -2,6 +2,7 @@ import hooks from './hooks.js';
 import components from './components.js';
 import user from './user.js';
 import store from './store.js';
+import { VALIDATION_INPUTS } from './constants.js';
 
 class Forms {
     constructor() {
@@ -33,7 +34,6 @@ class Forms {
         
         // Check if we're on the login page
         if (window.location.pathname.includes('login')) {
-            console.log('Forms: On login page, initializing login/register tabs');
             
             // Set up login/register tabs
             const loginTab = document.getElementById('loginTab');
@@ -43,8 +43,6 @@ class Forms {
                 // Default to showing login form
                 this.showLoginForm();
                 
-                // Add explicit console logs for debugging
-                console.log('Forms: Login page tabs found and initialized');
             } else {
                 console.warn('Forms: Login page tabs not found');
             }
@@ -62,7 +60,9 @@ class Forms {
             container: document.getElementById('loginFormContainer'),
             form: document.getElementById('loginForm'),
             submitBtn: document.getElementById('loginBtn'),
-            login42Link: document.getElementById('login42Link')
+            login42Link: document.getElementById('login42Link'),
+            usernameField: document.getElementById('loginUsername'),
+            passwordField: document.getElementById('loginPassword')
         };
         
         // Register form elements
@@ -70,12 +70,30 @@ class Forms {
             tab: document.getElementById('registerTab'),
             container: document.getElementById('registerFormContainer'),
             form: document.getElementById('registerForm'),
-            submitBtn: document.getElementById('registerBtn')
+            submitBtn: document.getElementById('registerBtn'),
+            usernameField: document.getElementById('registerUsername'),
+            emailField: document.getElementById('registerEmail'),
+            passwordField: document.getElementById('registerPassword'),
+            confirmPasswordField: document.getElementById('confirmPassword'),
+            passwordMatchStatus: document.getElementById('passwordMatchStatus')
         };
         
         // Add event listeners for login/register
         if (this.login.form) {
             this.login.form.addEventListener('submit', this.submitLoginForm.bind(this));
+            
+            // Add input validation for login fields
+            if (this.login.usernameField) {
+                this.login.usernameField.maxLength = VALIDATION_INPUTS.username.maxLength;
+                this.login.usernameField.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+                this.initializeCharCount(this.login.usernameField, 'username');
+            }
+            
+            if (this.login.passwordField) {
+                this.login.passwordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.login.passwordField.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+                this.initializeCharCount(this.login.passwordField, 'password');
+            }
         }
         
         if (this.login.login42Link) {
@@ -84,6 +102,37 @@ class Forms {
         
         if (this.register.form) {
             this.register.form.addEventListener('submit', this.submitRegisterForm.bind(this));
+            
+            // Add real-time password validation and input length validation for register fields
+            if (this.register.usernameField) {
+                this.register.usernameField.maxLength = VALIDATION_INPUTS.username.maxLength;
+                this.register.usernameField.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+                this.initializeCharCount(this.register.usernameField, 'username');
+            }
+            
+            if (this.register.emailField) {
+                this.register.emailField.maxLength = VALIDATION_INPUTS.email.maxLength;
+                this.register.emailField.addEventListener('input', this.validateInputLength.bind(this, 'email'));
+                this.initializeCharCount(this.register.emailField, 'email');
+            }
+            
+            if (this.register.passwordField) {
+                this.register.passwordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.register.passwordField.addEventListener('input', event => {
+                    this.validateInputLength('password', event);
+                    this.validatePasswordMatch();
+                });
+                this.initializeCharCount(this.register.passwordField, 'password');
+            }
+            
+            if (this.register.confirmPasswordField) {
+                this.register.confirmPasswordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.register.confirmPasswordField.addEventListener('input', event => {
+                    this.validateInputLength('password', event);
+                    this.validatePasswordMatch();
+                });
+                this.initializeCharCount(this.register.confirmPasswordField, 'password');
+            }
         }
         
         if (this.login.tab && this.register.tab) {
@@ -94,8 +143,6 @@ class Forms {
 
     // Method to show the login form tab
     showLoginForm() {
-        console.log('Forms: Switching to login tab');
-        
         // Try to get fresh references to elements, as they might have changed due to navigation
         const loginTab = document.getElementById('loginTab');
         const registerTab = document.getElementById('registerTab');
@@ -128,8 +175,6 @@ class Forms {
         
         container2.classList.remove('show', 'active');
         container2.classList.add('fade');
-        
-        console.log('Forms: Successfully switched to login tab');
     }
     
     // Method to show the register form tab
@@ -168,21 +213,16 @@ class Forms {
         
         container1.classList.remove('show', 'active');
         container1.classList.add('fade');
-        
-        console.log('Forms: Successfully switched to register tab');
     }
 
     async initProfilePage() {
         // Check if we're already initializing or initialized
         if (this.isProfileInitializing) {
-            console.log('Forms: Profile initialization already in progress, skipping');
             return;
         }
         
         // Set flag to prevent multiple simultaneous initializations
         this.isProfileInitializing = true;
-        
-        console.log('Forms: Initializing profile page');
         
         // First check if we have an auth token (required for profile access)
         const authToken = localStorage.getItem('authToken');
@@ -206,14 +246,12 @@ class Forms {
             
             if (storeState.user && !store.shouldRefreshUserData()) {
                 // Use cached data from store
-                console.log('Forms: Using cached user data from store for profile page');
                 userData = storeState.user;
                 this.populateAccountSettings(userData);
                 this.populatePlayerStatistics(userData);
                 this.populateMatchHistory(userData);
             } else {
                 // Force fetch fresh user data
-                console.log('Forms: Fetching fresh user data for profile page');
                 const result = await hooks.useFetchUserData(true);
                 
                 if (result.success) {
@@ -225,7 +263,6 @@ class Forms {
                     console.error('Failed to fetch user data for profile:', result.error);
                     // Try using cached data as fallback
                     if (storeState.user) {
-                        console.log('Forms: Using cached user data as fallback');
                         userData = storeState.user;
                         this.populateAccountSettings(userData);
                         this.populatePlayerStatistics(userData);
@@ -239,7 +276,6 @@ class Forms {
             // Check for saved form data in store and use newer values
             const savedFormData = store.getFormData('profileForm');
             if (savedFormData) {
-                console.log('Forms: Restoring saved profile form changes');
                 this.restoreFormData(this.profile.form, savedFormData);
             }
             
@@ -256,8 +292,6 @@ class Forms {
      * This ensures we have the latest DOM elements after page navigation
      */
     refreshProfileDOMElements() {
-        console.log('Forms: Refreshing profile DOM element references');
-        
         // Check for required elements
         if (!document.getElementById('settingsForm')) {
             console.warn('Forms: Profile form not found');
@@ -280,20 +314,82 @@ class Forms {
         this.profile.twoFA = document.getElementById('setting2fa');
         this.profile.submitBtn = document.getElementById('saveSettingsBtn');
         
+        // Get new profile image elements
+        this.profile.imageUpload = document.getElementById('profileImageUpload');
+        this.profile.imagePreview = document.getElementById('profileImagePreview');
+        
+        // Add input validation for profile form fields
+        if (this.profile.displayName) {
+            this.profile.displayName.maxLength = VALIDATION_INPUTS.username.maxLength;
+            this.profile.displayName.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+            this.initializeCharCount(this.profile.displayName, 'username');
+        }
+        
+        if (this.profile.password) {
+            this.profile.password.maxLength = VALIDATION_INPUTS.password.maxLength;
+            this.profile.password.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+            this.initializeCharCount(this.profile.password, 'password');
+        }
+        
+        if (this.profile.confirmPassword) {
+            this.profile.confirmPassword.maxLength = VALIDATION_INPUTS.password.maxLength;
+            this.profile.confirmPassword.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+            this.initializeCharCount(this.profile.confirmPassword, 'password');
+        }
+        
+        // Add profile image preview functionality
+        if (this.profile.imageUpload && this.profile.imagePreview) {
+            this.profile.imageUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // File size validation (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        components.showToast('warning', 'File Too Large', 'Profile image must be under 2MB.');
+                        event.target.value = ''; // Clear the input
+                        return;
+                    }
+                    
+                    // Preview the image
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.profile.imagePreview.src = e.target.result;
+                        
+                        // Also update main profile avatar if it exists
+                        if (this.profile.avatar) {
+                            this.profile.avatar.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
         // Add event listeners
         if (this.profile.submitBtn) {
             this.profile.submitBtn.addEventListener('click', this.submitProfileForm.bind(this));
         }
         
-        // Add edit profile button event listener
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', this.toggleProfileEditMode.bind(this));
+        // Make form fields editable by default (except email which is always disabled)
+        const formFields = [
+            this.profile.displayName,
+            this.profile.password,
+            this.profile.confirmPassword
+        ];
+        
+        formFields.forEach(field => {
+            if (field) {
+                field.readOnly = false;
+            }
+        });
+        
+        // Show submit button
+        if (this.profile.submitBtn) {
+            this.profile.submitBtn.style.display = 'block';
         }
         
         // Add 2FA checkbox change event listener
         if (this.profile.twoFA) {
-            this.profile.twoFA.addEventListener('change', this.handle2FACheckboxChange.bind(this));
+            this.profile.twoFA.addEventListener('click', this.handle2FAButtonClick.bind(this));
         }
         
         return true;
@@ -302,21 +398,10 @@ class Forms {
   
     // Populate player statistics
     populatePlayerStatistics(userData) {
-        console.log('Forms: Populating profile stats with data:', userData);
-        
         if (!userData || !this.profileStats) {
             console.warn('Forms: Cannot populate profile stats - missing data or elements');
             return;
         }
-        
-        // Debug element finding
-        console.log('Forms: Stats elements:',
-            this.profileStats.totalGames ? 'totalGames found' : 'totalGames missing',
-            this.profileStats.wins ? 'wins found' : 'wins missing',
-            this.profileStats.losses ? 'losses found' : 'losses missing',
-            this.profileStats.winRate ? 'winRate found' : 'winRate missing',
-            this.profileStats.rank ? 'rank found' : 'rank missing'
-        );
         
         // Make sure stats object exists
         const stats = userData.stats || {
@@ -355,8 +440,6 @@ class Forms {
     
     populateAccountSettings(userData) {
         // Add more detailed logging to see exactly what data we're getting
-        console.log('Forms: ACCOUNT SETTINGS DATA:', JSON.stringify(userData, null, 2));
-        
         // Check if userData is null or undefined
         if (!userData) {
             console.error('Forms: userData is null or undefined');
@@ -373,17 +456,8 @@ class Forms {
         }
         
         if (!this.profile.twoFA) {
-            console.error('Forms: Two-Factor checkbox not found');
+            console.error('Forms: Two-Factor button not found');
         }
-        
-        // Debugging element IDs
-        console.log('Forms: Looking for form elements with IDs:', 
-            'settingDisplayName,', 
-            'settingEmail,', 
-            'settingPassword,',
-            'settingConfirmPassword,',
-            'setting2fa'
-        );
         
         // Set username
         if (this.profile.username) {
@@ -401,6 +475,11 @@ class Forms {
                 // Set the avatar image source
                 this.profile.avatar.src = userData.profile_image;
                 
+                // Also set the preview image in account settings
+                if (this.profile.imagePreview) {
+                    this.profile.imagePreview.src = userData.profile_image;
+                }
+                
                 // Display the avatar URL
                 if (this.profile.avatarUrl) {
                     this.profile.avatarUrl.textContent = userData.profile_image;
@@ -414,8 +493,15 @@ class Forms {
             
             // Add error handler for the image
             this.profile.avatar.onerror = function() {
-                this.src = '../public/assets/images/default-avatar.png';
+                this.src = '../public/assets/icons/avatar.svg';
             };
+            
+            // Add error handler for the preview image
+            if (this.profile.imagePreview) {
+                this.profile.imagePreview.onerror = function() {
+                    this.src = '../public/assets/icons/avatar.svg';
+                };
+            }
         }
         
         // Set form fields - using a more robust approach
@@ -425,17 +511,15 @@ class Forms {
             const emailInput = this.profile.email || document.getElementById('settingEmail');
             const passwordInput = this.profile.password || document.getElementById('settingPassword');
             const confirmPasswordInput = this.profile.confirmPassword || document.getElementById('settingConfirmPassword');
-            const twoFAInput = this.profile.twoFA || document.getElementById('setting2fa');
+            const twoFAButton = this.profile.twoFA || document.getElementById('setting2fa');
             
             // Set display name/username
             if (displayNameInput) {
-                console.log('Forms: Setting display name to:', userData.username || '');
                 displayNameInput.value = userData.username || '';
             }
             
             // Set email
             if (emailInput) {
-                console.log('Forms: Setting email to:', userData.email || '');
                 emailInput.value = userData.email || '';
             }
             
@@ -448,10 +532,17 @@ class Forms {
                 confirmPasswordInput.value = '';
             }
             
-            // Two-factor authentication
-            if (twoFAInput) {
-                console.log('Forms: Setting 2FA checkbox to:', userData.is_two_factor_enabled ? 'checked' : 'unchecked');
-                twoFAInput.checked = userData.is_two_factor_enabled === true;
+            // Show 2FA button only if 2FA is not enabled
+            if (twoFAButton) {
+                if (userData.is_two_factor_enabled === true) {
+                    // Set the toggle switch to checked (on) state
+                    twoFAButton.checked = true;
+                } else {
+                    // Set the toggle switch to unchecked (off) state
+                    twoFAButton.checked = false;
+                }
+                // Always make the toggle visible
+                twoFAButton.style.display = 'inline-block';
             }
             
             // Make sure the submit button is visible
@@ -508,46 +599,30 @@ class Forms {
         this.matchHistoryTable.innerHTML = tableContent;
     }
     
-    // Toggle profile edit mode
+    // Toggle profile edit mode - now a no-op since edit button is removed
     toggleProfileEditMode() {
-        const formFields = [
-            this.profile.displayName,
-            this.profile.email,
-            this.profile.password,
-            this.profile.confirmPassword,
-            this.profile.twoFA
-        ];
-        
-        // Toggle readonly state
-        formFields.forEach(field => {
-            if (field) {
-                if (field.readOnly) {
-                    field.readOnly = false;
-                } else {
-                    field.readOnly = true;
-                }
-            }
-        });
-        
-        // Toggle submit button visibility
-        if (this.profile.submitBtn) {
-            this.profile.submitBtn.style.display = 
-                this.profile.submitBtn.style.display === 'none' ? 'block' : 'none';
-        }
+        // No longer needed as the form is always in edit mode
+        // and there's no "Edit Profile" button
+        console.log('Profile is always in edit mode');
     }
     
     // Handle profile form submission
     async submitProfileForm(event) {
         event.preventDefault();
         
-        console.log('Forms: Profile form submission started');
+        // Get the current user data first
+        const userData = store.getUserData();
+        if (!userData) {
+            components.showToast('error', 'User Data Missing', 'Could not retrieve your profile information.');
+            return;
+        }
         
         // Get form values - try both our object references and direct getElementById
         const displayName = (this.profile.displayName ? this.profile.displayName.value : '') || 
                             (document.getElementById('settingDisplayName') ? document.getElementById('settingDisplayName').value : '');
         
-        const email = (this.profile.email ? this.profile.email.value : '') || 
-                     (document.getElementById('settingEmail') ? document.getElementById('settingEmail').value : '');
+        // Keep the email from existing userData
+        const email = userData.email;
         
         const password = (this.profile.password ? this.profile.password.value : '') || 
                         (document.getElementById('settingPassword') ? document.getElementById('settingPassword').value : '');
@@ -555,23 +630,38 @@ class Forms {
         const confirmPassword = (this.profile.confirmPassword ? this.profile.confirmPassword.value : '') || 
                                (document.getElementById('settingConfirmPassword') ? document.getElementById('settingConfirmPassword').value : '');
         
-        const twoFA = (this.profile.twoFA ? this.profile.twoFA.checked : false) || 
-                     (document.getElementById('setting2fa') ? document.getElementById('setting2fa').checked : false);
+        // Get profile image file if available
+        const imageFile = this.profile.imageUpload && this.profile.imageUpload.files && 
+                         this.profile.imageUpload.files.length > 0 ? 
+                         this.profile.imageUpload.files[0] : null;
         
-        console.log('Forms: Form values collected:', {
-            displayName, 
-            email, 
-            passwordProvided: password ? 'Yes' : 'No',
-            twoFA
-        });
+        // Get 2FA state from user data
+        const twoFA = userData.is_two_factor_enabled;
         
-        // Validate email format if provided
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                components.showToast('warning', 'Invalid Email', 'Please enter a valid email address.');
-                return;
-            }
+        // Validate username length
+        if (displayName && displayName.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('warning', 'Invalid Display Name', 
+                `Display name must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (displayName && displayName.length > VALIDATION_INPUTS.username.maxLength) {
+            components.showToast('warning', 'Invalid Display Name', 
+                `Display name cannot exceed ${VALIDATION_INPUTS.username.maxLength} characters.`);
+            return;
+        }
+        
+        // Validate password length
+        if (password && password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('warning', 'Invalid Password', 
+                `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
+            return;
+        }
+        
+        if (password && password.length > VALIDATION_INPUTS.password.maxLength) {
+            components.showToast('warning', 'Invalid Password', 
+                `Password cannot exceed ${VALIDATION_INPUTS.password.maxLength} characters.`);
+            return;
         }
         
         // Validate password match if provided
@@ -585,43 +675,89 @@ class Forms {
         // Show loading state
         this.setLoading(this.profile.submitBtn, true);
         
-        // Create profile update data object with correct field names
-        // matching the UserSerializer in the backend
-        const profileData = {
-            username: displayName,
-            email: email,
-            is_two_factor_enabled: twoFA
-        };
-        
-        // Add password if provided
-        if (password) {
-            profileData.password = password;
-        }
-        
-        console.log('Forms: Sending profile data:', JSON.stringify(profileData, null, 2));
-        
-        // Store form data in case submission fails
-        const formDataForStore = { ...profileData };
-        delete formDataForStore.password; // Don't store password
-        store.saveFormData('profileForm', formDataForStore);
-        
         try {
+            // First upload the profile image if one was selected
+            let imageUploadResult = { success: true };
+            let newProfileImageUrl = null;
+            
+            if (imageFile) {
+                imageUploadResult = await hooks.useUploadProfileImage(imageFile);
+                if (!imageUploadResult.success) {
+                    components.showToast('error', 'Image Upload Failed', 
+                        imageUploadResult.error || 'Failed to upload profile image. Please try again.');
+                    this.setLoading(this.profile.submitBtn, false);
+                    return;
+                }
+                
+                // Get the new image URL from the response
+                if (imageUploadResult.data && imageUploadResult.data.profile_image) {
+                    newProfileImageUrl = imageUploadResult.data.profile_image;
+                } else if (imageUploadResult.data && imageUploadResult.data.avatar) {
+                    newProfileImageUrl = imageUploadResult.data.avatar;
+                } else if (imageUploadResult.data && imageUploadResult.data.image_url) {
+                    newProfileImageUrl = imageUploadResult.data.image_url;
+                }
+            }
+            
+            // Create a complete profileData object that maintains all original data
+            // and only updates the fields that have changed
+            const profileData = { ...userData };  // Start with a copy of all current user data
+            
+            // Update only the fields that have changed
+            profileData.username = displayName;
+            profileData.email = email;
+            profileData.is_two_factor_enabled = twoFA;
+            
+            // Update profile image URL if a new one was uploaded
+            if (newProfileImageUrl) {
+                profileData.profile_image = newProfileImageUrl;
+            }
+            
+            // Add password only if provided (don't include empty password)
+            if (password) {
+                profileData.password = password;
+            }
+            
+            // Store form data in case submission fails (excluding sensitive data)
+            const formDataForStore = { 
+                username: profileData.username,
+                email: profileData.email,
+                is_two_factor_enabled: profileData.is_two_factor_enabled
+            };
+            store.saveFormData('profileForm', formDataForStore);
+            
             // Use the hook to submit the profile update
             const result = await hooks.useUpdateUserProfile(profileData);
             
             if (result.success) {
                 // Update user data in memory and store
-                user.setUserData(result.userData, true);
+                // Create merged user data that maintains all fields
+                const updatedUserData = {
+                    ...userData,  // Start with original user data  
+                    ...result.userData  // Update with returned values
+                };
+                
+                // If we uploaded an image and it wasn't included in the result, add it
+                if (newProfileImageUrl && !updatedUserData.profile_image) {
+                    updatedUserData.profile_image = newProfileImageUrl;
+                }
+                
+                // Update user data using the merged object
+                user.setUserData(updatedUserData, true);
                 
                 // Reset password fields
                 if (this.profile.password) this.profile.password.value = '';
                 if (this.profile.confirmPassword) this.profile.confirmPassword.value = '';
                 
+                // Reset character counts for password fields
+                const passwordCounter = this.profile.password && this.profile.password.parentElement.querySelector('.char-count');
+                const confirmPasswordCounter = this.profile.confirmPassword && this.profile.confirmPassword.parentElement.querySelector('.char-count');
+                
+                if (passwordCounter) passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
+                if (confirmPasswordCounter) confirmPasswordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
+                
                 // Show success toast
                 components.showToast('success', 'Profile Updated', 'Your profile has been successfully updated.');
-                
-                // Toggle back to view mode
-                this.toggleProfileEditMode();
             } else {
                 components.showToast('error', 'Update Failed', result.error || 'Failed to update your profile. Please try again.');
             }
@@ -662,6 +798,17 @@ class Forms {
             return;
         }
         
+        // Validate length constraints
+        if (username.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('error', 'Login Error', `Username must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('error', 'Login Error', `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
+            return;
+        }
+        
         // Show loading state
         this.setLoading(this.login.submitBtn, true);
         
@@ -682,6 +829,12 @@ class Forms {
                 
                 // Clear password field
                 document.getElementById('loginPassword').value = '';
+                
+                // Reset character count
+                const passwordCounter = document.querySelector('#loginPassword').parentElement.querySelector('.char-count');
+                if (passwordCounter) {
+                    passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
+                }
                 
                 // Fetch user data to update UI
                 await hooks.useFetchUserData(true);
@@ -721,6 +874,17 @@ class Forms {
             return;
         }
         
+        // Validate length constraints
+        if (username.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('error', 'Registration Error', `Username must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('error', 'Registration Error', `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
+            return;
+        }
+        
         // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -750,6 +914,8 @@ class Forms {
             // Use the hook to submit the data
             const result = await hooks.useSubmitRegisterForm(registerData);
             
+            console.log('result', result);
+            
             // Handle the result
             if (result.success) {
                 // Show success toast
@@ -757,6 +923,20 @@ class Forms {
                 
                 // Clear the form
                 this.register.form.reset();
+                this.register.passwordMatchStatus.textContent = '';
+                this.register.passwordMatchStatus.className = 'form-text mt-1';
+                
+                // Reset character counts
+                const charCounters = this.register.form.querySelectorAll('.char-count');
+                charCounters.forEach(counter => {
+                    if (counter.parentElement.querySelector('input').id === 'registerUsername' || 
+                        counter.parentElement.querySelector('input').id === 'registerPassword' || 
+                        counter.parentElement.querySelector('input').id === 'confirmPassword') {
+                        counter.textContent = `0/${VALIDATION_INPUTS.username.maxLength}`;
+                    } else if (counter.parentElement.querySelector('input').id === 'registerEmail') {
+                        counter.textContent = `0/${VALIDATION_INPUTS.email.maxLength}`;
+                    }
+                });
                 
                 // Switch to login form
                 this.showLoginForm();
@@ -855,290 +1035,81 @@ class Forms {
         }
     }
 
-    // Handle 2FA checkbox change
-    async handle2FACheckboxChange(event) {
-        const isChecked = event.target.checked;
-        const userData = user.getUserData();
+    // Handle 2FA button click - handles both enabling and disabling 2FA
+    async handle2FAButtonClick(event) {
+        // Get current user 2FA status
+        const currentUserData = store.getUserData();
+        const is2FACurrentlyEnabled = currentUserData && currentUserData.is_two_factor_enabled === true;
+        const twoFAToggle = event.target;
         
-        console.log('2FA checkbox clicked, checked state:', isChecked);
-        
-        // If already in the state we're trying to change to, do nothing
-        if ((isChecked && userData.is_two_factor_enabled) || 
-            (!isChecked && !userData.is_two_factor_enabled)) {
-            return;
-        }
-        
-        // Get the modal element
-        const twoFAModal = document.getElementById('twoFAModal');
-        
-        if (!twoFAModal) {
-            console.error('2FA modal element not found in the DOM!');
-            components.showToast('error', '2FA Error', 'Could not find the 2FA setup interface.');
-            // Reset the checkbox to its previous state
-            this.profile.twoFA.checked = !isChecked;
-            return;
-        }
-        
-        // Common modal setup
-        const modalBody = twoFAModal.querySelector('.modal-body');
-        const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
-        const twoFAForm = document.getElementById('twoFAForm');
-        const buttonText = twoFAForm.querySelector('[data-button-text]');
-        const errorDiv = document.getElementById('twofa-error');
-        
-        // Clear any previous errors
-        if (errorDiv) {
-            errorDiv.textContent = '';
-            errorDiv.classList.add('d-none');
-        }
-        
-        if (isChecked) {
-            // ENABLING 2FA
-            modalTitle.textContent = 'Set Up Two-Factor Authentication';
+        // If user is trying to disable 2FA (switch from ON to OFF)
+        if (is2FACurrentlyEnabled && !twoFAToggle.checked) {
+            console.log('2FA button clicked to disable 2FA');
             
-            // Show initial setup step first
-            const setupIntro = document.createElement('div');
-            setupIntro.className = 'setup-intro text-center mb-4';
-            setupIntro.innerHTML = `
-                <h4 class="text-gold mb-3">Secure Your Account</h4>
-                <p class="text-light">Two-factor authentication adds an extra layer of security to your account.</p>
-                <p class="text-light mb-4">To continue, you'll need an authenticator app like Google Authenticator, Authy, or Microsoft Authenticator.</p>
-                <div class="d-grid">
-                    <button type="button" id="continueSetupBtn" class="btn btn-gold">Continue Setup</button>
-                </div>
-            `;
+            // Keep the toggle as on until verification
+            twoFAToggle.checked = true;
             
-            // Remove any existing QR code or intro
-            const existingQR = modalBody.querySelector('.qr-code-container');
-            const existingIntro = modalBody.querySelector('.setup-intro');
-            if (existingQR) existingQR.remove();
-            if (existingIntro) existingIntro.remove();
+            // Show confirm dialog
+            const confirmDisable = confirm('Are you sure you want to disable Two-Factor Authentication? This will reduce your account security.');
             
-            // Hide the form initially
-            twoFAForm.style.display = 'none';
+            if (!confirmDisable) {
+                // User cancelled - keep toggle on
+                return;
+            }
             
-            // Add the intro section
-            const instructionText = modalBody.querySelector('p.text-light.mb-4');
+            // User confirmed - show code entry modal
+            const twoFAModal = document.getElementById('twoFAModal');
+            if (!twoFAModal) {
+                console.error('2FA modal element not found in the DOM!');
+                components.showToast('error', '2FA Error', 'Could not find the 2FA disable interface.');
+                return;
+            }
+            
+            // Set up modal for disabling
+            const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
+            const modalBody = twoFAModal.querySelector('.modal-body');
+            const twoFAForm = document.getElementById('twoFAForm');
+            const buttonText = twoFAForm.querySelector('[data-button-text]');
+            const errorDiv = document.getElementById('twofa-error');
+            
+            // Clear any previous errors
+            if (errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.classList.add('d-none');
+            }
+            
+            // Update modal title and instructions
+            modalTitle.textContent = 'Disable Two-Factor Authentication';
+            const instructionText = modalBody.querySelector('p.text-dark.mb-4');
             if (instructionText) {
-                modalBody.insertBefore(setupIntro, instructionText);
-                instructionText.style.display = 'none';
-            } else {
-                modalBody.insertBefore(setupIntro, modalBody.firstChild);
+                instructionText.textContent = 'Enter your verification code to disable two-factor authentication.';
             }
             
-            // Show the modal
-            if (typeof bootstrap !== 'undefined') {
-                const bsModal = new bootstrap.Modal(twoFAModal);
-                bsModal.show();
-            } else {
-                // Fallback for when Bootstrap isn't loaded
-                twoFAModal.classList.add('show');
-                twoFAModal.style.display = 'block';
-                document.body.classList.add('modal-open');
-                
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop fade show';
-                document.body.appendChild(backdrop);
+            // Remove any existing QR code containers
+            const existingQRs = modalBody.querySelectorAll('.qr-code-container');
+            existingQRs.forEach(container => container.remove());
+            
+            // Show verification input
+            const codeInputGroup = twoFAForm.querySelector('.mb-4');
+            if (codeInputGroup) {
+                codeInputGroup.style.display = 'block';
             }
             
-            // Set up the continue button event listener
-            const continueBtn = document.getElementById('continueSetupBtn');
-            if (continueBtn) {
-                continueBtn.onclick = async () => {
-                    try {
-                        // Show loading state
-                        continueBtn.disabled = true;
-                        continueBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
-                        
-                        // Now make the API call to set up 2FA
-                        const result = await hooks.useSetup2FA();
-                        
-                        if (!result.success) {
-                            throw new Error(result.error || 'Failed to set up 2FA');
-                        }
-                        
-                        // Remove the intro section
-                        setupIntro.remove();
-                        
-                        // Display the QR code
-                        const qrContainer = document.createElement('div');
-                        qrContainer.className = 'qr-code-container text-center mb-4';
-                        qrContainer.innerHTML = `
-                            <img src="${result.qr_code}" alt="2FA QR Code" class="img-fluid mb-3">
-                            <p class="text-light mb-2">Scan this QR code with your authenticator app</p>
-                            <p class="text-light">Or enter this code manually: <code class="bg-dark text-gold p-1">${result.secret_key}</code></p>
-                        `;
-                        
-                        // Show the instruction text
-                        if (instructionText) {
-                            instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to enable 2FA.';
-                            instructionText.style.display = 'block';
-                            modalBody.insertBefore(qrContainer, instructionText);
-                        } else {
-                            modalBody.insertBefore(qrContainer, modalBody.firstChild);
-                        }
-                        
-                        // Update form and show it
-                        const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
-                        if (codeLabel) {
-                            codeLabel.textContent = 'Verification Code from Authenticator App';
-                        }
-                        
-                        twoFAForm.dataset.action = 'setup';
-                        
-                        if (buttonText) {
-                            buttonText.textContent = 'Enable 2FA';
-                        }
-                        
-                        twoFAForm.style.display = 'block';
-                        
-                    } catch (error) {
-                        console.error('Error setting up 2FA:', error);
-                        if (errorDiv) {
-                            errorDiv.textContent = error.message || 'Could not initialize two-factor authentication.';
-                            errorDiv.classList.remove('d-none');
-                        }
-                        
-                        // Keep the intro visible but update the button
-                        continueBtn.disabled = false;
-                        continueBtn.textContent = 'Try Again';
-                        
-                        // Reset the checkbox
-                        this.profile.twoFA.checked = false;
-                    }
-                };
-            }
-            
-            // Set up form submission handler
-            twoFAForm.onsubmit = async (e) => {
-                e.preventDefault();
-                
-                const code = document.getElementById('twoFACode').value;
-                if (!code || code.length !== 6) {
-                    // Show validation error
-                    if (errorDiv) {
-                        errorDiv.textContent = 'Please enter a valid 6-digit code';
-                        errorDiv.classList.remove('d-none');
-                    }
-                    return;
-                }
-                
-                // Show loading
-                const spinner = twoFAForm.querySelector('[data-spinner]');
-                const submitBtn = twoFAForm.querySelector('button[type="submit"]');
-                
-                if (spinner) spinner.classList.remove('d-none');
-                if (buttonText) buttonText.textContent = 'Verifying...';
-                if (submitBtn) submitBtn.disabled = true;
-                
-                try {
-                    // Call verify API
-                    const verifyResult = await hooks.useVerify2FA(code);
-                    
-                    if (!verifyResult.success) {
-                        throw new Error(verifyResult.error || 'Verification failed');
-                    }
-                    
-                    // Update user data
-                    if (verifyResult.data && verifyResult.data.user) {
-                        user.setUserData(verifyResult.data.user, true);
-                    } else {
-                        // Force refresh user data
-                        await hooks.useFetchUserData(true);
-                    }
-                    
-                    // Show success
-                    components.showToast('success', '2FA Enabled', 'Two-factor authentication has been successfully enabled for your account.');
-                    
-                    // Close modal
-                    if (typeof bootstrap !== 'undefined') {
-                        const bsModal = bootstrap.Modal.getInstance(twoFAModal);
-                        if (bsModal) bsModal.hide();
-                    } else {
-                        twoFAModal.classList.remove('show');
-                        twoFAModal.style.display = 'none';
-                        document.body.classList.remove('modal-open');
-                        const backdrop = document.querySelector('.modal-backdrop');
-                        if (backdrop) backdrop.remove();
-                    }
-                    
-                    // Reset form
-                    twoFAForm.reset();
-                    
-                } catch (error) {
-                    console.error('2FA verification error:', error);
-                    
-                    // Show error
-                    if (errorDiv) {
-                        errorDiv.textContent = error.message || 'Verification failed. Please try again.';
-                        errorDiv.classList.remove('d-none');
-                    }
-                    
-                    // Uncheck the box since setup failed
-                    this.profile.twoFA.checked = false;
-                    
-                } finally {
-                    // Reset loading state
-                    if (spinner) spinner.classList.add('d-none');
-                    if (buttonText) buttonText.textContent = 'Enable 2FA';
-                    if (submitBtn) submitBtn.disabled = false;
-                }
-            };
-            
-        } else {
-            // DISABLING 2FA
-            if (modalTitle) {
-                modalTitle.textContent = 'Disable Two-Factor Authentication';
-            }
-            
-            // Remove any existing QR code or intro
-            const existingQR = modalBody.querySelector('.qr-code-container');
-            const existingIntro = modalBody.querySelector('.setup-intro');
-            if (existingQR) existingQR.remove();
-            if (existingIntro) existingIntro.remove();
-            
-            // Update instruction text
-            const instructionText = modalBody.querySelector('p.text-light.mb-4');
-            if (instructionText) {
-                instructionText.textContent = 'Enter the 6-digit verification code from your authenticator app to disable 2FA.';
-                instructionText.style.display = 'block';
-            }
-            
-            // Update label
-            const codeLabel = modalBody.querySelector('label[for="twoFACode"]');
-            if (codeLabel) {
-                codeLabel.textContent = 'Verification Code';
-            }
-            
-            // Update form
-            twoFAForm.style.display = 'block';
-            twoFAForm.dataset.action = 'disable';
-            
+            // Update button text
             if (buttonText) {
-                buttonText.textContent = 'Disable 2FA';
+                buttonText.textContent = 'Verify and Disable 2FA';
             }
             
             // Show the modal
-            if (typeof bootstrap !== 'undefined') {
-                const bsModal = new bootstrap.Modal(twoFAModal);
-                bsModal.show();
-            } else {
-                // Fallback for when Bootstrap isn't loaded
-                twoFAModal.classList.add('show');
-                twoFAModal.style.display = 'block';
-                document.body.classList.add('modal-open');
-                
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop fade show';
-                document.body.appendChild(backdrop);
-            }
+            const modal = new bootstrap.Modal(twoFAModal);
+            modal.show();
             
-            // Set up form submission handler
+            // Handle form submission for disabling 2FA
             twoFAForm.onsubmit = async (e) => {
                 e.preventDefault();
                 
                 const code = document.getElementById('twoFACode').value;
-                if (!code || code.length !== 6) {
+                if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
                     // Show validation error
                     if (errorDiv) {
                         errorDiv.textContent = 'Please enter a valid 6-digit code';
@@ -1156,11 +1127,11 @@ class Forms {
                 if (submitBtn) submitBtn.disabled = true;
                 
                 try {
-                    // Call disable API
+                    // Call API to disable 2FA
                     const disableResult = await hooks.useDisable2FA(code);
                     
                     if (!disableResult.success) {
-                        throw new Error(disableResult.error || 'Disabling 2FA failed');
+                        throw new Error(disableResult.error || 'Failed to disable 2FA');
                     }
                     
                     // Update user data
@@ -1171,43 +1142,396 @@ class Forms {
                         await hooks.useFetchUserData(true);
                     }
                     
+                    // Update toggle state
+                    this.update2FAButtonState(false);
+                    twoFAToggle.checked = false;
+                    
                     // Show success
                     components.showToast('success', '2FA Disabled', 'Two-factor authentication has been successfully disabled for your account.');
                     
                     // Close modal
-                    if (typeof bootstrap !== 'undefined') {
-                        const bsModal = bootstrap.Modal.getInstance(twoFAModal);
-                        if (bsModal) bsModal.hide();
-                    } else {
-                        twoFAModal.classList.remove('show');
-                        twoFAModal.style.display = 'none';
-                        document.body.classList.remove('modal-open');
-                        const backdrop = document.querySelector('.modal-backdrop');
-                        if (backdrop) backdrop.remove();
-                    }
+                    const bsModal = bootstrap.Modal.getInstance(twoFAModal);
+                    if (bsModal) bsModal.hide();
                     
                     // Reset form
                     twoFAForm.reset();
-                    
                 } catch (error) {
-                    console.error('2FA disabling error:', error);
+                    console.error('2FA disable error:', error);
                     
                     // Show error
                     if (errorDiv) {
-                        errorDiv.textContent = error.message || 'Failed to disable 2FA. Please try again.';
+                        errorDiv.textContent = error.message || 'Verification failed. Please try again.';
                         errorDiv.classList.remove('d-none');
                     }
                     
-                    // Check the box again since disabling failed
-                    this.profile.twoFA.checked = true;
-                    
+                    // Keep toggle on
+                    twoFAToggle.checked = true;
                 } finally {
                     // Reset loading state
                     if (spinner) spinner.classList.add('d-none');
-                    if (buttonText) buttonText.textContent = 'Disable 2FA';
+                    if (buttonText) buttonText.textContent = 'Verify and Disable 2FA';
                     if (submitBtn) submitBtn.disabled = false;
                 }
             };
+            
+            return;
+        }
+        
+        // User is trying to enable 2FA
+        console.log('2FA button clicked to enable 2FA');
+        
+        // Get the modal element
+        const twoFAModal = document.getElementById('twoFAModal');
+        
+        if (!twoFAModal) {
+            console.error('2FA modal element not found in the DOM!');
+            components.showToast('error', '2FA Error', 'Could not find the 2FA setup interface.');
+            return;
+        }
+        
+        // Set up modal for enabling 2FA
+        const modalTitle = twoFAModal.querySelector('#twoFAModalLabel');
+        const modalBody = twoFAModal.querySelector('.modal-body');
+        const twoFAForm = document.getElementById('twoFAForm');
+        const buttonText = twoFAForm.querySelector('[data-button-text]');
+        const errorDiv = document.getElementById('twofa-error');
+        
+        // Show error to match screenshot (for demonstration)
+        if (errorDiv) {
+            errorDiv.textContent = 'Failed to setup 2FA';
+            errorDiv.classList.remove('d-none');
+        }
+        
+        // Remove any existing QR code containers
+        const existingQRs = modalBody.querySelectorAll('.qr-code-container');
+        existingQRs.forEach(container => container.remove());
+        
+        // Set modal title and instructions
+        modalTitle.textContent = 'Set Up Two-Factor Authentication';
+        
+        // Update instruction text
+        const instructionText = modalBody.querySelector('p.text-dark.mb-4');
+        if (instructionText) {
+            instructionText.textContent = 'There was a problem setting up 2FA. Please try again.';
+        }
+        
+        // Show verification code input
+        const codeInputGroup = twoFAForm.querySelector('.mb-4');
+        if (codeInputGroup) {
+            codeInputGroup.style.display = 'block';
+        }
+        
+        // Set button text to match screenshot
+        if (buttonText) {
+            buttonText.textContent = 'GENERATE QR CODE';
+        }
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(twoFAModal);
+        modal.show();
+        
+        // Handle form submission for enabling 2FA
+        twoFAForm.onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = twoFAForm.querySelector('button[type="submit"]');
+            const spinner = twoFAForm.querySelector('[data-spinner]');
+            
+            // If the button text says "GENERATE QR CODE", we need to generate a QR code first
+            if (buttonText && buttonText.textContent === 'GENERATE QR CODE') {
+                // Show loading state
+                if (spinner) spinner.classList.remove('d-none');
+                if (buttonText) buttonText.textContent = 'Generating...';
+                if (submitBtn) submitBtn.disabled = true;
+                
+                try {
+                    // Call API to generate QR code
+                    const setupResult = await hooks.useSetup2FA();
+                    
+                    if (!setupResult.success) {
+                        throw new Error(setupResult.error || 'Failed to generate QR code');
+                    }
+                    
+                    // Make sure we have a QR code
+                    if (!setupResult.qr_code) {
+                        throw new Error('QR code not received from server');
+                    }
+                    
+                    // Clear any previous errors
+                    if (errorDiv) {
+                        errorDiv.textContent = '';
+                        errorDiv.classList.add('d-none');
+                    }
+                    
+                    // Display the QR code - create a simple container
+                    const qrContainer = document.createElement('div');
+                    qrContainer.className = 'qr-code-container';
+                    qrContainer.style.backgroundColor = '#ffffff';
+                    qrContainer.style.padding = '20px';
+                    qrContainer.style.margin = '15px auto';
+                    qrContainer.style.maxWidth = '280px';
+                    qrContainer.style.border = '1px solid #ddd';
+                    qrContainer.style.borderRadius = '8px';
+                    qrContainer.style.textAlign = 'center';
+                    
+                    // Create heading
+                    const heading = document.createElement('h6');
+                    heading.className = 'mb-3 fw-bold text-dark';
+                    heading.textContent = 'Scan this QR code';
+                    qrContainer.appendChild(heading);
+                    
+                    // Create image element
+                    const img = document.createElement('img');
+                    
+                    // Handle different API response formats
+                    if (setupResult.qr_code.startsWith('data:image')) {
+                        img.src = setupResult.qr_code;
+                    } else if (setupResult.qr_code.startsWith('http')) {
+                        img.src = setupResult.qr_code;
+                    } else {
+                        // Assume it's a base64 string without the prefix
+                        img.src = `data:image/png;base64,${setupResult.qr_code}`;
+                    }
+                    
+                    img.alt = '2FA QR Code';
+                    img.style.maxWidth = '200px';
+                    img.style.height = 'auto';
+                    img.style.margin = '0 auto';
+                    img.style.display = 'block';
+                    img.style.padding = '8px';
+                    img.style.backgroundColor = 'white';
+                    img.style.border = '1px solid #dee2e6';
+                    
+                    qrContainer.appendChild(img);
+                    
+                    // Create manual code section
+                    if (setupResult.secret_key) {
+                        const manualDiv = document.createElement('div');
+                        manualDiv.style.marginTop = '15px';
+                        manualDiv.style.padding = '10px';
+                        manualDiv.style.backgroundColor = '#f8f9fa';
+                        manualDiv.style.border = '1px solid #dee2e6';
+                        manualDiv.style.borderRadius = '4px';
+                        
+                        const manualText = document.createElement('p');
+                        manualText.className = 'mb-2 text-dark';
+                        manualText.innerHTML = '<strong>Or enter this code manually:</strong>';
+                        manualDiv.appendChild(manualText);
+                        
+                        const codeElem = document.createElement('code');
+                        codeElem.style.padding = '8px';
+                        codeElem.style.backgroundColor = '#212529';
+                        codeElem.style.color = '#ffc107';
+                        codeElem.style.fontSize = '1rem';
+                        codeElem.style.display = 'block';
+                        codeElem.style.wordBreak = 'break-all';
+                        codeElem.style.borderRadius = '4px';
+                        codeElem.textContent = setupResult.secret_key;
+                        manualDiv.appendChild(codeElem);
+                        
+                        qrContainer.appendChild(manualDiv);
+                    }
+                    
+                    // Find a good place to insert the QR code
+                    if (instructionText) {
+                        instructionText.textContent = 'Scan the QR code below with your authenticator app (Google Authenticator, Authy, etc.)';
+                        
+                        // Insert the QR code after the instruction text
+                        if (!modalBody.querySelector('.qr-code-container')) {
+                            modalBody.insertBefore(qrContainer, instructionText.nextSibling);
+                        }
+                    } else {
+                        // Fallback - just append to modal body
+                        modalBody.appendChild(qrContainer);
+                    }
+                    
+                    // Update button text for verification
+                    if (buttonText) {
+                        buttonText.textContent = 'Verify and Enable 2FA';
+                    }
+                } catch (error) {
+                    console.error('2FA QR code generation error:', error);
+                    
+                    // Show error
+                    if (errorDiv) {
+                        errorDiv.textContent = error.message || 'Failed to generate QR code.';
+                        errorDiv.classList.remove('d-none');
+                    }
+                } finally {
+                    // Reset loading state
+                    if (spinner) spinner.classList.add('d-none');
+                    if (submitBtn) submitBtn.disabled = false;
+                    if (buttonText && buttonText.textContent === 'Generating...') {
+                        buttonText.textContent = 'GENERATE QR CODE';
+                    }
+                }
+                
+                return;
+            }
+            
+            // If we're here, the button should say "Verify and Enable 2FA", so we need to verify the code
+            const code = document.getElementById('twoFACode').value;
+            if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+                // Show validation error
+                if (errorDiv) {
+                    errorDiv.textContent = 'Please enter a valid 6-digit code';
+                    errorDiv.classList.remove('d-none');
+                }
+                return;
+            }
+            
+            // Show loading
+            if (spinner) spinner.classList.remove('d-none');
+            if (buttonText) buttonText.textContent = 'Verifying...';
+            if (submitBtn) submitBtn.disabled = true;
+            
+            try {
+                // Verify the 2FA code
+                const verifyResult = await hooks.useVerify2FA(code);
+                
+                if (!verifyResult.success) {
+                    throw new Error(verifyResult.error || 'Verification failed');
+                }
+                
+                // Update user data
+                if (verifyResult.data && verifyResult.data.user) {
+                    user.setUserData(verifyResult.data.user, true);
+                } else {
+                    // Force refresh user data
+                    await hooks.useFetchUserData(true);
+                }
+                
+                // Update UI to reflect 2FA is now enabled
+                this.update2FAButtonState(true);
+                
+                // Show success toast
+                components.showToast('success', '2FA Enabled', 'Two-factor authentication has been successfully enabled for your account.');
+                
+                // Close modal
+                const bsModal = bootstrap.Modal.getInstance(twoFAModal);
+                if (bsModal) bsModal.hide();
+                
+                // Reset form
+                twoFAForm.reset();
+            } catch (error) {
+                console.error('2FA verification error:', error);
+                
+                // Show error
+                if (errorDiv) {
+                    errorDiv.textContent = error.message || 'Verification failed. Please try again.';
+                    errorDiv.classList.remove('d-none');
+                }
+                
+                // Reset toggle if verification failed
+                const toggleSwitch = document.querySelector('.form-check-input[data-toggle="2fa"]');
+                if (toggleSwitch) {
+                    toggleSwitch.checked = false;
+                }
+            } finally {
+                // Reset loading state
+                if (spinner) spinner.classList.add('d-none');
+                if (buttonText) buttonText.textContent = 'Verify and Enable 2FA';
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        };
+    }
+    
+    // Helper method to update 2FA button text based on state
+    update2FAButtonState(isEnabled) {
+        const button = this.profile.twoFA || document.getElementById('setting2fa');
+        if (button) {
+            // Set checked state based on isEnabled
+            button.checked = isEnabled === true;
+            
+            // Always keep the toggle visible
+            button.style.display = 'inline-block';
+        }
+    }
+
+    // Method to validate password match in real-time
+    validatePasswordMatch() {
+        if (!this.register.passwordField || !this.register.confirmPasswordField || !this.register.passwordMatchStatus) {
+            return;
+        }
+        
+        const password = this.register.passwordField.value;
+        const confirmPassword = this.register.confirmPasswordField.value;
+        
+        // Only show validation when confirm password has content
+        if (!confirmPassword) {
+            this.register.passwordMatchStatus.textContent = '';
+            this.register.passwordMatchStatus.className = 'form-text mt-1';
+            this.register.confirmPasswordField.classList.remove('is-valid', 'is-invalid');
+            return;
+        }
+        
+        // Check if passwords match
+        if (password === confirmPassword) {
+            this.register.passwordMatchStatus.textContent = 'Passwords match';
+            this.register.passwordMatchStatus.className = 'form-text mt-1 text-success';
+            this.register.confirmPasswordField.classList.add('is-valid');
+            this.register.confirmPasswordField.classList.remove('is-invalid');
+        } else {
+            this.register.passwordMatchStatus.textContent = 'Passwords do not match';
+            this.register.passwordMatchStatus.className = 'form-text mt-1 text-danger';
+            this.register.confirmPasswordField.classList.add('is-invalid');
+            this.register.confirmPasswordField.classList.remove('is-valid');
+        }
+
+    }
+
+    // Add method to initialize character counts
+    initializeCharCount(inputElement, fieldType) {
+        if (!inputElement) return;
+        
+        const charCountElement = inputElement.parentElement.querySelector('.char-count');
+        if (charCountElement) {
+            const currentLength = inputElement.value.length;
+            const maxLength = VALIDATION_INPUTS[fieldType].maxLength;
+            charCountElement.textContent = `${currentLength}/${maxLength}`;
+            
+            // Change color when approaching the limit, keeping text visible
+            if (maxLength - currentLength <= 5) {
+                charCountElement.classList.add('text-danger');
+                charCountElement.classList.remove('text-white');
+            } else {
+                charCountElement.classList.remove('text-danger');
+                charCountElement.classList.add('text-white');
+            }
+        }
+    }
+    
+    // Add method to validate input length
+    validateInputLength(fieldType, event) {
+        const input = event.target;
+        const value = input.value;
+        const validation = VALIDATION_INPUTS[fieldType];
+        
+        // Check if exceeding max length (should not happen due to maxLength attribute, but as a safeguard)
+        if (value.length > validation.maxLength) {
+            // Truncate the input value
+            input.value = value.slice(0, validation.maxLength);
+            
+            // Show warning toast
+            components.showToast('warning', 'Input Limit Reached', 
+                `${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} cannot exceed ${validation.maxLength} characters.`);
+            return;
+        }
+        
+        // Update character count indicator
+        const charCountElement = input.parentElement.querySelector('.char-count');
+        
+        if (charCountElement) {
+            charCountElement.textContent = `${value.length}/${validation.maxLength}`;
+            
+            // Change color when approaching the limit, keeping text visible
+            if (validation.maxLength - value.length <= 5) {
+                charCountElement.classList.add('text-danger');
+                charCountElement.classList.remove('text-white');
+            } else {
+                charCountElement.classList.remove('text-danger');
+                charCountElement.classList.add('text-white');
+            }
         }
     }
 }
