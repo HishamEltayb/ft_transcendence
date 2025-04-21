@@ -251,4 +251,51 @@ footer {
     z-index: 100;
     width: 100%;
     visibility: visible !important;
-} 
+}
+
+/* Dropdown menu styling for black and gold theme */
+.custom-dropdown {
+    background-color: #222;
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 8px rgba(212, 175, 55, 0.3);
+    padding: 8px 0;
+    min-width: 180px;
+    margin-top: 10px;
+}
+
+.custom-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--gold);
+}
+
+.custom-dropdown-item {
+    color: #e0e0e0 !important;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.custom-dropdown-item:hover, 
+.custom-dropdown-item:focus {
+    background-color: rgba(212, 175, 55, 0.1);
+    color: var(--gold) !important;
+    transform: translateX(5px);
+}
+
+.custom-dropdown-item i {
+    color: var(--gold);
+    font-size: 1.1rem;
+}
+
+.gold-divider {
+    border-top: 1px solid rgba(212, 175, 55, 0.3);
+    margin: 8px 0;
+}
+
+/* Add any other custom styling below */ 
