@@ -62,3 +62,17 @@ export const ENDPOINTS = {
         send: '/api/chat/send'
     }
 }; 
+
+export const VALIDATION_INPUTS = {
+    username: {
+        minLength: 3,
+        maxLength: 25,
+    },
+    email: {
+        maxLength: 50,
+    },
+    password: {
+        minLength: 3,
+        maxLength: 25
+    }
+};

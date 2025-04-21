@@ -2,6 +2,7 @@ import hooks from './hooks.js';
 import components from './components.js';
 import user from './user.js';
 import store from './store.js';
+import { VALIDATION_INPUTS } from './constants.js';
 
 class Forms {
     constructor() {
@@ -59,7 +60,9 @@ class Forms {
             container: document.getElementById('loginFormContainer'),
             form: document.getElementById('loginForm'),
             submitBtn: document.getElementById('loginBtn'),
-            login42Link: document.getElementById('login42Link')
+            login42Link: document.getElementById('login42Link'),
+            usernameField: document.getElementById('loginUsername'),
+            passwordField: document.getElementById('loginPassword')
         };
         
         // Register form elements
@@ -68,6 +71,8 @@ class Forms {
             container: document.getElementById('registerFormContainer'),
             form: document.getElementById('registerForm'),
             submitBtn: document.getElementById('registerBtn'),
+            usernameField: document.getElementById('registerUsername'),
+            emailField: document.getElementById('registerEmail'),
             passwordField: document.getElementById('registerPassword'),
             confirmPasswordField: document.getElementById('confirmPassword'),
             passwordMatchStatus: document.getElementById('passwordMatchStatus')
@@ -76,6 +81,19 @@ class Forms {
         // Add event listeners for login/register
         if (this.login.form) {
             this.login.form.addEventListener('submit', this.submitLoginForm.bind(this));
+            
+            // Add input validation for login fields
+            if (this.login.usernameField) {
+                this.login.usernameField.maxLength = VALIDATION_INPUTS.username.maxLength;
+                this.login.usernameField.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+                this.initializeCharCount(this.login.usernameField, 'username');
+            }
+            
+            if (this.login.passwordField) {
+                this.login.passwordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.login.passwordField.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+                this.initializeCharCount(this.login.passwordField, 'password');
+            }
         }
         
         if (this.login.login42Link) {
@@ -85,10 +103,35 @@ class Forms {
         if (this.register.form) {
             this.register.form.addEventListener('submit', this.submitRegisterForm.bind(this));
             
-            // Add real-time password validation
-            if (this.register.passwordField && this.register.confirmPasswordField) {
-                this.register.passwordField.addEventListener('input', this.validatePasswordMatch.bind(this));
-                this.register.confirmPasswordField.addEventListener('input', this.validatePasswordMatch.bind(this));
+            // Add real-time password validation and input length validation for register fields
+            if (this.register.usernameField) {
+                this.register.usernameField.maxLength = VALIDATION_INPUTS.username.maxLength;
+                this.register.usernameField.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+                this.initializeCharCount(this.register.usernameField, 'username');
+            }
+            
+            if (this.register.emailField) {
+                this.register.emailField.maxLength = VALIDATION_INPUTS.email.maxLength;
+                this.register.emailField.addEventListener('input', this.validateInputLength.bind(this, 'email'));
+                this.initializeCharCount(this.register.emailField, 'email');
+            }
+            
+            if (this.register.passwordField) {
+                this.register.passwordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.register.passwordField.addEventListener('input', event => {
+                    this.validateInputLength('password', event);
+                    this.validatePasswordMatch();
+                });
+                this.initializeCharCount(this.register.passwordField, 'password');
+            }
+            
+            if (this.register.confirmPasswordField) {
+                this.register.confirmPasswordField.maxLength = VALIDATION_INPUTS.password.maxLength;
+                this.register.confirmPasswordField.addEventListener('input', event => {
+                    this.validateInputLength('password', event);
+                    this.validatePasswordMatch();
+                });
+                this.initializeCharCount(this.register.confirmPasswordField, 'password');
             }
         }
         
@@ -270,6 +313,31 @@ class Forms {
         this.profile.confirmPassword = document.getElementById('settingConfirmPassword');
         this.profile.twoFA = document.getElementById('setting2fa');
         this.profile.submitBtn = document.getElementById('saveSettingsBtn');
+        
+        // Add input validation for profile form fields
+        if (this.profile.displayName) {
+            this.profile.displayName.maxLength = VALIDATION_INPUTS.username.maxLength;
+            this.profile.displayName.addEventListener('input', this.validateInputLength.bind(this, 'username'));
+            this.initializeCharCount(this.profile.displayName, 'username');
+        }
+        
+        if (this.profile.email) {
+            this.profile.email.maxLength = VALIDATION_INPUTS.email.maxLength;
+            this.profile.email.addEventListener('input', this.validateInputLength.bind(this, 'email'));
+            this.initializeCharCount(this.profile.email, 'email');
+        }
+        
+        if (this.profile.password) {
+            this.profile.password.maxLength = VALIDATION_INPUTS.password.maxLength;
+            this.profile.password.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+            this.initializeCharCount(this.profile.password, 'password');
+        }
+        
+        if (this.profile.confirmPassword) {
+            this.profile.confirmPassword.maxLength = VALIDATION_INPUTS.password.maxLength;
+            this.profile.confirmPassword.addEventListener('input', this.validateInputLength.bind(this, 'password'));
+            this.initializeCharCount(this.profile.confirmPassword, 'password');
+        }
         
         // Add event listeners
         if (this.profile.submitBtn) {
@@ -532,6 +600,25 @@ class Forms {
         const userData = store.getUserData();
         const twoFA = userData ? userData.is_two_factor_enabled : false;
         
+        // Validate username length
+        if (displayName && displayName.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('warning', 'Invalid Display Name', 
+                `Display name must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (displayName && displayName.length > VALIDATION_INPUTS.username.maxLength) {
+            components.showToast('warning', 'Invalid Display Name', 
+                `Display name cannot exceed ${VALIDATION_INPUTS.username.maxLength} characters.`);
+            return;
+        }
+        
+        // Validate email length
+        if (email && email.length > VALIDATION_INPUTS.email.maxLength) {
+            components.showToast('warning', 'Invalid Email', 
+                `Email cannot exceed ${VALIDATION_INPUTS.email.maxLength} characters.`);
+            return;
+        }
         
         // Validate email format if provided
         if (email) {
@@ -540,6 +627,19 @@ class Forms {
                 components.showToast('warning', 'Invalid Email', 'Please enter a valid email address.');
                 return;
             }
+        }
+        
+        // Validate password length
+        if (password && password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('warning', 'Invalid Password', 
+                `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
+            return;
+        }
+        
+        if (password && password.length > VALIDATION_INPUTS.password.maxLength) {
+            components.showToast('warning', 'Invalid Password', 
+                `Password cannot exceed ${VALIDATION_INPUTS.password.maxLength} characters.`);
+            return;
         }
         
         // Validate password match if provided
@@ -582,6 +682,13 @@ class Forms {
                 // Reset password fields
                 if (this.profile.password) this.profile.password.value = '';
                 if (this.profile.confirmPassword) this.profile.confirmPassword.value = '';
+                
+                // Reset character counts for password fields
+                const passwordCounter = this.profile.password && this.profile.password.parentElement.querySelector('.char-count');
+                const confirmPasswordCounter = this.profile.confirmPassword && this.profile.confirmPassword.parentElement.querySelector('.char-count');
+                
+                if (passwordCounter) passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
+                if (confirmPasswordCounter) confirmPasswordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
                 
                 // Show success toast
                 components.showToast('success', 'Profile Updated', 'Your profile has been successfully updated.');
@@ -628,6 +735,17 @@ class Forms {
             return;
         }
         
+        // Validate length constraints
+        if (username.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('error', 'Login Error', `Username must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('error', 'Login Error', `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
+            return;
+        }
+        
         // Show loading state
         this.setLoading(this.login.submitBtn, true);
         
@@ -648,6 +766,12 @@ class Forms {
                 
                 // Clear password field
                 document.getElementById('loginPassword').value = '';
+                
+                // Reset character count
+                const passwordCounter = document.querySelector('#loginPassword').parentElement.querySelector('.char-count');
+                if (passwordCounter) {
+                    passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
+                }
                 
                 // Fetch user data to update UI
                 await hooks.useFetchUserData(true);
@@ -684,6 +808,17 @@ class Forms {
         // Validate required fields
         if (!username || !email || !password || !confirmPassword) {
             components.showToast('error', 'Registration Error', 'Please fill out all fields.');
+            return;
+        }
+        
+        // Validate length constraints
+        if (username.length < VALIDATION_INPUTS.username.minLength) {
+            components.showToast('error', 'Registration Error', `Username must be at least ${VALIDATION_INPUTS.username.minLength} characters.`);
+            return;
+        }
+        
+        if (password.length < VALIDATION_INPUTS.password.minLength) {
+            components.showToast('error', 'Registration Error', `Password must be at least ${VALIDATION_INPUTS.password.minLength} characters.`);
             return;
         }
         
@@ -727,6 +862,18 @@ class Forms {
                 this.register.form.reset();
                 this.register.passwordMatchStatus.textContent = '';
                 this.register.passwordMatchStatus.className = 'form-text mt-1';
+                
+                // Reset character counts
+                const charCounters = this.register.form.querySelectorAll('.char-count');
+                charCounters.forEach(counter => {
+                    if (counter.parentElement.querySelector('input').id === 'registerUsername' || 
+                        counter.parentElement.querySelector('input').id === 'registerPassword' || 
+                        counter.parentElement.querySelector('input').id === 'confirmPassword') {
+                        counter.textContent = `0/${VALIDATION_INPUTS.username.maxLength}`;
+                    } else if (counter.parentElement.querySelector('input').id === 'registerEmail') {
+                        counter.textContent = `0/${VALIDATION_INPUTS.email.maxLength}`;
+                    }
+                });
                 
                 // Switch to login form
                 this.showLoginForm();
@@ -1117,6 +1264,61 @@ class Forms {
             this.register.passwordMatchStatus.className = 'form-text mt-1 text-danger';
             this.register.confirmPasswordField.classList.add('is-invalid');
             this.register.confirmPasswordField.classList.remove('is-valid');
+        }
+    }
+
+    // Add method to initialize character counts
+    initializeCharCount(inputElement, fieldType) {
+        if (!inputElement) return;
+        
+        const charCountElement = inputElement.parentElement.querySelector('.char-count');
+        if (charCountElement) {
+            const currentLength = inputElement.value.length;
+            const maxLength = VALIDATION_INPUTS[fieldType].maxLength;
+            charCountElement.textContent = `${currentLength}/${maxLength}`;
+            
+            // Set appropriate color while keeping text white
+            if (maxLength - currentLength <= 5) {
+                charCountElement.classList.add('text-danger');
+                charCountElement.classList.remove('text-white');
+            } else {
+                charCountElement.classList.remove('text-danger');
+                charCountElement.classList.add('text-white');
+            }
+        }
+    }
+    
+    // Add method to validate input length
+    validateInputLength(fieldType, event) {
+        const input = event.target;
+        const value = input.value;
+        const validation = VALIDATION_INPUTS[fieldType];
+        
+        // Check if exceeding max length (should not happen due to maxLength attribute, but as a safeguard)
+        if (value.length > validation.maxLength) {
+            // Truncate the input value
+            input.value = value.slice(0, validation.maxLength);
+            
+            // Show warning toast
+            components.showToast('warning', 'Input Limit Reached', 
+                `${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} cannot exceed ${validation.maxLength} characters.`);
+            return;
+        }
+        
+        // Update character count indicator
+        const charCountElement = input.parentElement.querySelector('.char-count');
+        
+        if (charCountElement) {
+            charCountElement.textContent = `${value.length}/${validation.maxLength}`;
+            
+            // Change color when approaching the limit, keeping text visible
+            if (validation.maxLength - value.length <= 5) {
+                charCountElement.classList.add('text-danger');
+                charCountElement.classList.remove('text-white');
+            } else {
+                charCountElement.classList.remove('text-danger');
+                charCountElement.classList.add('text-white');
+            }
         }
     }
 }
