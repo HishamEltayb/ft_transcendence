@@ -1,20 +1,24 @@
 import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
-import { AVAILABLE_PAGES } from './constant.js';
+import user from './user.js';
+import forms from './forms.js';
+// import store from './store.js';
 
 class App {
     constructor() {
         this.appContainer = null;
+        this.isInitialized = false;
+        console.log('App: Created instance');
     }
     
     async init() {
-        console.log("Initializing application");
+        console.log("App: Initializing...");
         
         this.appContainer = document.getElementById('App');
         
         if (!this.appContainer) {
-            console.error("App container not found!");
+            console.error("App: Container not found!");
             return false;
         }
         
@@ -24,77 +28,83 @@ class App {
             components.init(this.appContainer);
             await components.loadAllComponents();
             
+            components.showSpinner();
+        
             pages.init(this.appContainer);
             await pages.loadAllPages();
             
+            // Append footer
             components.appendFooter();
-
-            // Initialize router after pages are fully loaded
+            
+            // Initialize router
+            console.log("App: Initializing router...");
             router.init();
-            const initialPage = router.handleURL();
-            console.log("Router initialized with initial page:", initialPage);
             
-            this.initNavigationEvents();
+            // Initialize user authentication
+            console.log("App: Initializing user authentication...");
+            await user.init();
             
+            // Initialize forms
+            console.log("App: Initializing forms...");
+            forms.init();
+            
+            // Mark app as initialized
+            this.isInitialized = true;
+            
+            // Hide spinner
+            components.hideSpinner();
+            
+            // Dispatch an event to notify other components
             document.dispatchEvent(new Event('appInitialized'));
             
+            console.log("App: Initialization complete");
             return true;
         } catch (error) {
-            console.error("Failed to initialize application:", error);
+            console.error("App: Failed to initialize application:", error);
+            components.hideSpinner();
+            components.showToast(
+                'error',
+                'Application Error',
+                'There was a problem loading the application. Please refresh the page.',
+                5000  
+            );
             return false;
         }
     }
-    
+
     resetAppContainer() {
         while (this.appContainer.firstChild) {
             this.appContainer.removeChild(this.appContainer.firstChild);
         }
     }
-    
-    initNavigationEvents() {
-        const navElements = document.querySelectorAll('[data-page]');
-        navElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.preventDefault();
-                const pageName = element.getAttribute('data-page');
-                router.navigateTo(pageName);
-            });
-        });
-        
-        const homeLinks = document.querySelectorAll('.navbar-brand, a[href="/"]');
-        homeLinks.forEach(link => {
-            if (!link.hasAttribute('data-page')) {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    router.navigateTo('home');
-                });
-            }
-        });
-        
-        const logoutButtons = document.querySelectorAll('[data-action="logout"]');
-        logoutButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                router.navigateTo('home');
-            });
-        });
+
+    isReady() {
+        return this.isInitialized;
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM fully loaded and parsed");
-    
     const app = new App();
     
     try {
-        const success = await app.init();
-        console.log("App initialization " + (success ? "complete" : "failed"));
-        window.App = app;
+        await app.init();
+        
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('profile')) {
+            console.log("App: On profile page, initializing profile...");
+            // Use a small delay to ensure DOM is fully rendered
+            setTimeout(() => {
+                if (typeof forms !== 'undefined' && forms.initProfilePage) {
+                    forms.initProfilePage();
+                }
+            }, 100);
+        }
     } catch (error) {
-        console.error("App initialization failed:", error);
+        components.hideSpinner()
     }
 });
 
+// Handle video playback when tab becomes visible
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         const videoElement = document.querySelector('video');
@@ -103,9 +113,5 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
-
-window.navigateTo = function(pageName) {
-    router.navigateTo(pageName);
-};
 
 export default App; 

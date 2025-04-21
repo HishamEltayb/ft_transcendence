@@ -1,6 +1,12 @@
-import { COMPONENTS, PAGES} from './constant.js';
+import { COMPONENTS, PAGES, ENDPOINTS } from './constants.js';
+
+// Reference to be set from user.js to avoid circular imports
+let userInstance = null;
 
 class Hooks {
+  setUserInstance(instance) {
+    userInstance = instance;
+  }
 
   async useFetchHtml(url, returnElement = true) {
     try {
@@ -58,6 +64,361 @@ class Hooks {
     } catch (error) {
       console.error(`Error fetching pages:`, error);
       throw error;
+    }
+  }
+
+  async useSubmitLoginForm(loginData) {
+    try {
+      const loginEndpoint = ENDPOINTS.auth.login;
+      
+      const response = await fetch(loginEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(loginData)
+      });
+      
+      if (!response.ok)
+        throw new Error('Login failed');
+      
+      const data = await response.json();
+      
+      if (data.token) {
+        // Always store the token in localStorage
+        localStorage.setItem('authToken', data.token);
+      }
+      
+      // Return the data for further processing if needed
+      return { success: true, data };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for submitting registration data to the backend
+  async useSubmitRegisterForm(registerData) {
+    try {
+      // Validate password match
+      if (registerData.password !== registerData.confirmPassword) {
+        return {
+          success: false,
+          error: 'Passwords do not match.'
+        };
+      }
+
+      // API endpoint for registration from the ENDPOINTS constant
+      const registerEndpoint = ENDPOINTS.auth.register;
+      
+      // Make the POST request
+      const response = await fetch(registerEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(registerData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+      
+      const data = await response.json();
+      console.log('Registration successful:', data);
+      
+      // Return success data
+      return { success: true, data };
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Return the error for handling
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for initiating 42 OAuth login
+  async use42Login() {
+    try {
+      const oauth42Endpoint = ENDPOINTS.auth.auth42;
+      console.log('Hooks: Initiating 42 OAuth, calling endpoint:', oauth42Endpoint);
+      
+      // Make API call to get the OAuth authorization URL
+      const response = await fetch(oauth42Endpoint, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Hooks: 42 OAuth response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('42 OAuth error details:', errorText);
+        throw new Error('Failed to initiate 42 login: ' + errorText);
+      }
+      
+      const data = await response.json();
+      
+      // Validate response contains auth_url
+      if (!data || !data.auth_url) {
+        console.error('Hooks: No auth_url in response data:', data);
+        throw new Error('No authorization URL received from server');
+      }
+      
+      console.log('Hooks: 42 OAuth successful, received auth URL:', data.auth_url);
+      
+      // Return the OAuth data with success flag
+      return { success: true, auth_url: data.auth_url };
+    } catch (error) {
+      console.error('42 OAuth Error:', error);
+      
+      // Return the error for handling
+      return { success: false, error: error.message };
+    }
+  }
+
+  async useFetchUserData(forceRefresh = false) {
+    try {
+      // Cache check - only use if not forcing refresh
+      if (!forceRefresh) {
+        // Try to get user data from localStorage
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) {
+          try {
+            const userData = JSON.parse(storedUserData);
+            const storedTime = localStorage.getItem('userDataTimestamp');
+            const dataAge = storedTime ? (Date.now() - parseInt(storedTime)) : Infinity;
+            
+            // Use cached data if it's less than 5 minutes old
+            if (dataAge < 5 * 60 * 1000) { // 5 minutes
+              console.log('Hooks: Using cached user data from localStorage');
+              return { success: true, userData };
+            }
+          } catch (e) {
+            console.error('Error parsing cached user data:', e);
+            // Continue to fetch fresh data
+          }
+        }
+      }
+      
+      console.log('Hooks: Fetching fresh user data from API');
+      const userMeEndpoint = ENDPOINTS.user.me;
+      
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      const response = await fetch(userMeEndpoint, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      
+      const userData = await response.json();
+
+      // Save to localStorage with timestamp
+      localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem('userDataTimestamp', Date.now().toString());
+
+      return { success: true, userData };
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Hook for updating user profile data
+  async useUpdateUserProfile(profileData) {
+    try {
+      const updateProfileEndpoint = ENDPOINTS.user.update;
+      
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      const response = await fetch(updateProfileEndpoint, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profileData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update profile');
+      }
+      
+      const updatedData = await response.json();
+      
+      // Update localStorage with new user data
+      localStorage.setItem('userData', JSON.stringify(updatedData));
+      
+      // Update user instance if it exists
+      if (userInstance && userInstance.userData) {
+        userInstance.userData = updatedData;
+      }
+      
+      return { success: true, userData: updatedData };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Hook for optimized form submission with state preservation
+  async useSubmitForm(formId, formData, endpoint, method = 'POST') {
+    try {
+      // Save form state to store before submission
+      store.saveFormData(formId, formData);
+      
+      const token = localStorage.getItem('authToken');
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(endpoint, {
+        method: method,
+        headers: headers,
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed with status ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      return { success: true, data: responseData };
+    } catch (error) {
+      console.error(`Error submitting form ${formId}:`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for setting up 2FA
+  async useSetup2FA() {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send setup request to backend
+      const setup2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/setup/';
+      
+      const response = await fetch(setup2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to setup 2FA');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, qr_code: data.qr_code, secret_key: data.secret_key };
+    } catch (error) {
+      console.error('Error setting up 2FA:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for disabling 2FA
+  async useDisable2FA(verificationCode) {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send disable request to backend
+      const disable2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/disable/';
+      
+      const response = await fetch(disable2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ otp_token: verificationCode })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to disable 2FA');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error disabling 2FA:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Hook for verifying 2FA code
+  async useVerify2FA(verificationCode) {
+    try {
+      // Get the auth token
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send verification request to backend
+      const verify2FAEndpoint = ENDPOINTS.auth.twoFactorAuth + '/verify/';
+      
+      const response = await fetch(verify2FAEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ otp_token: verificationCode })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to verify 2FA code');
+      }
+      
+      const data = await response.json();
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error verifying 2FA code:', error);
+      return { success: false, error: error.message };
     }
   }
 }

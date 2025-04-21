@@ -89,16 +89,6 @@
     color: var(--gold-light);
 }
 
-.error-message {
-    color: #e74c3c;
-    background-color: rgba(231, 76, 60, 0.2);
-    padding: 0.8rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    display: none;
-    border-left: 3px solid #e74c3c;
-}
-
 /* Auth Tabs */
 .auth-tabs .nav-tabs {
     border-bottom: 1px solid rgba(212, 175, 55, 0.3);
