@@ -172,65 +172,98 @@ body {
 
 .modal-dialog {
     z-index: 1080 !important;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    max-width: 500px;
+    margin: 3rem auto;
 }
 
-.modal-header.border-gold {
-    background-color: rgba(212, 175, 55, 0.1);
+.modal-content {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 2px solid var(--gold);
 }
 
-.modal .btn-close-white {
-    filter: invert(1) grayscale(100%) brightness(200%);
+.modal-header {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.3)) !important;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--gold);
 }
 
-#twoFAModal .invalid-feedback {
-    color: #e74c3c;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
+.modal-header .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gold) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-#twoFAModal .alert-danger {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-    border-color: #e74c3c;
-    padding: 0.75rem;
+.modal-body {
+    padding: 2rem !important;
+}
+
+/* Form styling within modal */
+#twoFAForm .mb-4 {
+    background-color: #252525 !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    border: 1px solid #333 !important;
+    margin-top: 2rem !important;
+}
+
+#twoFAForm .form-label {
+    color: var(--gold) !important;
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: 1rem;
 }
 
-/* Styling for numeric input */
-#twoFACode {
-    letter-spacing: 0.5em;
-    font-family: monospace;
-    font-size: 1.2em;
-    text-align: center;
-    height: 3rem;
-    background-color: #252525;
-    color: var(--gold);
-    border: 2px solid var(--gold);
-    transition: all 0.3s ease;
+#twoFAForm .form-text {
+    color: #aaa !important;
+    font-size: 0.9rem;
+    margin-top: 1rem;
 }
 
-#twoFACode:focus {
-    background-color: #2a2a2a;
-    border-color: var(--gold-light);
-    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+/* Button styling */
+#twoFAForm button[type="submit"] {
+    background: linear-gradient(to bottom, var(--gold), var(--gold-dark)) !important;
+    border: none !important;
+    padding: 1rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+#twoFAForm button[type="submit"]:hover {
+    background: linear-gradient(to bottom, var(--gold-light), var(--gold)) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+#twoFAForm button[type="submit"]:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* QR code container styling */
 .qr-code-container {
-    background-color: #252525;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    margin: 1.5rem 0;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    background-color: #2a2a2a;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    margin: 2rem auto;
+    border: 2px solid var(--gold);
+    max-width: 330px;
+    text-align: center;
 }
 
 .qr-code-container img {
-    max-width: 200px;
+    max-width: 220px;
     margin: 0 auto;
-    border: 10px solid white;
-    border-radius: 0.5rem;
+    border: 12px solid white;
+    border-radius: 0.75rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 /* Setup intro styling */
@@ -325,4 +358,52 @@ body {
     .logo-text {
         font-size: 1.1rem;
     }
+}
+
+/* Styling for numeric input */
+#twoFACode {
+    letter-spacing: 0.5em;
+    font-family: monospace;
+    font-size: 1.4em;
+    text-align: center;
+    height: 3.5rem;
+    background-color: #2a2a2a;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+#twoFACode:focus {
+    background-color: #333333;
+    border-color: var(--gold-light);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+/* Keep original alert and invalid feedback styles */
+#twoFAModal .invalid-feedback {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+#twoFAModal .alert-danger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: #e74c3c;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.modal-header.border-gold {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.3)) !important;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--gold);
+}
+
+.modal .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
 } 
