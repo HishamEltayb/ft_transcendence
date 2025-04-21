@@ -122,20 +122,20 @@
 
 .gameArea {
     position: relative;
-    width: 80vw; /* Increased from 60% to 80% */
-    max-width: 960px; /* Increased from 600px to 900px */
+    width: 80vw;
+    max-width: 960px;
     aspect-ratio: 16/9; 
     min-width: 320px;
     min-height: 180px;
-    background-color: rgba(0, 0, 0, 0.4); /* More transparent to see video */
+    background-color: rgba(0, 0, 0, 1); /* Fully opaque black background by default */
     border: var(--gold) 2px solid;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     border-radius: 4px;
-    overflow: hidden; /* Important to contain video */
-    margin: 0 auto; /* Center horizontally */
-    display: flex; /* Added to improve centering of internal elements */
-    justify-content: center; /* Center contents horizontally */
-    align-items: center; /* Center contents vertically */
+    overflow: hidden;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Video Background specifically for gameArea */
@@ -147,6 +147,8 @@
     height: 100%;
     z-index: 1; /* Above the base gameArea background */
     overflow: hidden;
+    display: blcok;
+    z-index: 1;
 }
 
 .gameArea .video-background video {
@@ -161,7 +163,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.0); /* Semi-transparent overlay */
+    background: rgba(0, 0, 0, 0.6); /* More opaque overlay */
     z-index: 2; /* Above video */
 }
 
@@ -253,7 +255,7 @@
     position: absolute;
     margin: 0;
     top: 50%;
-    z-index: 1;
+    z-index: 100; /* Much higher z-index to ensure it appears above everything */
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -284,19 +286,19 @@
 /* Mode selection button - matching new nav style */
 .modeButton {
     display: inline-block;
-    margin: 3px; /* Smaller margin */
-    padding: 6px 15px; /* Smaller padding */
+    margin: 3px;
+    padding: 5px 12px; /* Smaller padding */
     background-color: rgba(0, 0, 0, 0.8);
     color: var(--gold);
     border: 2px solid var(--gold);
-    border-radius: 5px;
+    border-radius: 4px;
     font-size: 12px; /* Smaller font */
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    min-width: 100px; /* Reduced min-width */
-    max-width: 280px;
+    min-width: 80px; /* Reduced min-width */
+    max-width: 200px;
     position: relative;
     overflow: hidden;
 }
@@ -324,7 +326,20 @@
     width: 100%;
 }
 
-/* Settings styles */
+/* Settings styles - updated for two-column layout */
+.settings-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.settings-column {
+    min-width: 160px;
+}
+
 .setting {
     margin: 10px 0;
     display: flex;

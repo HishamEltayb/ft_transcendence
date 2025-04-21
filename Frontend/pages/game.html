@@ -18,40 +18,60 @@
     <!-- Settings Screen -->
     <div class="screen" id="settingsScreen">
         <h3>Game Settings</h3>
-        <div class="setting">
-            <label for="winScore">Points to Win:</label>
-            <select id="winScore">
-                <option value="3">3</option>
-                <option value="5" selected>5</option>
-                <option value="7">7</option>
-                <option value="10">10</option>
-            </select>
-        </div>
-        <div class="setting">
-            <label for="player1NameInput">Player 1 Name:</label>
-            <input type="text" id="player1NameInput" placeholder="Player 1" maxlength="10">
-        </div>
-        <div class="setting">
-            <label for="player2NameInput">Player 2 Name:</label>
-            <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
-        </div>
-        <div class="setting">
-            <label for="ballSpeedSelect">Ball Speed:</label>
-            <select id="ballSpeedSelect">
-                <option value="3">Slow</option>
-                <option value="5" selected>Normal</option>
-                <option value="8">Fast</option>
-                <option value="12">Insane</option>
-            </select>
-        </div>
-        <div class="setting" id="aiDifficultyContainer">
-            <label for="aiDifficultySelect">AI Difficulty:</label>
-            <select id="aiDifficultySelect">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
-                <!-- <option value="unbeatable">Unbeatable</option> -->
-            </select>
+        <div class="settings-container">
+            <div class="settings-column">
+                <div class="setting">
+                    <label for="winScore">Points to Win:</label>
+                    <select id="winScore">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="player1NameInput">Player 1 Name:</label>
+                    <input type="text" id="player1NameInput" placeholder="Player 1" maxlength="10">
+                </div>
+                <div class="setting">
+                    <label for="player2NameInput">Player 2 Name:</label>
+                    <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
+                </div>
+            </div>
+            <div class="settings-column">
+                <div class="setting">
+                    <label for="ballSpeedSelect">Ball Speed:</label>
+                    <select id="ballSpeedSelect">
+                        <option value="3">Slow</option>
+                        <option value="5" selected>Normal</option>
+                        <option value="8">Fast</option>
+                        <option value="12">Insane</option>
+                    </select>
+                </div>
+                <div class="setting" id="aiDifficultyContainer">
+                    <label for="aiDifficultySelect">AI Difficulty:</label>
+                    <select id="aiDifficultySelect">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="paddleSize">Paddle Size:</label>
+                    <select id="paddleSize">
+                        <option value="small">Small</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="backgroundSelect">Background:</label>
+                    <select id="backgroundSelect">
+                        <option value="classic" selected>Classic</option>
+                        <option value="video">Video Background</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <button class="modeButton" id="saveSettingsButton">Save Settings</button>
     </div>
@@ -98,8 +118,8 @@
         
         <!-- Game area in the middle -->
         <div class="gameArea">
-            <!-- Video Background moved inside gameArea -->
-            <div class="video-background">
+            <!-- Video Background - Hidden by default with inline style -->
+            <div class="video-background" id="videoBackground" style="display: none;">
                 <div class="video-overlay"></div>
                 <video autoplay muted loop playsinline> 
                     <source src="../public/assets/videos/bg1.mp4" type="video/mp4">

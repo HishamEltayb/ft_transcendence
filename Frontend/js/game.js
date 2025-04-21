@@ -37,6 +37,15 @@ const player2NameInput = document.getElementById('player2NameInput');
 const saveSettingsButton = document.getElementById('saveSettingsButton');
 const backFromHowToPlayButton = document.getElementById('backFromHowToPlayButton');
 
+// Add new global variables for the new settings
+let currentBackground = 'classic'; // Default background
+let paddleSizeMultiplier = 1; // Default paddle size multiplier
+
+// DOM Elements - add new elements
+const paddleSizeSelect = document.getElementById('paddleSize');
+const backgroundSelect = document.getElementById('backgroundSelect');
+const videoBackground = document.querySelector('.gameArea .video-background');
+
 /********************************************************************************************************
  * GAME STATE VARIABLES
  ********************************************************************************************************/
@@ -227,31 +236,65 @@ let shouldReturnToCenter = false; // Flag to indicate if AI should return to cen
  ********************************************************************************************************/
 // Initialize paddle and ball positions
 function initializePositions() {
+  // Get the current dimensions of the game area
+  gameWidth = gameArea.clientWidth;
+  gameHeight = gameArea.clientHeight;
+  
+  // Update scale factors based on current dimensions
+  scaleX = gameWidth / REFERENCE_WIDTH;
+  scaleY = gameHeight / REFERENCE_HEIGHT;
+  
   // Position paddles at the center of the game area vertically
   paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
   paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
   
-  // Set the paddle width based on the game area width
+  // Set the paddle width based on the game area width (responsive)
   const paddleWidth = Math.max(Math.round(0.01 * gameWidth), 6); // at least 6px wide
   paddle1.style.width = paddleWidth + 'px';
   paddle2.style.width = paddleWidth + 'px';
   
-  // Set the ball size based on the game area
+  // Apply the paddle height based on size multiplier (as percentage)
+  const paddleHeight = 15 * paddleSizeMultiplier + '%'; // 15% is the base height
+  paddle1.style.height = paddleHeight;
+  paddle2.style.height = paddleHeight;
+  
+  // Set the ball size based on the game area (responsive)
   const ballSize = Math.max(Math.round(0.02 * Math.min(gameWidth, gameHeight)), 8); // at least 8px
   ball.style.width = ballSize + 'px';
   ball.style.height = ballSize + 'px';
   
   // IMPORTANT: Calculate ball position AFTER updating its size
   // We need to account for the ball's dimensions to center it properly
-  // This fixes the issue where the ball sometimes doesn't appear centered
   ballX = gameWidth / 2 - ball.clientWidth / 2;
   ballY = gameHeight / 2 - ball.clientHeight / 2;
+  
+  // Set previous position same as current for smooth collision detection
+  ballLastX = ballX;
+  ballLastY = ballY;
 
   // Apply positions to DOM elements
+  paddle1.style.left = '0px'; // Ensure paddle1 is at left edge
+  paddle2.style.right = '0px'; // Ensure paddle2 is at right edge
   paddle1.style.top = paddle1Y + 'px';
   paddle2.style.top = paddle2Y + 'px';
   ball.style.left = ballX + 'px';
   ball.style.top = ballY + 'px';
+  
+  // Reset speeds to ensure consistent gameplay
+  paddle1Speed = 0;
+  paddle2Speed = 0;
+  
+  // Ensure all elements are visible
+  paddle1.style.display = 'block';
+  paddle2.style.display = 'block';
+  
+  // Ball display is controlled separately based on game state
+  
+  // Make sure elements are within bounds
+  ensureElementsInBounds();
+  
+  // Apply background based on settings
+  toggleVideoBackground();
 }
 
 // Get reference to size warning screen
@@ -314,20 +357,51 @@ function ensureElementsInBounds() {
   ball.style.top = ballY + 'px';
 }
 
-// Window load event - initialize everything
+// Window load event - initialize everything - add event listeners for new settings
 window.addEventListener('load', () => {
+  // Initialize video state - ensure it's paused if not visible
+  const videoBackground = document.querySelector('.gameArea .video-background');
+  if (videoBackground) {
+    console.log('Video background found, setting initial state');
+    
+    // Make sure z-index is low by default
+    videoBackground.style.zIndex = '-1000';
+    
+    // Pause the video initially
+    const videoElement = videoBackground.querySelector('video');
+    if (videoElement) {
+      videoElement.pause();
+      
+      // Add event listeners to monitor video state
+      videoElement.addEventListener('play', () => {
+        console.log('Video started playing');
+      });
+      
+      videoElement.addEventListener('pause', () => {
+        console.log('Video paused');
+      });
+    }
+  } else {
+    console.error('Video background not found on load');
+  }
+  
+  // Make sure backgroundSelect reflects the default
+  if (backgroundSelect) {
+    backgroundSelect.value = 'classic';
+  }
+  
+  // Set default background to classic
+  currentBackground = 'classic';
+  
   // Update game dimensions before initializing positions
   updateGameDimensions();
   initializePositions();
   
+  // Apply settings which will ensure proper video state
+  applySettings();
+  
   // Check window size on load
   checkWindowSize();
-  
-  // Add resize event listener to handle window size changes
-  window.addEventListener('resize', function() {
-    updateGameDimensions();
-    checkWindowSize();
-  });
   
   // Try to get logged-in user for player1 name
   const loggedInUser = getLoggedInUser();
@@ -344,7 +418,9 @@ window.addEventListener('load', () => {
   
   // Hide all screens, don't select any button by default
   hideAllScreens();
-  clearActiveNavButtons();
+  
+  // Make sure the video is off by default
+  toggleVideoBackground();
   
   // Add a global keydown listener for starting the game
   window.addEventListener('keydown', function(e) {
@@ -358,6 +434,10 @@ window.addEventListener('load', () => {
   // Set up regular game controls
   document.addEventListener('keydown', handleKeyDown);
   document.addEventListener('keyup', handleKeyUp);
+  
+  // Export functions to window for access from other contexts
+  window.toggleVideoBackground = toggleVideoBackground;
+  window.updatePaddleSizes = updatePaddleSizes;
 });
 
 // Main key press handler that manages both starting the game and in-game controls
@@ -495,6 +575,32 @@ function applySettings() {
   player1Name = player1NameInput.value || "Player 1";
   player2Name = isAIMode ? "AI" : (player2NameInput.value || "Player 2");
   
+  // Apply new settings
+  if (paddleSizeSelect) {
+    const paddleSize = paddleSizeSelect.value;
+    switch (paddleSize) {
+      case 'small':
+        paddleSizeMultiplier = 0.7; // 70% of normal size
+        break;
+      case 'large':
+        paddleSizeMultiplier = 1.5; // 150% of normal size
+        break;
+      case 'normal':
+      default:
+        paddleSizeMultiplier = 1.0; // Normal size
+        break;
+    }
+    // Update paddle sizes immediately
+    updatePaddleSizes();
+  }
+  
+  if (backgroundSelect) {
+    currentBackground = backgroundSelect.value;
+    console.log('Background changed to:', currentBackground);
+    // Toggle video background based on setting
+    toggleVideoBackground();
+  }
+  
   // Always apply AI difficulty settings regardless of mode
   if (aiDifficultySelect) {
     currentAIDifficulty = aiDifficultySelect.value;
@@ -522,6 +628,37 @@ function applySettings() {
   const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
   if (aiDifficultyContainer) {
     aiDifficultyContainer.style.display = 'block';
+  }
+}
+
+// Function to update paddle sizes based on size multiplier
+function updatePaddleSizes() {
+  // Get base height (% of game area height)
+  const baseHeight = 15; // 15% of game area height
+  
+  // Calculate new height as percentage
+  const newHeightPercentage = baseHeight * paddleSizeMultiplier;
+  
+  // Apply to paddles
+  if (paddle1 && paddle2) {
+    paddle1.style.height = newHeightPercentage + '%';
+    paddle2.style.height = newHeightPercentage + '%';
+    
+    // Reposition paddles to center them vertically
+    resetPaddlePositions();
+  }
+}
+
+// Function to reset paddle positions (used after size change)
+function resetPaddlePositions() {
+  if (paddle1 && paddle2) {
+    // Calculate positions to center paddles vertically
+    paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
+    paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
+    
+    // Apply positions
+    paddle1.style.top = paddle1Y + 'px';
+    paddle2.style.top = paddle2Y + 'px';
   }
 }
 
@@ -594,7 +731,7 @@ function resetBall() {
   gameRunning = true;
 }
 
-// Reset the entire game state
+// Reset the entire game state - updated for new settings
 function resetGame() {
   // Reset scores
   player1Score = 0;
@@ -620,6 +757,9 @@ function resetGame() {
   
   // Hide the ball until game starts
   ball.style.display = 'none';
+  
+  // Apply background based on settings
+  toggleVideoBackground();
   
   // Reset last time to ensure game loop functions properly on restart
   lastTime = null;
@@ -1137,3 +1277,45 @@ function pauseGame() {
   
   // Don't show any menu when paused in normal mode
 }
+
+// Function to toggle video background based on settings and pause/play accordingly
+function toggleVideoBackground() {
+  console.log('toggleVideoBackground called, currentBackground:', currentBackground);
+  // Make sure we're targeting the video inside the game area
+  const gameAreaVideoBackground = document.querySelector('.gameArea .video-background');
+  
+  if (gameAreaVideoBackground) {
+    const videoElement = gameAreaVideoBackground.querySelector('video');
+    
+    if (currentBackground === 'video') {
+      console.log('Setting video background to visible (z-index: 1)');
+      // Set z-index to make video visible
+      gameAreaVideoBackground.style.zIndex = '1';
+      
+      // Play the video when it becomes visible
+      if (videoElement) {
+        videoElement.play().catch(err => {
+          console.error('Error playing video:', err);
+        });
+      }
+    } else {
+      console.log('Setting video background to hidden (z-index: -1000)');
+      // Set z-index to hide video behind everything
+      gameAreaVideoBackground.style.zIndex = '-1000';
+      
+      // Pause the video when it's hidden to save resources
+      if (videoElement) {
+        videoElement.pause();
+      }
+    }
+  } else {
+    console.error('Game area video background element not found');
+  }
+}
+
+// Export key game functions and variables to global window object for SPA context
+// ... existing code ...
+window.paddleSizeMultiplier = paddleSizeMultiplier;
+window.currentBackground = currentBackground;
+window.toggleVideoBackground = toggleVideoBackground;
+window.updatePaddleSizes = updatePaddleSizes;
