@@ -6,7 +6,7 @@ from rest_framework_simplejwt import authentication, tokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer
+from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer, UserProfileUpdateSerializer
 from .models import User, PlayerProfile
 import requests
 import os
@@ -173,7 +173,7 @@ class Disable2FAView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(generics.RetrieveUpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -346,6 +346,7 @@ class LeaderboardView(generics.ListAPIView):
 
 
 class UploadProfileImage(generics.UpdateAPIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
     serializer_class = PlayerProfileSerializer
@@ -363,6 +364,53 @@ class UploadProfileImage(generics.UpdateAPIView):
         profile.avatar = request.data.get('avatar')
         profile.save()
         return Response(self.get_serializer(profile).data)
+
+class UserProfileUpdateView(generics.GenericAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserProfileUpdateSerializer
+    parser_classes = [MultiPartParser]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def post(self, request):
+        user = self.get_object()
+        
+        # If user is OAuth and trying to change username/password, return error
+        if user.is_oauth_user and ('username' in request.data or 
+                                 'current_password' in request.data or 
+                                 'new_password' in request.data or 
+                                 'confirm_password' in request.data):
+            return Response(
+                {"error": "Cannot change username or password for OAuth users"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Process the data
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            instance, password_updated = serializer.update(user, serializer.validated_data)
+            
+            # If password was updated, generate new tokens
+            response_data = UserSerializer(instance).data
+            if password_updated:
+                refresh = RefreshToken.for_user(instance)
+                response_data.update({
+                    'message': 'Profile updated successfully. New tokens generated.',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token)
+                })
+            else:
+                response_data.update({
+                    'message': 'Profile updated successfully',
+                })
+                
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
     """
 This file contains all the views for the users app.

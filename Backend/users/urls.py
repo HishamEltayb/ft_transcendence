@@ -4,7 +4,8 @@ from .views import (
     RegisterView, LoginView,UserDetailView,
     FortyTwoLoginView, FortyTwoCallbackView,
     Setup2FAView, Verify2FAView, Disable2FAView,
-    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage
+    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage,
+    UserProfileUpdateView
 )
 
 urlpatterns = [
@@ -26,5 +27,7 @@ urlpatterns = [
     path('profile/update/', PlayerProfileUpdateView.as_view(), name='player-profile-update'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
     path('profile/upload-avatar/', UploadProfileImage.as_view(), name='upload-avatar'),
+    # Unified profile update endpoint
+    path('profile/update-all/', UserProfileUpdateView.as_view(), name='profile-update-all'),
 ]
 
