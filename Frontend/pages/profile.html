@@ -107,9 +107,12 @@
                             </div>
                         </div>
                         <div class="mb-4">
-                            <button type="button" class="btn btn-gold" id="setting2fa">
-                                <i class="bi bi-shield-lock-fill me-2"></i>Enable Two-Factor Authentication
-                            </button>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span style="color: var(--gold); font-weight: 500;">Two-Factor Authentication</span>
+                                <div class="form-check form-switch" style="margin: 0; padding: 0;">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="setting2fa" style="width: 3em; height: 1.5em; cursor: pointer; margin: 0;">
+                                </div>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-gold" id="saveSettingsBtn">Save Changes</button>
                     </form>
@@ -149,29 +152,31 @@
 <!-- Two-Factor Authentication Modal -->
 <div class="modal fade" id="twoFAModal" tabindex="-1" aria-labelledby="twoFAModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="twoFAModalLabel">Set Up Two-Factor Authentication</h5>
+    <div class="modal-content" style="background-color: #fdf7e3; border: 1px solid var(--gold);">
+      <div class="modal-header" style="border-color: var(--gold);">
+        <h5 class="modal-title" id="twoFAModalLabel" style="color: var(--gold); font-weight: bold;">Set Up Two-Factor Authentication</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-danger d-none" id="twofa-error"></div>
-        <p class="text-dark mb-4 fw-bold">To enhance your account security, set up two-factor authentication using an authenticator app.</p>
+        <div class="alert alert-danger" id="twofa-error" style="background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">Failed to setup 2FA</div>
+        <p class="text-dark mb-4 fw-bold">There was a problem setting up 2FA. Please try again.</p>
         
         <!-- QR code will be inserted here -->
         
         <form id="twoFAForm" class="mt-4">
-          <div class="mb-4 bg-light p-3 rounded border">
-            <label for="twoFACode" class="form-label fw-bold">Verification Code</label>
-            <input type="text" class="form-control form-control-lg" id="twoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="000000" required>
-            <div class="invalid-feedback">Please enter a valid 6-digit code</div>
-            <div class="form-text mt-2">Enter the 6-digit code from your authenticator app (Google Authenticator, Authy, etc.)</div>
+          <div style="background-color: #212529; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h5 style="color: var(--gold); margin-bottom: 15px;">Verification Code</h5>
+            <div class="text-center mb-3">
+              <input type="text" class="form-control form-control-lg text-center" id="twoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="0 0 0 0 0 0" required style="background-color: #2c3036; color: var(--gold); border: 1px solid var(--gold); font-size: 24px; letter-spacing: 5px;">
+            </div>
+            <p style="color: #adb5bd; font-size: 0.9rem;">Enter the 6-digit code from your authenticator app (Google Authenticator, Authy, etc.)</p>
           </div>
           
           <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" class="btn btn-lg" style="background-color: var(--gold); color: #212529; font-weight: bold;">
+              <i class="bi bi-arrow-repeat me-2"></i>
               <span class="spinner-border spinner-border-sm d-none" data-spinner></span>
-              <span data-button-text>Generate QR Code</span>
+              <span data-button-text>GENERATE QR CODE</span>
             </button>
           </div>
         </form>
