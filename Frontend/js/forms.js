@@ -67,7 +67,10 @@ class Forms {
             tab: document.getElementById('registerTab'),
             container: document.getElementById('registerFormContainer'),
             form: document.getElementById('registerForm'),
-            submitBtn: document.getElementById('registerBtn')
+            submitBtn: document.getElementById('registerBtn'),
+            passwordField: document.getElementById('registerPassword'),
+            confirmPasswordField: document.getElementById('confirmPassword'),
+            passwordMatchStatus: document.getElementById('passwordMatchStatus')
         };
         
         // Add event listeners for login/register
@@ -81,6 +84,12 @@ class Forms {
         
         if (this.register.form) {
             this.register.form.addEventListener('submit', this.submitRegisterForm.bind(this));
+            
+            // Add real-time password validation
+            if (this.register.passwordField && this.register.confirmPasswordField) {
+                this.register.passwordField.addEventListener('input', this.validatePasswordMatch.bind(this));
+                this.register.confirmPasswordField.addEventListener('input', this.validatePasswordMatch.bind(this));
+            }
         }
         
         if (this.login.tab && this.register.tab) {
@@ -707,6 +716,8 @@ class Forms {
             // Use the hook to submit the data
             const result = await hooks.useSubmitRegisterForm(registerData);
             
+            console.log('result', result);
+            
             // Handle the result
             if (result.success) {
                 // Show success toast
@@ -714,6 +725,8 @@ class Forms {
                 
                 // Clear the form
                 this.register.form.reset();
+                this.register.passwordMatchStatus.textContent = '';
+                this.register.passwordMatchStatus.className = 'form-text mt-1';
                 
                 // Switch to login form
                 this.showLoginForm();
@@ -1073,6 +1086,37 @@ class Forms {
                 button.classList.remove('btn-danger');
                 button.classList.add('btn-gold');
             }
+        }
+    }
+
+    // Method to validate password match in real-time
+    validatePasswordMatch() {
+        if (!this.register.passwordField || !this.register.confirmPasswordField || !this.register.passwordMatchStatus) {
+            return;
+        }
+        
+        const password = this.register.passwordField.value;
+        const confirmPassword = this.register.confirmPasswordField.value;
+        
+        // Only show validation when confirm password has content
+        if (!confirmPassword) {
+            this.register.passwordMatchStatus.textContent = '';
+            this.register.passwordMatchStatus.className = 'form-text mt-1';
+            this.register.confirmPasswordField.classList.remove('is-valid', 'is-invalid');
+            return;
+        }
+        
+        // Check if passwords match
+        if (password === confirmPassword) {
+            this.register.passwordMatchStatus.textContent = 'Passwords match';
+            this.register.passwordMatchStatus.className = 'form-text mt-1 text-success';
+            this.register.confirmPasswordField.classList.add('is-valid');
+            this.register.confirmPasswordField.classList.remove('is-invalid');
+        } else {
+            this.register.passwordMatchStatus.textContent = 'Passwords do not match';
+            this.register.passwordMatchStatus.className = 'form-text mt-1 text-danger';
+            this.register.confirmPasswordField.classList.add('is-invalid');
+            this.register.confirmPasswordField.classList.remove('is-valid');
         }
     }
 }
