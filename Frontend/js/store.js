@@ -112,18 +112,13 @@ class Store {
      * Clear user data (logout)
      */
     clearUserData() {
-        // First clear state properties
         this.state.user = null;
         this.state.userDataTimestamp = null;
-        
-        // Remove all relevant items from localStorage
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
         localStorage.removeItem('userDataTimestamp');
         localStorage.removeItem('appState');
-        localStorage.removeItem('redirectAfterLogin');
-        
-        // Do not call this.saveState() here as it would save the state back to localStorage
+        this.saveState();
     }
 
     // NAVIGATION METHODS
