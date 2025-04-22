@@ -60,11 +60,35 @@ class LoginView(APIView):
         
         # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
-        return Response({
+        
+        # Create response with user data
+        response = Response({
             'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
+            'success': True
         })
+        
+        # Set JWT cookies as HttpOnly and Secure
+        # Access token (shorter expiration)
+        response.set_cookie(
+            key='access_token',
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=True,  # Use True in production with HTTPS
+            samesite='Lax',
+            max_age=60 * 30  # 30 minutes in seconds
+        )
+        
+        # Refresh token (longer expiration)
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=True,  # Use True in production with HTTPS
+            samesite='Lax',
+            max_age=60 * 60 * 24  # 1 day in seconds
+        )
+        
+        return response
 
 class Setup2FAView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -267,7 +291,7 @@ class FortyTwoCallbackView(APIView):
                 user = User.objects.get(intra_id=intra_id)
             except User.DoesNotExist:
                 # Create a new user if none exists
-                username = f"{intra_login}_{intra_id}"
+                username = intra_login
                 
                 # Generate a random password
                 password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
@@ -287,7 +311,7 @@ class FortyTwoCallbackView(APIView):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
-            
+        
             # Create the redirect URL with the tokens
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
             redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
@@ -343,6 +367,20 @@ class LeaderboardView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlayerProfileSerializer
     queryset = PlayerProfile.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
+
+
+class LogoutView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        response = Response({'success': True, 'message': 'Logged out successfully'})
+        
+        # Clear JWT cookies
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        return response
 
 
 class UploadProfileImage(generics.UpdateAPIView):
