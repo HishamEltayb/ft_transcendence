@@ -150,6 +150,8 @@ AUTH_USER_MODEL = 'users.User'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+APPEND_SLASH = False
+
 CSRF_TRUSTED_ORIGINS = ['https://localhost', 'http://localhost']
 
 
