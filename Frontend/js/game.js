@@ -293,6 +293,7 @@ function initializePositions() {
       rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
     };
   } else {
+    console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz');
     // Standard 2-player positioning
     paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
@@ -350,11 +351,9 @@ function initializePositions() {
   paddle3Speed = 0;
   paddle4Speed = 0;
   
-  // Ensure the appropriate elements are visible
+  // Ensure all elements are visible
   paddle1.style.display = 'block';
   paddle2.style.display = 'block';
-  
-  // Ball display is controlled separately based on game state
   
   // Make sure elements are within bounds
   ensureElementsInBounds();
@@ -578,11 +577,10 @@ howToPlayLink.addEventListener('click', () => {
 
 // Game Mode buttons with simpler direct start
 pvpButton.addEventListener('click', () => {
-  console.log('PVP button clicked');
   window.isAIMode = false;
   isAIMode = false; // Set both local and global
   isMultiplayerMode = false;
-  console.log('PVP mode selected, isAIMode set to:', isAIMode);
+  console.log('1111111111111111111111111111111111111');
   hideAllScreens();
   
   // Apply current settings
@@ -594,11 +592,10 @@ pvpButton.addEventListener('click', () => {
 });
 
 pveButton.addEventListener('click', () => {
-  console.log('PVE button clicked');
   window.isAIMode = true;
   isAIMode = true; // Set both local and global
   isMultiplayerMode = false;
-  console.log('AI mode selected, isAIMode set to:', isAIMode);
+  console.log('AIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAI');
   hideAllScreens();
   
   // Apply current settings
@@ -611,11 +608,10 @@ pveButton.addEventListener('click', () => {
 
 // Add event listener for multiplayer button
 multiplayerButton.addEventListener('click', () => {
-  console.log('Multiplayer button clicked');
   window.isAIMode = false;
   isAIMode = false; // Set both local and global
   isMultiplayerMode = true;
-  console.log('Multiplayer mode selected, isMultiplayerMode set to:', isMultiplayerMode);
+  console.log('4444444444444444444444444444444444444');
   hideAllScreens();
   
   // Apply current settings
@@ -645,6 +641,7 @@ backFromHowToPlayButton.addEventListener('click', () => {
 // Event listener for the restart button
 restartButton.addEventListener('click', () => {
   winScreen.style.display = 'none';
+  isMultiplayerMode = false;
   resetGame();
   
   // Return to the game selection screen
