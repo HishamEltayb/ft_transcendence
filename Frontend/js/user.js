@@ -414,15 +414,6 @@ class User {
     }
 
     /**
-     * Check if the current user has 2FA enabled
-     * @returns {boolean} True if 2FA is enabled, false otherwise
-     */
-    is2FAEnabled() {
-        const userData = this.getUserData();
-        return userData && userData.is_two_factor_enabled === true;
-    }
-
-    /**
      * Set up event listeners
      */
     setupEventListeners() {

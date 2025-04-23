@@ -3,7 +3,6 @@ import components from './components.js';
 import user from './user.js';
 import store from './store.js';
 import forms from './forms.js';
-import { PROTECTED_PAGES } from './constants.js';
 
 class Router {
     constructor() {
@@ -44,16 +43,6 @@ class Router {
                 if (pageName) {
                     this.navigateTo(pageName);
                 }
-                return;
-            }
-            
-            // Special handling for profile link
-            if (e.target.id === 'navProfile' || (e.target.closest('a') && e.target.closest('a').id === 'navProfile')) {
-                e.preventDefault();
-                console.log('Router: Profile link clicked directly');
-                
-                // Force reload of user data before navigating to profile
-                this.forceFetchUserDataAndNavigate();
                 return;
             }
             
@@ -153,32 +142,12 @@ class Router {
             user.refreshUserData(false);
         }
         
-        // Check if page is protected and requires auth
-        if (this.isProtectedPage(pageName) && !store.isAuthenticated()) {
-            console.warn(`Router: Page ${pageName} requires authentication. Redirecting to login...`);
-            
-            // Store intended destination for post-login redirect
-            store.setRedirectAfterLogin(pageName);
-            
-            // Navigate to login page
-            this.navigateTo('login', false);
-            
-            // Show notification
-            components.showToast('warning', 'Authentication Required', 'Please log in to access this page.');
-            
-            return 'login';
-        }
-        
-        // Update UI for current auth state
         user.updateUIAuthState();
         
         return true;
     }
     
-    isProtectedPage(pageName) {
-        return PROTECTED_PAGES.includes(pageName.toLowerCase());
-    }
-    
+
     /**
      * Navigate to a specific page
      */
@@ -215,20 +184,7 @@ class Router {
         user.updateUIAuthState();
         
         // Special handling for specific pages
-        if (resolvedPage === 'profile') {
-            console.log('Router: Loading profile page, initializing forms...');
-            // Small delay to ensure DOM is fully loaded
-            setTimeout(() => {
-                // Reapply auth state for any elements added by initialization
-                user.updateUIAuthState();
-                
-                if (typeof forms !== 'undefined' && forms.initProfilePage) {
-                    forms.initProfilePage();
-                } else {
-                    console.warn('Router: forms.js not loaded or initProfilePage not found');
-                }
-            }, 100);
-        } else if (resolvedPage === 'login') {
+        if (resolvedPage === 'login') {
             console.log('Router: Loading login page, initializing login/register tabs...');
             // Small delay to ensure DOM is fully loaded
             setTimeout(() => {
@@ -286,40 +242,6 @@ class Router {
     }
 
     /**
-     * Force fetch user data from server before navigation
-     */
-    async forceFetchUserDataAndNavigate() {
-        components.showSpinner();
-        
-        // Check if authenticated
-        if (!store.hasAuthToken()) {
-            store.setRedirectAfterLogin('profile');
-            this.navigateTo('login');
-            components.hideSpinner();
-            return;
-        }
-        
-        try {
-            // Force fetch fresh user data
-            const result = await user.fetchUserData(true);
-            
-            if (result.success) {
-                console.log('Router: Successfully refreshed user data before profile navigation');
-            } else {
-                console.warn('Router: Failed to refresh user data before profile navigation');
-            }
-            
-            // Navigate to profile
-            this.navigateTo('profile');
-        } catch (error) {
-            console.error('Router: Error fetching user data before profile navigation:', error);
-            this.navigateTo('profile');
-        } finally {
-            components.hideSpinner();
-        }
-    }
-
-    /**
      * Save state of the current page before navigation
      */
     saveCurrentPageState() {
@@ -330,36 +252,12 @@ class Router {
         console.log(`Router: Saving state for page: ${currentPage}`);
         
         // Save form data for specific pages
-        if (currentPage === 'profile') {
-            this.saveProfileFormState();
-        } else if (currentPage === 'game') {
+        if (currentPage === 'game') {
             this.saveGameState();
         }
         
         // Save overall state
         store.saveState();
-    }
-    
-    /**
-     * Save profile form state
-     */
-    saveProfileFormState() {
-        try {
-            const profileForm = document.getElementById('profileForm');
-            if (profileForm) {
-                const formData = new FormData(profileForm);
-                const formDataObj = {};
-                
-                for (const [key, value] of formData.entries()) {
-                    formDataObj[key] = value;
-                }
-                
-                console.log('Router: Saving profile form state to store');
-                store.saveFormData('profileForm', formDataObj);
-            }
-        } catch (error) {
-            console.error('Router: Error saving profile form state:', error);
-        }
     }
     
     /**

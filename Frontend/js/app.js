@@ -88,17 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     try {
         await app.init();
-        
-        const currentPath = window.location.pathname;
-        if (currentPath.includes('profile')) {
-            console.log("App: On profile page, initializing profile...");
-            // Use a small delay to ensure DOM is fully rendered
-            setTimeout(() => {
-                if (typeof forms !== 'undefined' && forms.initProfilePage) {
-                    forms.initProfilePage();
-                }
-            }, 100);
-        }
     } catch (error) {
         components.hideSpinner()
     }
