@@ -1,13 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
-from rest_framework_simplejwt import authentication, tokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer
-from .models import User, PlayerProfile
+from .serializers import UserSerializer, RegisterSerializer
+from .models import User
 import requests
 import os
 import secrets
@@ -20,6 +18,9 @@ import json
 from django.shortcuts import redirect
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.parsers import MultiPartParser
+import os
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -321,43 +322,43 @@ class FortyTwoCallbackView(APIView):
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-# Player Profile Views
-class PlayerProfileDetailView(generics.RetrieveAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
+# # Player Profile Views
+# class PlayerProfileDetailView(generics.RetrieveAPIView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = PlayerProfileSerializer
 
-    def get_object(self):
-        # Get the profile for the currently authenticated user
-        try:
-            return self.request.user.profile
-        except PlayerProfile.DoesNotExist:  
-            # Create profile if it doesn't exist
-            return PlayerProfile.objects.create(user=self.request.user)
+#     def get_object(self):
+#         # Get the profile for the currently authenticated user
+#         try:
+#             return self.request.user.profile
+#         except PlayerProfile.DoesNotExist:  
+#             # Create profile if it doesn't exist
+#             return PlayerProfile.objects.create(user=self.request.user)
 
 class PlayerProfileUpdateView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
+    serializer_class = UserSerializer
     
     def get_object(self):
-        return self.request.user.profile
+        return self.request.user
 
     def update(self, request, *args, **kwargs):
-        profile = self.get_object()
+        user = self.get_object()
         
         game_result = request.data.get('game_result')
         if game_result:
-            profile.total_games += 1
+            user.total_games += 1
             if game_result.lower() == 'win':
-                profile.wins += 1
-                profile.rank += 10
+                user.wins += 1
+                user.rank += 10
             elif game_result.lower() == 'loss':
-                profile.losses += 1
+                user.losses += 1
                 # Decrement rank for losing, but not below 0
-                profile.rank = max(0, profile.rank - 5)
-            profile.save()
-            return Response(self.get_serializer(profile).data)
+                user.rank = max(0, user.rank - 5)
+            user.save()
+            return Response(self.get_serializer(user).data)
         
         # Handle direct stats update (admin or system use)
         return super().update(request, *args, **kwargs)
@@ -365,8 +366,8 @@ class PlayerProfileUpdateView(generics.UpdateAPIView):
 class LeaderboardView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
-    queryset = PlayerProfile.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
+    serializer_class = UserSerializer
+    queryset = User.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
 
 
 class LogoutView(APIView):
@@ -383,80 +384,81 @@ class LogoutView(APIView):
         return response
 
 
-class UploadProfileImage(generics.UpdateAPIView):
+# class UploadProfileImage(generics.UpdateAPIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#     parser_classes = [MultiPartParser]
+#     serializer_class = PlayerProfileSerializer
+#     queryset = PlayerProfile.objects.all()
+
+#     def get_object(self):
+#         return self.request.user.profile
+
+#     def update(self, request, *args, **kwargs):
+#         profile = self.get_object()
+#         if 'avatar' not in request.data:
+#             return Response({'error': 'No avatar provided'}, status=status.HTTP_400_BAD_REQUEST)
+#         if profile.avatar:
+#             profile.avatar.delete()
+#         profile.avatar = request.data.get('avatar')
+#         profile.save()
+#         return Response(self.get_serializer(profile).data)
+
+class UpdateProfileImageView(generics.UpdateAPIView):
+    """View to update the profile_image for the authenticated user."""
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser]
-    serializer_class = PlayerProfileSerializer
-    queryset = PlayerProfile.objects.all()
+    parser_classes = [MultiPartParser] # Expect image file uploads
+    serializer_class = UserSerializer # Still needed for response serialization
+    queryset = User.objects.all()
 
     def get_object(self):
-        return self.request.user.profile
+        """Return the authenticated user object."""
+        return self.request.user
 
     def update(self, request, *args, **kwargs):
-        profile = self.get_object()
-        if 'avatar' not in request.data:
-            return Response({'error': 'No avatar provided'}, status=status.HTTP_400_BAD_REQUEST)
-        if profile.avatar:
-            profile.avatar.delete()
-        profile.avatar = request.data.get('avatar')
-        profile.save()
-        return Response(self.get_serializer(profile).data)
+        """Handle PATCH/PUT request to update profile_image."""
+        user = self.get_object()
+        new_image_file = request.FILES.get('profile_image')
 
-    """
-This file contains all the views for the users app.
+        if new_image_file:
+            old_image_value = user.profile_image
 
-The views are:
+            # --- Delete old image file if it's a local path ---
+            if old_image_value and not old_image_value.startswith(('http://', 'https://')):
+                # Assume old_image_value is a path relative to MEDIA_ROOT
+                try:
+                    if default_storage.exists(old_image_value):
+                        default_storage.delete(old_image_value)
+                        print(f"Deleted old profile image: {old_image_value}")
+                    else:
+                         print(f"Old profile image path not found in storage: {old_image_value}")
+                except Exception as e:
+                    # Log error, but proceed with saving new image
+                    print(f"Error deleting old profile image {old_image_value}: {e}")
 
-* RegisterView: Handles user registration
-	1. Receive a POST request with the user's registration details
-	2. Validate the request data
-	3. Create a new user instance
-	4. Save the user to the database
-	5. Return a JSON response with the user's details
-* LoginView: Handles user login
-	1. Receive a POST request with the user's login credentials
-	2. Validate the request data
-	3. Authenticate the user
-	4. Return a JSON response with the user's details and a token
-* Setup2FAView: Handles setting up 2FA for a user
-	1. Receive a POST request with the user's 2FA setup details
-	2. Validate the request data
-	3. Generate a QR code for the user
-	4. Return a JSON response with the QR code and a secret key
-* Verify2FAView: Handles verifying a user's 2FA token
-	1. Receive a POST request with the user's 2FA token
-	2. Validate the request data
-	3. Verify the token with the user's secret key
-	4. Return a JSON response with a success message
-* Disable2FAView: Handles disabling 2FA for a user
-	1. Receive a POST request with the user's 2FA disable details
-	2. Validate the request data
-	3. Disable 2FA for the user
-	4. Return a JSON response with a success message
-* UserDetailView: Handles retrieving a user's profile
-	1. Receive a GET request with the user's ID
-	2. Retrieve the user from the database
-	3. Return a JSON response with the user's details
-* FortyTwoLoginView: Handles redirecting the user to 42's OAuth authorization page
-	1. Receive a GET request with the user's ID
-	2. Redirect the user to 42's OAuth authorization page
-* FortyTwoCallbackView: Handles the callback from 42's OAuth service
-	1. Receive a GET request with the user's authorization code
-	2. Exchange the authorization code for an access token
-	3. Retrieve the user's details from 42's API
-	4. Create a new user instance
-	5. Save the user to the database
-	6. Return a JSON response with the user's details and a token
-* PlayerProfileDetailView: Handles retrieving a player's profile
-	1. Receive a GET request with the player's ID
-	2. Retrieve the player from the database
-	3. Return a JSON response with the player's details
-* PlayerProfileUpdateView: Handles updating a player's profile
-	1. Receive a PATCH or PUT request with the player's updated details
-	2. Validate the request data
-	3. Update the player's profile
-	4. Return a JSON response with the player's updated details
-* LeaderboardView: Handles retrieving the top 10 players by rank
-	1. Retrieve the top 10 players from the database
-	2. Return a JSON response with the players' details
-""" 
+            # --- Save new image ---
+            # Define the path within MEDIA_ROOT (storage handles MEDIA_ROOT internally)
+            file_path = os.path.join('profile_images', new_image_file.name)
+            # Ensure unique filename if necessary (default_storage might handle this)
+            # file_path = default_storage.get_available_name(file_path)
+            try:
+                # Use default_storage to save the file
+                saved_path = default_storage.save(file_path, new_image_file)
+                print(f"Saved new profile image to: {saved_path}")
+                # Store the relative path returned by save() in the model field
+                user.profile_image = saved_path
+            except Exception as e:
+                # Handle save error (log it, return error response)
+                print(f"Error saving profile image: {e}")
+                return Response({"error": "Failed to save profile image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # --- Save user model (only the profile_image field) ---
+            user.save(update_fields=['profile_image'])
+
+        # --- Serialize and return response ---
+        # We manually updated the user, now serialize the result for the response
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
+# Assuming PlayerProfile is potentially deprecated or handled elsewhere
+# If PlayerProfile.objects.get_or_create(user=user) was needed, add it back here before the return.
