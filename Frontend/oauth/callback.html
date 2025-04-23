@@ -131,7 +131,7 @@
                 statusMsg.style.color = 'var(--gold)';
                 
                 // Fetch user data
-                fetch('/api/users/me', {
+                fetch('/api/users/me/', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
