@@ -4,8 +4,7 @@ from .views import (
     RegisterView, LoginView,UserDetailView, LogoutView,
     FortyTwoLoginView, FortyTwoCallbackView,
     Setup2FAView, Verify2FAView, Disable2FAView,
-    PlayerProfileDetailView, PlayerProfileUpdateView, LeaderboardView, UploadProfileImage
-)
+    LeaderboardView)
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -23,9 +22,5 @@ urlpatterns = [
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
 
     # Player Profile endpoints
-    path('profile/', PlayerProfileDetailView.as_view(), name='player-profile'),
-    path('profile/update/', PlayerProfileUpdateView.as_view(), name='player-profile-update'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
-    path('profile/upload-avatar/', UploadProfileImage.as_view(), name='upload-avatar'),
 ]
-
