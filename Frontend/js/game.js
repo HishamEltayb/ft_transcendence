@@ -100,6 +100,9 @@ let player1Name = "Player 1"; // Default player names
 let player2Name = "Player 2"; // Default player names
 let pointsToWin = 5; // Default points to win
 
+// Add a variable to track if a collision has happened in the current frame
+let collisionProcessedThisFrame = false;
+
 // Function to get logged-in user data
 function getLoggedInUser() {
   // Check if we have a user in localStorage
@@ -278,14 +281,17 @@ function initializePositions() {
     paddle3.style.display = 'block';
     paddle4.style.display = 'block';
     
-    // Reset paddle disabled state
+    // Initialize paddle states: paddle1 and paddle2 active, paddle3 and paddle4 disabled
     paddle1.classList.remove('paddle-disabled');
     paddle2.classList.remove('paddle-disabled');
-    paddle3.classList.remove('paddle-disabled');
-    paddle4.classList.remove('paddle-disabled');
+    paddle3.classList.add('paddle-disabled');
+    paddle4.classList.add('paddle-disabled');
     
-    // Reset last paddle hit
-    lastPaddleHit = null;
+    // Set lastPaddleHit for proper initialization
+    lastPaddleHit = {
+      leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
+      rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
+    };
   } else {
     // Standard 2-player positioning
     paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
@@ -344,11 +350,9 @@ function initializePositions() {
   paddle3Speed = 0;
   paddle4Speed = 0;
   
-  // Ensure all elements are visible
+  // Ensure the appropriate elements are visible
   paddle1.style.display = 'block';
   paddle2.style.display = 'block';
-  paddle3.style.display = 'block';
-  paddle4.style.display = 'block';
   
   // Ball display is controlled separately based on game state
   
@@ -879,14 +883,20 @@ function resetGame() {
   // Reset game state
   gameRunning = false;
   gameOver = false;
-  lastPaddleHit = null;
+  collisionProcessedThisFrame = false;
   
-  // Reset paddle states for multiplayer
+  // In multiplayer mode, set initial paddle states
   if (isMultiplayerMode) {
-    paddle1.classList.remove('paddle-disabled');
-    paddle2.classList.remove('paddle-disabled');
-    paddle3.classList.remove('paddle-disabled');
-    paddle4.classList.remove('paddle-disabled');
+    // Initialize the lastPaddleHit tracker
+    lastPaddleHit = {
+      leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
+      rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
+    };
+    
+    // Apply visual states
+    resetPaddleVisuals();
+  } else {
+    lastPaddleHit = null;
   }
   
   // Update player names display (ensuring they're always visible)
@@ -1317,6 +1327,9 @@ function moveBall(deltaTime) {
   ballX += effectiveSpeedX;
   ballY += effectiveSpeedY;
 
+  // Reset collision flag at the start of each frame
+  collisionProcessedThisFrame = false;
+
   // Top collision: snap to top and reverse vertical velocity
   if (ballY <= 0) {
     ballY = 3;
@@ -1340,12 +1353,27 @@ function moveBall(deltaTime) {
   // Left paddles collision detection (paddle1 and paddle3)
   // First, check if the ball is moving left (toward left paddles)
   if (ballSpeedX < 0) {
-    // Check for paddle1 collision
-    checkLeftPaddleCollision(paddle1, paddle1Y, paddle1Right, 'paddle1');
-    
-    // Check for paddle3 collision in multiplayer mode
+    // Check for active paddle first, then disabled paddle
     if (isMultiplayerMode) {
-      checkLeftPaddleCollision(paddle3, paddle3Y, paddle1Right, 'paddle3');
+      // Determine which paddle is active and which is disabled
+      const activePaddle = lastPaddleHit.leftSide === 'paddle3' ? paddle1 : paddle3;
+      const activePaddleY = lastPaddleHit.leftSide === 'paddle3' ? paddle1Y : paddle3Y;
+      const activePaddleId = lastPaddleHit.leftSide === 'paddle3' ? 'paddle1' : 'paddle3';
+      
+      const disabledPaddle = lastPaddleHit.leftSide === 'paddle3' ? paddle3 : paddle1;
+      const disabledPaddleY = lastPaddleHit.leftSide === 'paddle3' ? paddle3Y : paddle1Y;
+      const disabledPaddleId = lastPaddleHit.leftSide === 'paddle3' ? 'paddle3' : 'paddle1';
+      
+      // Check active paddle first
+      checkLeftPaddleCollision(activePaddle, activePaddleY, paddle1Right, activePaddleId);
+      
+      // Only check disabled paddle if no collision has been processed yet
+      if (!collisionProcessedThisFrame) {
+        checkLeftPaddleCollision(disabledPaddle, disabledPaddleY, paddle1Right, disabledPaddleId);
+      }
+    } else {
+      // Standard single player mode
+      checkLeftPaddleCollision(paddle1, paddle1Y, paddle1Right, 'paddle1');
     }
   }
 
@@ -1355,12 +1383,27 @@ function moveBall(deltaTime) {
   // Right paddles collision detection (paddle2 and paddle4)
   // Check if the ball is moving right (toward right paddles)
   if (ballSpeedX > 0) {
-    // Check for paddle2 collision
-    checkRightPaddleCollision(paddle2, paddle2Y, rightPaddleLeft, 'paddle2');
-    
-    // Check for paddle4 collision in multiplayer mode
+    // Check for active paddle first, then disabled paddle
     if (isMultiplayerMode) {
-      checkRightPaddleCollision(paddle4, paddle4Y, rightPaddleLeft, 'paddle4');
+      // Determine which paddle is active and which is disabled
+      const activePaddle = lastPaddleHit.rightSide === 'paddle4' ? paddle2 : paddle4;
+      const activePaddleY = lastPaddleHit.rightSide === 'paddle4' ? paddle2Y : paddle4Y;
+      const activePaddleId = lastPaddleHit.rightSide === 'paddle4' ? 'paddle2' : 'paddle4';
+      
+      const disabledPaddle = lastPaddleHit.rightSide === 'paddle4' ? paddle4 : paddle2;
+      const disabledPaddleY = lastPaddleHit.rightSide === 'paddle4' ? paddle4Y : paddle2Y;
+      const disabledPaddleId = lastPaddleHit.rightSide === 'paddle4' ? 'paddle4' : 'paddle2';
+      
+      // Check active paddle first
+      checkRightPaddleCollision(activePaddle, activePaddleY, rightPaddleLeft, activePaddleId);
+      
+      // Only check disabled paddle if no collision has been processed yet
+      if (!collisionProcessedThisFrame) {
+        checkRightPaddleCollision(disabledPaddle, disabledPaddleY, rightPaddleLeft, disabledPaddleId);
+      }
+    } else {
+      // Standard single player mode
+      checkRightPaddleCollision(paddle2, paddle2Y, rightPaddleLeft, 'paddle2');
     }
   }
 
@@ -1463,8 +1506,14 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle, paddleId = nul
   if (isMultiplayerMode && paddleId) {
     console.log(`${paddleId} hit the ball`);
     
-    // Store the last paddle that hit the ball
-    lastPaddleHit = paddleId;
+    // Update the last paddle hit for the appropriate side
+    if (paddleId === 'paddle1' || paddleId === 'paddle3') {
+      // Left side paddle hit
+      lastPaddleHit.leftSide = paddleId;
+    } else if (paddleId === 'paddle2' || paddleId === 'paddle4') {
+      // Right side paddle hit
+      lastPaddleHit.rightSide = paddleId;
+    }
     
     // Apply visual cue to show which paddle is disabled
     resetPaddleVisuals();
@@ -1474,7 +1523,7 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle, paddleId = nul
   playSound(paddleSound);
 }
 
-// Function to reset paddle visuals (remove disabled state)
+// Function to reset paddle visuals (update disabled state)
 function resetPaddleVisuals() {
   // Check if we're in multiplayer mode
   if (!isMultiplayerMode) return;
@@ -1485,31 +1534,32 @@ function resetPaddleVisuals() {
   paddle3.classList.remove('paddle-disabled');
   paddle4.classList.remove('paddle-disabled');
   
-  // Apply disabled visual to the last hit paddle's team
-  if (lastPaddleHit === 'paddle1' || lastPaddleHit === 'paddle3') {
-    // If a left paddle hit last, disable both left paddles
-    if (lastPaddleHit === 'paddle1') {
-      paddle1.classList.add('paddle-disabled');
-    } else {
-      paddle3.classList.add('paddle-disabled');
-    }
-  } else if (lastPaddleHit === 'paddle2' || lastPaddleHit === 'paddle4') {
-    // If a right paddle hit last, disable both right paddles
-    if (lastPaddleHit === 'paddle2') {
-      paddle2.classList.add('paddle-disabled');
-    } else {
-      paddle4.classList.add('paddle-disabled');
-    }
+  // Apply disabled visual based on lastPaddleHit
+  // For left side
+  if (lastPaddleHit.leftSide === 'paddle1') {
+    paddle1.classList.add('paddle-disabled');
+  } else if (lastPaddleHit.leftSide === 'paddle3') {
+    paddle3.classList.add('paddle-disabled');
+  }
+  
+  // For right side
+  if (lastPaddleHit.rightSide === 'paddle2') {
+    paddle2.classList.add('paddle-disabled');
+  } else if (lastPaddleHit.rightSide === 'paddle4') {
+    paddle4.classList.add('paddle-disabled');
   }
 }
 
 // Helper function to check collision with left paddles
 function checkLeftPaddleCollision(paddle, paddleY, paddleRight, paddleId) {
-  // Skip the paddle if it's disabled in multiplayer mode
+  // Skip collision check if we've already processed a collision this frame
+  if (collisionProcessedThisFrame) return false;
+  
+  // Skip collision check for disabled paddles in multiplayer mode
   if (isMultiplayerMode) {
-    // If this paddle is from the same side (left) as the last hit paddle, skip collision
-    if ((lastPaddleHit === 'paddle1' && paddleId === 'paddle3') || 
-        (lastPaddleHit === 'paddle3' && paddleId === 'paddle1')) {
+    // For left side (paddle1 and paddle3)
+    // Skip if this paddle matches the last hit paddle for the left side
+    if (paddleId === lastPaddleHit.leftSide) {
       return false;
     }
   }
@@ -1528,6 +1578,7 @@ function checkLeftPaddleCollision(paddle, paddleY, paddleRight, paddleId) {
       // Valid collision - set ball position to the edge of paddle
       ballX = paddleRight;
       adjustBallDirection(paddleY, paddle.clientHeight, true, paddleId);
+      collisionProcessedThisFrame = true;
       return true;
     }
   }
@@ -1540,6 +1591,7 @@ function checkLeftPaddleCollision(paddle, paddleY, paddleRight, paddleId) {
   ) {
     ballX = paddleRight; // Snap to paddle edge
     adjustBallDirection(paddleY, paddle.clientHeight, true, paddleId);
+    collisionProcessedThisFrame = true;
     return true;
   }
   
@@ -1548,11 +1600,14 @@ function checkLeftPaddleCollision(paddle, paddleY, paddleRight, paddleId) {
 
 // Helper function to check collision with right paddles
 function checkRightPaddleCollision(paddle, paddleY, paddleLeft, paddleId) {
-  // Skip the paddle if it's disabled in multiplayer mode
+  // Skip collision check if we've already processed a collision this frame
+  if (collisionProcessedThisFrame) return false;
+  
+  // Skip collision check for disabled paddles in multiplayer mode
   if (isMultiplayerMode) {
-    // If this paddle is from the same side (right) as the last hit paddle, skip collision
-    if ((lastPaddleHit === 'paddle2' && paddleId === 'paddle4') || 
-        (lastPaddleHit === 'paddle4' && paddleId === 'paddle2')) {
+    // For right side (paddle2, paddle4)
+    // Skip if this paddle matches the last hit paddle for the right side
+    if (paddleId === lastPaddleHit.rightSide) {
       return false;
     }
   }
@@ -1572,6 +1627,7 @@ function checkRightPaddleCollision(paddle, paddleY, paddleLeft, paddleId) {
       // Valid collision - set ball position to the edge of paddle
       ballX = paddleLeft - ball.clientWidth;
       adjustBallDirection(paddleY, paddle.clientHeight, false, paddleId);
+      collisionProcessedThisFrame = true;
       return true;
     }
   }
@@ -1584,6 +1640,7 @@ function checkRightPaddleCollision(paddle, paddleY, paddleLeft, paddleId) {
   ) {
     ballX = paddleLeft - ball.clientWidth; // Snap to paddle edge
     adjustBallDirection(paddleY, paddle.clientHeight, false, paddleId);
+    collisionProcessedThisFrame = true;
     return true;
   }
   

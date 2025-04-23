@@ -167,11 +167,6 @@
     z-index: 2; /* Above video */
 }
 
-/* Ensure paddles and ball appear above video */
-.paddle, .ball {
-    position: absolute;
-    z-index: 5; /* Above video and overlay */
-}
 
 .net {
     z-index: 4; /* Above overlay but below paddles/ball */
@@ -190,31 +185,33 @@
     background-color: var(--gold);
     left: 0%; /* Position paddle on the left */
     /* Remove top positioning to avoid conflict with JS */
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 .paddle2 {
     background-color: var(--gold);
     right: 0%; /* Position paddle on the right */
     /* Remove top positioning to avoid conflict with JS */
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 /* New paddles for multiplayer mode */
 .paddle3 {
-    background-color: #FF9900; /* Orange-gold for paddle3 */
+    background-color: #1eff00; /* Orange-gold for paddle3 */
     left: 0%; /* Position paddle on the left */
-    /* Remove top positioning to avoid conflict with JS */
+    box-shadow: 0 0 8px #1eff00;
+    
 }
 
 .paddle4 {
-    background-color: #66CCFF; /* Light blue for paddle4 */
+    background-color: #1eff00; /* Light blue for paddle4 */
     right: 0%; /* Position paddle on the right */
-    /* Remove top positioning to avoid conflict with JS */
+    box-shadow: 0 0 8px #1eff00;
 }
 
 /* Add a class for disabled paddles */
 .paddle-disabled {
     opacity: 0.3; /* Make it semi-transparent */
-    /* Keep pointer events so we can still move the paddle */
 }
 
 /* Team score display styles */
@@ -248,6 +245,7 @@
     top: 50%; /* Center vertically */
     /*transform: translate(-50%, -50%); /* Re-enable true centering */
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    z-index: 5;
 }
 
 /* Player information - make responsive */
