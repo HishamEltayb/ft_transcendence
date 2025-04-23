@@ -358,18 +358,6 @@ class Forms {
                 this.register.passwordMatchStatus.textContent = '';
                 this.register.passwordMatchStatus.className = 'form-text mt-1';
                 
-                // Reset character counts
-                const charCounters = this.register.form.querySelectorAll('.char-count');
-                charCounters.forEach(counter => {
-                    if (counter.parentElement.querySelector('input').id === 'registerUsername' || 
-                        counter.parentElement.querySelector('input').id === 'registerPassword' || 
-                        counter.parentElement.querySelector('input').id === 'confirmPassword') {
-                        counter.textContent = `0/${VALIDATION_INPUTS.username.maxLength}`;
-                    } else if (counter.parentElement.querySelector('input').id === 'registerEmail') {
-                        counter.textContent = `0/${VALIDATION_INPUTS.email.maxLength}`;
-                    }
-                });
-                
                 // Switch to login form
                 this.showLoginForm();
                 this.setLoading(this.register.submitBtn, false);
