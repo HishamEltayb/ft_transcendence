@@ -15,6 +15,7 @@ import base64
 import qrcode
 import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django.shortcuts import redirect
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()

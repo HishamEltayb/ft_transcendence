@@ -1,7 +1,7 @@
-import hooks from './hooks.js';
+import api from './api.js';
 import components from './components.js';
+import docHandler from './document.js';
 import { AVAILABLE_PAGES } from './constants.js';
-import store from './store.js';
 
 class Pages {
     constructor() {
@@ -26,6 +26,8 @@ class Pages {
         this.pageSection.id = 'pageSection';
         this.pageSection.className = 'page-content';
         this.appContainer.appendChild(this.pageSection);
+        
+        console.log('Pages: Initialized with App container and page section');
     }
     
     async loadAllPages() {
@@ -33,20 +35,8 @@ class Pages {
         this.loadingComplete = false;
         components.showSpinner();
         
-        
-        const slowLoadingTimeout = setTimeout(() => {
-            if (this.isLoading) {
-                components.showToast(
-                    'warning',
-                    'Slow Connection',
-                    'Pages are taking longer than usual to load.',
-                    3000
-                );
-            }
-        }, 5000);
-        
         try {
-            const htmlPages = await hooks.useFetchAllPages();
+            const htmlPages = await api.fetchAllPages();
             
             this.pages.home = htmlPages.homePage ? htmlPages.homePage.innerHTML : null;
             this.pages.game = htmlPages.gamePage ? htmlPages.gamePage.innerHTML : null;
@@ -56,12 +46,16 @@ class Pages {
             this.isLoading = false;
             this.loadingComplete = true;
             
-            clearTimeout(slowLoadingTimeout);
+            console.log('Pages: Successfully loaded all pages');
         } catch (error) {
             console.error("Error loading pages:", error);
-            clearTimeout(slowLoadingTimeout);
             
-            this.showErrorMessage();
+            components.showToast(
+                'error',
+                'Content Load Error',
+                'Failed to load page content. Please try refreshing the page.',
+                6000
+            );
             
             this.isLoading = false;
             this.loadingComplete = false;
@@ -69,198 +63,72 @@ class Pages {
         }
     }
     
-    showErrorMessage() {
-        // Show error toast
-        components.showToast(
-            'error',
-            'Content Loading Error',
-            'Failed to load page content. Please try again.',
-            8000  // Show for 8 seconds
-        );
-        
-        // Also add a simple retry button in the page area
-        if (this.pageSection) {
-            this.pageSection.innerHTML = `
-                <div class="text-center mt-5">
-                    <p class="text-muted">Content could not be loaded</p>
-                    <button class="btn btn-outline-primary" onclick="window.location.reload()">
-                        <i class="bi bi-arrow-clockwise"></i> Retry
-                    </button>
-                </div>
-            `;
-        }
-    }
-    
     showPage(pageName) {
-        
-        // Get the content for the requested page
         const content = this.pages[pageName];
         
-        if (content) {
-            // Before replacing content, store any form data from current page if needed
-            this.saveCurrentPageForms();
-            
-            // Replace page content
-            this.pageSection.innerHTML = content;
-            this.updateActiveNavLink(pageName);
-            window.scrollTo(0, 0);
-            
-            // Initialize the page with appropriate data after content is loaded
-            switch(pageName) {
-                case 'login':
-                    this.initializeLoginPage();
-                    break;
-                case 'game':
-                    this.initializeGamePage();
-                    break;
-                case 'home':
-                    this.initializeHomePage();
-                    break;
-                default:
-                    // Default initialization for other pages
-                    break;
-            }
-        } else {
+        if (!content) {
             console.error(`Error: Content for page ${pageName} not found!`);
-            if (this.pages.home) {
+            
+            components.showToast(
+                'error',
+                'Page Not Found',
+                `The requested page "${pageName}" could not be found.`,
+                5000
+            );
+            
+            if (this.pages.notFound) {
+                this.pageSection.innerHTML = this.pages.notFound;
+                this.updateActiveNavLink('notFound');
+                document.dispatchEvent(new CustomEvent('pageShown', { 
+                    detail: { page: 'notFound' } 
+                }));
+            } else if (this.pages.home) {
                 this.pageSection.innerHTML = this.pages.home;
                 this.updateActiveNavLink('home');
-                this.initializeHomePage();
+                document.dispatchEvent(new CustomEvent('pageShown', { 
+                    detail: { page: 'home' } 
+                }));
             }
+            return;
         }
-    }
-    
-    // Save any form data from the current page before navigation
-    saveCurrentPageForms() {
-        const forms = this.pageSection.querySelectorAll('form');
-        if (!forms || forms.length === 0) return;
         
+        components.showSpinner();
         
-        forms.forEach(form => {
-            if (form.id) {
-                try {
-                    const formData = new FormData(form);
-                    const formDataObj = {};
-                    
-                    for (const [key, value] of formData.entries()) {
-                        formDataObj[key] = value;
-                    }
-                    
-                    // Save to store
-                    store.saveFormData(form.id, formDataObj);
-                } catch (error) {
-                    console.error(`Pages: Error saving form data for ${form.id}:`, error);
-                }
-            }
-        });
-    }
-    
-    // Initialize login page with potentially saved form data
-    initializeLoginPage() {
-        console.log('Initializing login page');
-        
-        // Initialize login form
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            // Restore any previously entered login form data
-            const savedFormData = store.getFormData('loginForm');
-            if (savedFormData) {
-                Object.entries(savedFormData).forEach(([key, value]) => {
-                    const input = loginForm.querySelector(`[name="${key}"]`);
-                    if (input && input.type !== 'password') { // Don't restore passwords for security
-                        input.value = value;
-                    }
-                });
-            }
+        try {
+            this.pageSection.innerHTML = content;
             
-            // Set up submit handler
-            loginForm.addEventListener('submit', this.handleLoginFormSubmit);
+            this.updateActiveNavLink(pageName);
             
-            // Set up input change tracking
-            loginForm.addEventListener('input', (e) => {
-                const form = e.currentTarget;
-                if (form.id) {
-                    const formData = new FormData(form);
-                    const formDataObj = {};
-                    
-                    for (const [key, value] of formData.entries()) {
-                        if (key !== 'password') { // Don't store password
-                            formDataObj[key] = value;
-                        }
-                    }
-                    
-                    // Save to store as user types
-                    store.saveFormData(form.id, formDataObj);
-                }
-            });
+            window.scrollTo(0, 0);
+            
+            console.log(`Pages: Dispatching pageShown event for ${pageName}`);
+            document.dispatchEvent(new CustomEvent('pageShown', { 
+                detail: { page: pageName } 
+            }));
+            
+            console.log(`Pages: Displayed ${pageName} page`);
+        } catch (error) {
+            console.error(`Error showing page ${pageName}:`, error);
+            
+            components.showToast(
+                'error',
+                'Page Display Error',
+                `There was a problem displaying the ${pageName} page.`,
+                5000
+            );
+        } finally {
+            components.hideSpinner();
         }
-        
-        // Initialize 42 login button - direct reference by ID
-        const login42Link = document.getElementById('login42Link');
-        if (login42Link) {
-            console.log('Found login42Link button, attaching event handler');
-            // Dynamically import the forms module to get access to the handler
-            import('./forms.js').then(formsModule => {
-                const forms = formsModule.default;
-                if (forms && typeof forms.handleLogin42 === 'function') {
-                    // Bind the handler directly to the button
-                    login42Link.onclick = (e) => {
-                        console.log('42 login button clicked via pages.js handler');
-                        forms.handleLogin42(e);
-                    };
-                    console.log('Attached 42 login handler from forms module');
-                } else {
-                    console.warn('Could not find handleLogin42 method in forms module');
-                }
-            }).catch(error => {
-                console.error('Error loading forms module:', error);
-            });
-        } else {
-            console.warn('Login with 42 button (login42Link) not found in DOM during page initialization');
-        }
-        
-        // Initialize any other OAuth login buttons using data attributes
-        const oauthButtons = document.querySelectorAll('[data-oauth]');
-        oauthButtons.forEach(button => {
-            button.addEventListener('click', this.handleOAuthLogin);
-        });
-    }
-    
-    // Initialize game page with game state
-    initializeGamePage() {
-        
-        // Get game state from store
-        const appState = store.getState();
-        const gameState = appState.gameState;
-        
-        if (gameState) {
-            // Implement game state restoration logic here
-        }
-        
-        // Initialize any game controls
-        // ...
-    }
-    
-    // Initialize home page
-    initializeHomePage() {
-        
-        // Add any home page specific initialization
-        // ...
     }
     
     updateActiveNavLink(pageName) {
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
+        docHandler.queryAll('.nav-link').forEach(link => {
             link.classList.remove('active');
         });
         
-        const selector = `.nav-link[data-page="${pageName}"], .nav-link[href="/${pageName}"]`;
-        const activeLink = pageName === 'home' 
-            ? document.querySelector(`.nav-link[data-page="home"], .nav-link[href="/"]`)
-            : document.querySelector(selector);
-        
-        if (activeLink) {
-            activeLink.classList.add('active');
+        const navLink = docHandler.query(`#${pageName}NavBtn`);
+        if (navLink) {
+            navLink.classList.add('active');
         }
     }
     

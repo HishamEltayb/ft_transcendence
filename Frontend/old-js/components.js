@@ -1,4 +1,4 @@
-import api from './api.js';
+import hooks from './hooks.js';
 
 class Components {
     constructor() {
@@ -29,10 +29,10 @@ class Components {
 
     async loadAllComponents() {
         try {
-            const componentsHtml = await api.fetchAllComponents();
+            const componentsHtml = await hooks.useFetchAllComponents();
             
             if (!componentsHtml) {
-                throw new Error('No components returned from API');
+                throw new Error('No components returned from hook');
             }
             
             // Store the components and append the header to the DOM
@@ -132,6 +132,7 @@ class Components {
         }, duration);
     }
     
+  
     hideToast() {
         if (this.toastComponent) {
             this.toastComponent.classList.add('hide');
