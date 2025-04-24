@@ -14,13 +14,7 @@ import pyotp
 import base64
 import qrcode
 import io
-import json
-from django.shortcuts import redirect
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from rest_framework.parsers import MultiPartParser
-import os
-from django.conf import settings
-from django.core.files.storage import default_storage
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -322,19 +316,7 @@ class FortyTwoCallbackView(APIView):
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-# # Player Profile Views
-# class PlayerProfileDetailView(generics.RetrieveAPIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [permissions.IsAuthenticated]
-#     serializer_class = PlayerProfileSerializer
 
-#     def get_object(self):
-#         # Get the profile for the currently authenticated user
-#         try:
-#             return self.request.user.profile
-#         except PlayerProfile.DoesNotExist:  
-#             # Create profile if it doesn't exist
-#             return PlayerProfile.objects.create(user=self.request.user)
 
 class PlayerProfileUpdateView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -383,82 +365,3 @@ class LogoutView(APIView):
         
         return response
 
-
-# class UploadProfileImage(generics.UpdateAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-#     parser_classes = [MultiPartParser]
-#     serializer_class = PlayerProfileSerializer
-#     queryset = PlayerProfile.objects.all()
-
-#     def get_object(self):
-#         return self.request.user.profile
-
-#     def update(self, request, *args, **kwargs):
-#         profile = self.get_object()
-#         if 'avatar' not in request.data:
-#             return Response({'error': 'No avatar provided'}, status=status.HTTP_400_BAD_REQUEST)
-#         if profile.avatar:
-#             profile.avatar.delete()
-#         profile.avatar = request.data.get('avatar')
-#         profile.save()
-#         return Response(self.get_serializer(profile).data)
-
-class UpdateProfileImageView(generics.UpdateAPIView):
-    """View to update the profile_image for the authenticated user."""
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser] # Expect image file uploads
-    serializer_class = UserSerializer # Still needed for response serialization
-    queryset = User.objects.all()
-
-    def get_object(self):
-        """Return the authenticated user object."""
-        return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        """Handle PATCH/PUT request to update profile_image."""
-        user = self.get_object()
-        new_image_file = request.FILES.get('profile_image')
-
-        if new_image_file:
-            old_image_value = user.profile_image
-
-            # --- Delete old image file if it's a local path ---
-            if old_image_value and not old_image_value.startswith(('http://', 'https://')):
-                # Assume old_image_value is a path relative to MEDIA_ROOT
-                try:
-                    if default_storage.exists(old_image_value):
-                        default_storage.delete(old_image_value)
-                        print(f"Deleted old profile image: {old_image_value}")
-                    else:
-                         print(f"Old profile image path not found in storage: {old_image_value}")
-                except Exception as e:
-                    # Log error, but proceed with saving new image
-                    print(f"Error deleting old profile image {old_image_value}: {e}")
-
-            # --- Save new image ---
-            # Define the path within MEDIA_ROOT (storage handles MEDIA_ROOT internally)
-            file_path = os.path.join('profile_images', new_image_file.name)
-            # Ensure unique filename if necessary (default_storage might handle this)
-            # file_path = default_storage.get_available_name(file_path)
-            try:
-                # Use default_storage to save the file
-                saved_path = default_storage.save(file_path, new_image_file)
-                print(f"Saved new profile image to: {saved_path}")
-                # Store the relative path returned by save() in the model field
-                user.profile_image = saved_path
-            except Exception as e:
-                # Handle save error (log it, return error response)
-                print(f"Error saving profile image: {e}")
-                return Response({"error": "Failed to save profile image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # --- Save user model (only the profile_image field) ---
-            user.save(update_fields=['profile_image'])
-
-        # --- Serialize and return response ---
-        # We manually updated the user, now serialize the result for the response
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
-
-# Assuming PlayerProfile is potentially deprecated or handled elsewhere
-# If PlayerProfile.objects.get_or_create(user=user) was needed, add it back here before the return.
