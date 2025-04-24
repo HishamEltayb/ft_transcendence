@@ -1,5 +1,5 @@
-import { COMPONENTS, PAGES, ENDPOINTS } from './constants.js';
 import utils from './utils.js';
+import { COMPONENTS, PAGES, ENDPOINTS } from './constants.js';
 
 class API {
   async fetchHtml(url, returnElement = true) {
@@ -80,7 +80,7 @@ class API {
       
       if (data.token) {
         // Store in both cookie and localStorage for compatibility
-        this.setCookie('authToken', data.token, 7); // 7 days
+        utils.setCookie('authToken', data.token, 7); // 7 days
         localStorage.setItem('authToken', data.token);
       }
       
@@ -185,7 +185,7 @@ class API {
       }
       
       if (!token) {
-        throw new Error('No authentication token found');
+        return { success: true, userData: null };
       }
       
       const response = await fetch(userMeEndpoint, {
@@ -246,15 +246,37 @@ class API {
     }
   }
 
-  // Helper to set a cookie
-  setCookie(name, value, days) {
-    let expires = "";
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = "; expires=" + date.toUTCString();
+  async logout() {
+    try {
+      console.log('API: Logging out user');
+      const logoutEndpoint = ENDPOINTS.auth.logout;
+      
+      // Get token
+      const token = utils.getCookie('authToken') || localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.log('API: No token found, user already logged out');
+        return { success: true };
+      }
+      
+      await fetch(logoutEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      utils.deleteCookie('authToken');
+      localStorage.removeItem('authToken');
+      
+      return { success: true };
+    } catch (error) {
+      utils.deleteCookie('authToken');
+      localStorage.removeItem('authToken');
+      
+      return { success: false, error: error.message };
     }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/; Secure; SameSite=Strict";
   }
 }
 

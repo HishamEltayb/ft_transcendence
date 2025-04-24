@@ -68,6 +68,9 @@ class App {
             
             await this.checkAuthState();
             
+            // Initialize logout button listener AFTER authentication check
+            this.initLogoutButton();
+            
             components.hideSpinner();
             
             // Dispatch an event to notify other components
@@ -141,6 +144,9 @@ class App {
                 console.log('App: User is authenticated:', result.userData);
                 this.state.user = result.userData;
                 this.updateUIAuthState();
+                
+                // Add logout button listener since user is authenticated
+                this.initLogoutButton();
             } else {
                 console.log('App: User is not authenticated');
                 this.state.user = null;
@@ -192,6 +198,69 @@ class App {
             loginNavBtn.parentElement.style.display = 'block';
             loginBtn.style.display = 'block';
             loginDropdown.style.display = 'none';
+        }
+    }
+
+    // Method to initialize the logout button listener
+    initLogoutButton() {
+        // Only initialize once
+        if (this._logoutInitialized) return;
+        
+        // Using event delegation for dynamically added logout button
+        document.addEventListener('click', (event) => {
+            const logoutBtn = event.target.closest('#logoutBtn');
+            if (logoutBtn) {
+                event.preventDefault();
+                this.logout();
+            }
+        });
+        
+        // Set flag to prevent multiple initializations
+        this._logoutInitialized = true;
+        console.log('App: Logout button listener initialized');
+    }
+    
+    // Method to handle user logout
+    async logout() {
+        console.log('App: Logging out user');
+        components.showSpinner();
+        
+        try {
+            // Call API logout function
+            await api.logout();
+            
+            // Clear application state
+            this.state.user = null;
+            
+            // Update UI
+            this.updateUIAuthState();
+            
+            components.hideSpinner();
+            
+            // Show success message
+            components.showToast('success', 'Logged Out', 'You have been successfully logged out.');
+            
+            // Redirect to home page
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+            
+            return true;
+        } catch (error) {
+            console.error('App: Logout error:', error);
+            
+            // Even if error occurs, clear tokens and state
+            this.state.user = null;
+            this.updateUIAuthState();
+            
+            components.hideSpinner();
+            components.showToast('warning', 'Logout Status', 'You have been logged out, but there was an issue with the server.');
+       
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+            
+            return false;
         }
     }
     
@@ -252,6 +321,8 @@ class App {
     isReady() {
         return this.initialized;
     }
+
+    
 }
 
 // Create a singleton instance

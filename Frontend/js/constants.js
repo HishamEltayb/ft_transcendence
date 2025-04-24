@@ -17,9 +17,10 @@ export const ENDPOINTS = {
     auth: {
         auth42: '/api/users/oauth/42/',
         
+        logout: '/api/users/logout/',
+
         login: '/api/users/login/',
         register: '/api/users/register/',
-        logout: '/api/users/logout/',
         refreshToken: '/api/users/refresh-token/',
         verifyEmail: '/api/users/verify-email/',
         forgotPassword: '/api/users/forgot-password/',
