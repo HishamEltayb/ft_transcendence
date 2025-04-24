@@ -79,14 +79,13 @@ class DocumentHandler {
     
     // Method to initialize the login and register forms
     initLoginRegisterForms(formInstance) {
-        console.log('DocumentHandler: Initializing login/register forms');
-        
-        // Get fresh form elements
         formInstance.login = this.getLoginForm();
         formInstance.register = this.getRegisterForm();
 
+        console.log('DocumentHandler: this.getLoginForm', formInstance.login);
+
         if (formInstance.login.form) {
-            formInstance.login.form.addEventListener('submit', formInstance.submitLoginForm.bind(formInstance));
+            formInstance.login.form.addEventListener('submit', formInstance.handleLogin.bind(formInstance));
             
             if (formInstance.login.usernameField) {
                 formInstance.setupInputField(formInstance.login.usernameField, 'username');
@@ -94,6 +93,11 @@ class DocumentHandler {
             
             if (formInstance.login.passwordField) {
                 formInstance.setupInputField(formInstance.login.passwordField, 'password');
+            }
+
+            if (formInstance.login.submitBtn) {
+                console.log('DocumentHandler: Attaching login handler');
+                formInstance.login.submitBtn.onclick = formInstance.handleLogin.bind(formInstance);
             }
         }
         
@@ -103,7 +107,7 @@ class DocumentHandler {
         }
         
         if (formInstance.register.form) {
-            formInstance.register.form.addEventListener('submit', formInstance.submitRegisterForm.bind(formInstance));
+            formInstance.register.form.addEventListener('submit', formInstance.handleRegistration.bind(formInstance));
             
             // Add validation for register fields
             if (formInstance.register.usernameField) {

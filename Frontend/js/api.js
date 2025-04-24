@@ -63,6 +63,8 @@ class API {
 
   async submitLoginForm(loginData) {
     try {
+      console.log('API: Submitting login form');
+      
       const loginEndpoint = ENDPOINTS.auth.login;
       
       const response = await fetch(loginEndpoint, {

@@ -64,9 +64,40 @@ class Forms {
         );
     }
     
+    async handleLogin42(event) {
+        console.log('Forms: Handling 42 login button click');
+        if (event) {
+            event.preventDefault();
+        }
+        
+        components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
+        
+        try {
+            console.log('Forms: Requesting 42 auth URL from API');
+            const result = await api.get42AuthUrl();
+            
+            console.log('Forms: Received API response for 42 auth:', result);
+            
+            if (!result.success || !result.auth_url) {
+                throw new Error(result.error || 'No authorization URL received');
+            }
+            
+            // Show success message
+            components.showToast('success', 'Connected', 'Redirecting to 42 login page...');
+            
+            // Add a custom query parameter to the auth_url so we know we're coming from 42 login
+            let redirectUrl = result.auth_url;
+            
+        
+            window.location.href = redirectUrl;
+        } catch (error) {
+            console.error('42 login error:', error);
+            components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');
+        }
+    }
 
-
-    async submitLoginForm(event) {
+    async handleLogin(event) {
+        console.log('Forms: Handling login form submission');
         event.preventDefault();
         
         // Get form values
@@ -145,7 +176,7 @@ class Forms {
         }
     }
 
-    async submitRegisterForm(event) {
+    async handleRegistration(event) {
         event.preventDefault();
         
         // Get form values
@@ -224,39 +255,7 @@ class Forms {
         }
     }
 
-    async handleLogin42(event) {
-        console.log('Forms: Handling 42 login button click');
-        if (event) {
-            event.preventDefault();
-        }
-        
-        components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
-        
-        try {
-            console.log('Forms: Requesting 42 auth URL from API');
-            const result = await api.get42AuthUrl();
-            
-            console.log('Forms: Received API response for 42 auth:', result);
-            
-            if (!result.success || !result.auth_url) {
-                throw new Error(result.error || 'No authorization URL received');
-            }
-            
-            // Show success message
-            components.showToast('success', 'Connected', 'Redirecting to 42 login page...');
-            
-            // Add a custom query parameter to the auth_url so we know we're coming from 42 login
-            let redirectUrl = result.auth_url;
-            
-        
-            window.location.href = redirectUrl;
-        } catch (error) {
-            console.error('42 login error:', error);
-            components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');
-        }
-    }
-
-        // Helper method to show loading state on a submitBtn
+    // Helper method to show loading state on a submitBtn
     setLoading(submitBtn, isLoading) {
         if (!submitBtn) return;
         

@@ -3,10 +3,8 @@ import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
 import api from './api.js';
-import forms from './forms.js';
-// import constants from './constants.js';
 import docHandler from './document.js';
-import utils from './utils.js';
+import forms from './forms.js';
 
 class App {
     constructor() {
@@ -98,28 +96,28 @@ class App {
             '/': () => {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 console.log(`App: Displayed page: home`);
             },
             
             '/home': () => {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 console.log(`App: Displayed page: home`);
             },
             
             '/login': () => {
                 this.state.currentPage = 'login';
                 pages.showPage('login');
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 console.log(`App: Displayed page: login`);
             },
             
             '/game': () => {
                 this.state.currentPage = 'game';
                 pages.showPage('game');
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 console.log(`App: Displayed page: game`);
             },
             
@@ -127,7 +125,7 @@ class App {
                 console.error(`Route not found: ${path}`);
                 this.state.currentPage = 'notFound';
                 pages.showPage('notFound');
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 console.log(`App: Displayed page: notFound`);
             }
         });
@@ -142,7 +140,7 @@ class App {
             if (result.success && result.userData) {
                 console.log('App: User is authenticated:', result.userData);
                 this.state.user = result.userData;
-                this.updateUIAuthState();
+                docHandler.updateUIAuthState(this);
                 
                 // Initialize logout button if user is authenticated
                 docHandler.initLogoutButton(this);
@@ -156,12 +154,6 @@ class App {
         }
     }
 
-    updateUIAuthState() {
-        // Delegate to DocumentHandler to handle UI updates
-        docHandler.updateUIAuthState(this);
-    }
-
-    
     // Method to handle user logout
     async logout() {
         console.log('App: Logging out user');
@@ -175,7 +167,7 @@ class App {
             this.state.user = null;
             
             // Update UI
-            this.updateUIAuthState();
+            docHandler.updateUIAuthState(this);
             
             components.hideSpinner();
             
@@ -193,7 +185,7 @@ class App {
             
             // Even if error occurs, clear tokens and state
             this.state.user = null;
-            this.updateUIAuthState();
+            docHandler.updateUIAuthState(this);
             
             components.hideSpinner();
             components.showToast('warning', 'Logout Status', 'You have been logged out, but there was an issue with the server.');
@@ -263,8 +255,6 @@ class App {
     isReady() {
         return this.initialized;
     }
-
-    
 }
 
 // Create a singleton instance
