@@ -12,7 +12,6 @@ class Pages {
             home: null,
             game: null,
             login: null,
-            profile: null,
             notFound: null
         };
         
@@ -52,7 +51,6 @@ class Pages {
             this.pages.home = htmlPages.homePage ? htmlPages.homePage.innerHTML : null;
             this.pages.game = htmlPages.gamePage ? htmlPages.gamePage.innerHTML : null;
             this.pages.login = htmlPages.loginPage ? htmlPages.loginPage.innerHTML : null;
-            this.pages.profile = htmlPages.profilePage ? htmlPages.profilePage.innerHTML : null;
             this.pages.notFound = htmlPages.notFoundPage ? htmlPages.notFoundPage.innerHTML : null;
             
             this.isLoading = false;
@@ -114,9 +112,6 @@ class Pages {
                     break;
                 case 'game':
                     this.initializeGamePage();
-                    break;
-                case 'profile':
-                    this.initializeProfilePage();
                     break;
                 case 'home':
                     this.initializeHomePage();
@@ -231,66 +226,6 @@ class Pages {
         });
     }
     
-    // Initialize profile page with user data
-    initializeProfilePage() {
-        console.log('Pages: initializeProfilePage called');
-        
-        // Get user data from store
-        const appState = store.getState();
-        const userData = appState.user;
-        
-        if (!userData) {
-            console.warn('Pages: No user data available for profile page');
-        } else {
-            console.log('Pages: User data available, applying basic profile data');
-            
-            // Update profile avatar - this is something we can do without the Forms module
-            const profileAvatar = document.getElementById('profileAvatar');
-            if (profileAvatar) {
-                if (userData.profile_image) {
-                    profileAvatar.src = userData.profile_image;
-                    profileAvatar.alt = `${userData.username}'s avatar`;
-                }
-                
-                // Add error handler for the image
-                profileAvatar.onerror = function() {
-                    this.src = '../public/assets/images/default-avatar.png';
-                };
-            }
-            
-            // Update username - something else we can do directly
-            const profileUsername = document.getElementById('profileUsername');
-            if (profileUsername) {
-                profileUsername.textContent = userData.username || 'Unknown User';
-            }
-            
-            // Update intra login
-            const profileIntraLogin = document.getElementById('profileIntraLogin');
-            if (profileIntraLogin) {
-                profileIntraLogin.textContent = userData.intra_login || 'N/A';
-            }
-        }
-        
-        // Now load the Forms module to handle the rest of the profile initialization
-        console.log('Pages: Loading Forms module for full profile initialization');
-        import('./forms.js')
-            .then(formsModule => {
-                const forms = formsModule.default;
-                if (forms && typeof forms.initProfilePage === 'function') {
-                    console.log('Pages: Calling forms.initProfilePage() from pages.js');
-                    // Add a small delay to ensure the DOM is ready
-                    setTimeout(() => {
-                        forms.initProfilePage();
-                    }, 100);
-                } else {
-                    console.error('Pages: forms.initProfilePage is not available');
-                }
-            })
-            .catch(error => {
-                console.error('Pages: Error loading Forms module:', error);
-            });
-    }
-    
     // Initialize game page with game state
     initializeGamePage() {
         
@@ -350,7 +285,6 @@ class Pages {
             this.pages.home && 
             this.pages.game && 
             this.pages.login && 
-            this.pages.profile &&
             this.pages.notFound;
     }
 }

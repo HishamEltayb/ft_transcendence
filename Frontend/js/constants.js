@@ -1,12 +1,9 @@
-export const AVAILABLE_PAGES = ['home', 'game', 'login', 'profile', 'notFound'];
-
-export const PROTECTED_PAGES = ['profile'];
+export const AVAILABLE_PAGES = ['home', 'game', 'login', 'notFound'];
 
 export const PAGES = {
     homePage: './pages/home.html',
     gamePage: './pages/game.html',
     loginPage: './pages/login.html',
-    profilePage: './pages/profile.html',
     notFoundPage: './pages/notFound.html'
 };
 
@@ -72,7 +69,7 @@ export const VALIDATION_INPUTS = {
         maxLength: 50,
     },
     password: {
-        minLength: 3,
+        minLength: 8,
         maxLength: 25
     }
 };
