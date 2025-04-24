@@ -23,7 +23,10 @@ class DocumentHandler {
     }
 
     getLoginRegisterTabs() {
-        return document.querySelectorAll('#loginTab, #registerTab');
+        return {
+            loginTab: document.getElementById('loginTab'),
+            registerTab: document.getElementById('registerTab')
+        };
     }
 
     getLoginForm() { 
@@ -55,9 +58,219 @@ class DocumentHandler {
 
         return form;
     }
+
+    // Method to setup the login/register tabs
+    setupLoginRegisterTabs(formInstance) {
+        const tabs = this.getLoginRegisterTabs();
+        
+        if (tabs.loginTab && tabs.registerTab) {
+            // Default to showing login form
+            this.showLoginForm(formInstance);
+            
+            // Attach tab event listeners
+            tabs.loginTab.addEventListener('click', () => this.showLoginForm(formInstance));
+            tabs.registerTab.addEventListener('click', () => this.showRegisterForm(formInstance));
+            
+            console.log('DocumentHandler: Login/Register tabs initialized');
+        } else {
+            console.warn('DocumentHandler: Login/Register tabs not found');
+        }
+    }
+    
+    // Method to initialize the login and register forms
+    initLoginRegisterForms(formInstance) {
+        console.log('DocumentHandler: Initializing login/register forms');
+        
+        // Get fresh form elements
+        formInstance.login = this.getLoginForm();
+        formInstance.register = this.getRegisterForm();
+
+        if (formInstance.login.form) {
+            formInstance.login.form.addEventListener('submit', formInstance.submitLoginForm.bind(formInstance));
+            
+            if (formInstance.login.usernameField) {
+                formInstance.setupInputField(formInstance.login.usernameField, 'username');
+            }
+            
+            if (formInstance.login.passwordField) {
+                formInstance.setupInputField(formInstance.login.passwordField, 'password');
+            }
+        }
+        
+        if (formInstance.login.login42Link) {
+            console.log('DocumentHandler: Attaching 42 login handler');
+            formInstance.login.login42Link.onclick = formInstance.handleLogin42.bind(formInstance);
+        }
+        
+        if (formInstance.register.form) {
+            formInstance.register.form.addEventListener('submit', formInstance.submitRegisterForm.bind(formInstance));
+            
+            // Add validation for register fields
+            if (formInstance.register.usernameField) {
+                formInstance.setupInputField(formInstance.register.usernameField, 'username');
+            }
+            
+            if (formInstance.register.emailField) {
+                formInstance.setupInputField(formInstance.register.emailField, 'email');
+            }
+            
+            if (formInstance.register.passwordField) {
+                formInstance.setupPasswordField(formInstance.register.passwordField, 'password');
+            }
+            
+            if (formInstance.register.confirmPasswordField) {
+                formInstance.setupPasswordField(formInstance.register.confirmPasswordField, 'password');
+            }
+        }
+    }
+
+    // Method to show the login form tab
+    showLoginForm(formInstance) {
+        // Try to get fresh references to elements
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContainer = document.getElementById('loginFormContainer');
+        const registerContainer = document.getElementById('registerFormContainer');
+        
+        // Use either stored references or fresh ones
+        const tab1 = formInstance?.login?.tab || loginTab;
+        const tab2 = formInstance?.register?.tab || registerTab;
+        const container1 = formInstance?.login?.container || loginContainer;
+        const container2 = formInstance?.register?.container || registerContainer;
+        
+        if (!tab1 || !container1 || !tab2 || !container2) {
+            console.warn('DocumentHandler: Cannot switch tabs - missing elements:', {
+                loginTab: !!tab1,
+                loginContainer: !!container1,
+                registerTab: !!tab2,
+                registerContainer: !!container2
+            });
+            return;
+        }
+        
+        // Activate login tab
+        tab1.classList.add('active');
+        tab2.classList.remove('active');
+        
+        // Show login form, hide register form
+        container1.classList.add('show', 'active');
+        container1.classList.remove('fade');
+        
+        container2.classList.remove('show', 'active');
+        container2.classList.add('fade');
+        
+        console.log('DocumentHandler: Switched to login tab');
+    }
+    
+    // Method to show the register form tab
+    showRegisterForm(formInstance) {
+        console.log('DocumentHandler: Switching to register tab');
+        
+        // Try to get fresh references to elements
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContainer = document.getElementById('loginFormContainer');
+        const registerContainer = document.getElementById('registerFormContainer');
+        
+        // Use either stored references or fresh ones
+        const tab1 = formInstance?.login?.tab || loginTab;
+        const tab2 = formInstance?.register?.tab || registerTab;
+        const container1 = formInstance?.login?.container || loginContainer;
+        const container2 = formInstance?.register?.container || registerContainer;
+        
+        if (!tab1 || !container1 || !tab2 || !container2) {
+            console.warn('DocumentHandler: Cannot switch tabs - missing elements:', {
+                loginTab: !!tab1,
+                loginContainer: !!container1,
+                registerTab: !!tab2,
+                registerContainer: !!container2
+            });
+            return;
+        }
+        
+        // Activate register tab
+        tab2.classList.add('active');
+        tab1.classList.remove('active');
+        
+        // Show register form, hide login form
+        container2.classList.add('show', 'active');
+        container2.classList.remove('fade');
+        
+        container1.classList.remove('show', 'active');
+        container1.classList.add('fade');
+    }
+
+    // Method to update UI based on authentication state
+    updateUIAuthState(appInstance) {
+        console.log('DocumentHandler: Updating UI auth state, user =', appInstance.state.user);
+        
+        const loginNavBtn = this.getById('loginNavBtn');
+        const loginBtn = this.getById('loginBtn');
+        const loginDropdown = this.getById('loginDropdown');
+        const loggedInUserImg = this.getById('loggedInUserImg');
+        const loggedInUsername = this.getById('loggedInUsername');
+        
+        if (appInstance.state.user) {
+            // User is logged in - show user profile, hide login button
+            if (loginNavBtn) loginNavBtn.parentElement.style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (loginDropdown) loginDropdown.style.display = 'block';
+            
+            // Handle 42 user with image
+            if (appInstance.getIs42User && appInstance.getIs42User() && 
+                appInstance.getUserImg && appInstance.getUserImg()) {
+                if (loggedInUserImg) {
+                    loggedInUserImg.src = appInstance.getUserImg();
+                    loggedInUserImg.style.display = 'block';
+                }
+            } else if (loggedInUserImg) {
+                loggedInUserImg.style.display = 'none';
+            }
+            
+            // Handle user display - use 42 image or username
+            if (appInstance.getIs42User && appInstance.getIs42User()) {
+                if (appInstance.getUserImg && appInstance.getUserImg() && loggedInUserImg) {
+                    loggedInUserImg.src = appInstance.getUserImg();
+                    loggedInUserImg.style.display = 'block';
+                } else if (loggedInUserImg) {
+                    loggedInUserImg.style.display = 'none';
+                }
+            } else {
+                if (appInstance.getUsername && appInstance.getUsername() && loggedInUsername) {
+                    loggedInUsername.textContent = appInstance.getUsername();
+                    loggedInUsername.style.display = 'inline';
+                } else if (loggedInUsername) {
+                    loggedInUsername.style.display = 'none';
+                }
+            }
+        } else {
+            // User is not logged in - show login button, hide user profile
+            if (loginNavBtn) loginNavBtn.parentElement.style.display = 'block';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (loginDropdown) loginDropdown.style.display = 'none';
+        }
+    }
+
+    initLogoutButton(appInstance) {
+        // Use app's existing flag to track initialization
+        if (appInstance.logoutInitialized) return;
+        
+        document.addEventListener('click', (event) => {
+            const logoutBtn = event.target.closest('#logoutBtn');
+            if (logoutBtn) {
+                event.preventDefault();
+                appInstance.logout(); // Use the app's logout method
+            }
+        });
+        
+        // Set the flag on the app instance
+        appInstance.logoutInitialized = true;
+        console.log('DocumentHandler: Logout button listener initialized');
+    }
 }
 
 // Create a singleton instance
 const docHandler = new DocumentHandler();
+
 export default docHandler;
 

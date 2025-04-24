@@ -1,9 +1,10 @@
 import api from './api.js';
 import components from './components.js';
 import app from './app.js';
-import { VALIDATION_INPUTS } from './constants.js';
 import utils from './utils.js';
 import docHandler from './document.js';
+import { VALIDATION_INPUTS } from './constants.js';
+
 
 class Forms {
     constructor() {
@@ -17,162 +18,53 @@ class Forms {
             // If login page is shown, initialize the forms
             if (event.detail.page === 'login') {
                 console.log('Forms: Login page detected, initializing forms');
-                this.initLoginRegisterForms();
-                this.setupLoginRegisterTabs();
+                
+                // Use DocumentHandler methods instead
+                docHandler.initLoginRegisterForms(this);
+                docHandler.setupLoginRegisterTabs(this);
             }
-        
         });
     }
-
-    setupLoginRegisterTabs() {
-        const {loginTab, registerTab} = docHandler.getLoginRegisterTabs();
+    
+    // Helper method to setup an input field with validation
+    setupInputField(inputField, fieldType) {
+        if (!inputField) return;
         
-        if (loginTab && registerTab) {
-            // Default to showing login form
-            this.showLoginForm();
-            
-            // Attach tab event listeners
-            loginTab.addEventListener('click', this.showLoginForm.bind(this));
-            registerTab.addEventListener('click', this.showRegisterForm.bind(this));
-        } else {
-            console.warn('Forms: Login page tabs not found');
-        }
+        inputField.maxLength = VALIDATION_INPUTS[fieldType].maxLength;
+        inputField.addEventListener('input', (event) => {
+            utils.validateInputLength(fieldType, event, VALIDATION_INPUTS, components);
+        });
+        utils.initializeCharCount(inputField, fieldType, VALIDATION_INPUTS);
     }
     
-    initLoginRegisterForms() {
-        console.log('Forms: Initializing login/register forms');
+    // Helper method to setup password fields with validation
+    setupPasswordField(passwordField, fieldType) {
+        if (!passwordField) return;
         
-        this.login = docHandler.getLoginForm();
-        this.register = docHandler.getRegisterForm();
-
-        if (this.login.form) {
-            this.login.form.addEventListener('submit', this.submitLoginForm.bind(this));
-            
-            if (this.login.usernameField) {
-                this.setupInputField(this.login.usernameField, 'username');
-            }
-            
-            if (this.login.passwordField) {
-                this.setupInputField(this.login.passwordField, 'password');
-            }
-        }
+        passwordField.maxLength = VALIDATION_INPUTS[fieldType].maxLength;
         
-        if (this.login.login42Link) {
-            console.log('Forms: Attaching 42 login handler');
-            this.login.login42Link.onclick = this.handleLogin42.bind(this);
-        }
+        passwordField.addEventListener('input', event => {
+            utils.validateInputLength(fieldType, event, VALIDATION_INPUTS, components);
+            this.validatePasswordMatch();
+        });
         
-        if (this.register.form) {
-            this.register.form.addEventListener('submit', this.submitRegisterForm.bind(this));
-            
-            // Add validation for register fields
-            if (this.register.usernameField) {
-                this.setupInputField(this.register.usernameField, 'username');
-            }
-            
-            if (this.register.emailField) {
-                this.setupInputField(this.register.emailField, 'email');
-            }
-            
-            if (this.register.passwordField) {
-                this.setupPasswordField(this.register.passwordField, 'password');
-            }
-            
-            if (this.register.confirmPasswordField) {
-                this.setupPasswordField(this.register.confirmPasswordField, 'password');
-            }
-        }
+        utils.initializeCharCount(passwordField, fieldType, VALIDATION_INPUTS);
     }
-
-    // Method to show the login form tab
-    showLoginForm() {
-        // Try to get fresh references to elements, as they might have changed due to navigation
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
-        const loginContainer = document.getElementById('loginFormContainer');
-        const registerContainer = document.getElementById('registerFormContainer');
-        
-        // Use either our stored references or the fresh ones
-        const tab1 = this.login.tab || loginTab;
-        const tab2 = this.register.tab || registerTab;
-        const container1 = this.login.container || loginContainer;
-        const container2 = this.register.container || registerContainer;
-        
-        if (!tab1 || !container1 || !tab2 || !container2) {
-            console.warn('Forms: Cannot switch tabs - missing elements:', {
-                loginTab: !!tab1,
-                loginContainer: !!container1,
-                registerTab: !!tab2,
-                registerContainer: !!container2
-            });
+    
+    // Method to validate password match in real-time - uses utils function
+    validatePasswordMatch() {
+        if (!this.register.passwordField || !this.register.confirmPasswordField || !this.register.passwordMatchStatus) {
             return;
         }
         
-        // Activate login tab
-        tab1.classList.add('active');
-        tab2.classList.remove('active');
-        
-        // Show login form, hide register form
-        container1.classList.add('show', 'active');
-        container1.classList.remove('fade');
-        
-        container2.classList.remove('show', 'active');
-        container2.classList.add('fade');
+        utils.validatePasswordMatch(
+            this.register.passwordField,
+            this.register.confirmPasswordField,
+            this.register.passwordMatchStatus
+        );
     }
     
-    // Method to show the register form tab
-    showRegisterForm() {
-        console.log('Forms: Switching to register tab');
-        
-        // Try to get fresh references to elements, as they might have changed due to navigation
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
-        const loginContainer = document.getElementById('loginFormContainer');
-        const registerContainer = document.getElementById('registerFormContainer');
-        
-        // Use either our stored references or the fresh ones
-        const tab1 = this.login.tab || loginTab;
-        const tab2 = this.register.tab || registerTab;
-        const container1 = this.login.container || loginContainer;
-        const container2 = this.register.container || registerContainer;
-        
-        if (!tab1 || !container1 || !tab2 || !container2) {
-            console.warn('Forms: Cannot switch tabs - missing elements:', {
-                loginTab: !!tab1,
-                loginContainer: !!container1,
-                registerTab: !!tab2,
-                registerContainer: !!container2
-            });
-            return;
-        }
-        
-        // Activate register tab
-        tab2.classList.add('active');
-        tab1.classList.remove('active');
-        
-        // Show register form, hide login form
-        container2.classList.add('show', 'active');
-        container2.classList.remove('fade');
-        
-        container1.classList.remove('show', 'active');
-        container1.classList.add('fade');
-    }
 
-    // Helper method to show loading state on a submitBtn
-    setLoading(submitBtn, isLoading) {
-        if (!submitBtn) return;
-        
-        if (isLoading) {
-            // Store the original text
-            submitBtn.dataset.originalText = submitBtn.textContent;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-            submitBtn.disabled = true;
-        } else {
-            // Restore the original text
-            submitBtn.innerHTML = submitBtn.dataset.originalText || submitBtn.innerHTML;
-            submitBtn.disabled = false;
-        }
-    }
 
     async submitLoginForm(event) {
         event.preventDefault();
@@ -226,7 +118,12 @@ class Forms {
                 const userResult = await api.fetchUserData();
                 if (userResult.success && userResult.userData) {
                     // Update app state
-                    app.setAuthState(true, userResult.userData);
+                    if (app.setAuthState) {
+                        app.setAuthState(true, userResult.userData);
+                    } else {
+                        app.state.user = userResult.userData;
+                        app.updateUIAuthState();
+                    }
                 }
                 
                 // Show success message
@@ -359,42 +256,20 @@ class Forms {
         }
     }
 
-    // New helper method to setup an input field with validation
-    setupInputField(inputField, fieldType) {
-        if (!inputField) return;
+        // Helper method to show loading state on a submitBtn
+    setLoading(submitBtn, isLoading) {
+        if (!submitBtn) return;
         
-        inputField.maxLength = VALIDATION_INPUTS[fieldType].maxLength;
-        inputField.addEventListener('input', (event) => {
-            utils.validateInputLength(fieldType, event, VALIDATION_INPUTS, components);
-        });
-        utils.initializeCharCount(inputField, fieldType, VALIDATION_INPUTS);
-    }
-    
-    // New helper method to setup password fields with validation
-    setupPasswordField(passwordField, fieldType) {
-        if (!passwordField) return;
-        
-        passwordField.maxLength = VALIDATION_INPUTS[fieldType].maxLength;
-        
-        passwordField.addEventListener('input', event => {
-            utils.validateInputLength(fieldType, event, VALIDATION_INPUTS, components);
-            this.validatePasswordMatch();
-        });
-        
-        utils.initializeCharCount(passwordField, fieldType, VALIDATION_INPUTS);
-    }
-    
-    // Method to validate password match in real-time - now uses utils function
-    validatePasswordMatch() {
-        if (!this.register.passwordField || !this.register.confirmPasswordField || !this.register.passwordMatchStatus) {
-            return;
+        if (isLoading) {
+            // Store the original text
+            submitBtn.dataset.originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            submitBtn.disabled = true;
+        } else {
+            // Restore the original text
+            submitBtn.innerHTML = submitBtn.dataset.originalText || submitBtn.innerHTML;
+            submitBtn.disabled = false;
         }
-        
-        utils.validatePasswordMatch(
-            this.register.passwordField,
-            this.register.confirmPasswordField,
-            this.register.passwordMatchStatus
-        );
     }
 }
 

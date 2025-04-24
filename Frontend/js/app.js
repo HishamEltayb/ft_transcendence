@@ -12,14 +12,12 @@ class App {
     constructor() {
         this.appContainer = null;
         this.initialized = false;
-        
+        this.logoutInitialized = false;
         // Application state that persists across all routes
         this.state = {
             user: null,
-            user: false,
             currentPage: null,
             gameSettings: {},
-            // Add more state properties as needed
         };
         
         console.log('App: Created instance');
@@ -69,7 +67,8 @@ class App {
             await this.checkAuthState();
             
             // Initialize logout button listener AFTER authentication check
-            this.initLogoutButton();
+            // Pass the entire app instance to the docHandler
+            docHandler.initLogoutButton(this);
             
             components.hideSpinner();
             
@@ -145,8 +144,8 @@ class App {
                 this.state.user = result.userData;
                 this.updateUIAuthState();
                 
-                // Add logout button listener since user is authenticated
-                this.initLogoutButton();
+                // Initialize logout button if user is authenticated
+                docHandler.initLogoutButton(this);
             } else {
                 console.log('App: User is not authenticated');
                 this.state.user = null;
@@ -158,67 +157,10 @@ class App {
     }
 
     updateUIAuthState() {
-        console.log('App: Updating UI auth state, user =', this.state.user);
-        
-        const loginNavBtn = docHandler.getById('loginNavBtn');
-        const loginBtn = docHandler.getById('loginBtn');
-
-        const loginDropdown = docHandler.getById('loginDropdown');
-        const loggedInUserImg = docHandler.getById('loggedInUserImg');
-        const loggedInUsername = docHandler.getById('loggedInUsername');
-        
-        if (this.state.user) {
-            loginNavBtn.parentElement.style.display = 'none';
-            if (loginBtn) loginBtn.style.display = 'none';
-            
-            if (loginDropdown) loginDropdown.style.display = 'block';
-            
-            if (this.getIs42User() && this.getUserImg()) {
-                loggedInUserImg.src = this.getUserImg();
-                loggedInUserImg.style.display = 'block';
-            } else loggedInUserImg.style.display = 'none';
-            
-
-            if (this.getIs42User()) {
-                if (this.getUserImg()) {
-                    loggedInUserImg.src = this.getUserImg();
-                    loggedInUserImg.style.display = 'block';
-                } else {
-                    loggedInUserImg.style.display = 'none';
-                }
-            } else {
-                if (this.getUsername()) {
-                    loggedInUsername.textContent = this.getUsername();
-                    loggedInUsername.style.display = 'inline';
-                } else {
-                    loggedInUsername.style.display = 'none';
-                }
-            }
-        } else {
-            loginNavBtn.parentElement.style.display = 'block';
-            loginBtn.style.display = 'block';
-            loginDropdown.style.display = 'none';
-        }
+        // Delegate to DocumentHandler to handle UI updates
+        docHandler.updateUIAuthState(this);
     }
 
-    // Method to initialize the logout button listener
-    initLogoutButton() {
-        // Only initialize once
-        if (this._logoutInitialized) return;
-        
-        // Using event delegation for dynamically added logout button
-        document.addEventListener('click', (event) => {
-            const logoutBtn = event.target.closest('#logoutBtn');
-            if (logoutBtn) {
-                event.preventDefault();
-                this.logout();
-            }
-        });
-        
-        // Set flag to prevent multiple initializations
-        this._logoutInitialized = true;
-        console.log('App: Logout button listener initialized');
-    }
     
     // Method to handle user logout
     async logout() {

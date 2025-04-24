@@ -142,4 +142,5 @@ class Utils {
 
 // Create and export a singleton instance
 const utils = new Utils();
+
 export default utils;
