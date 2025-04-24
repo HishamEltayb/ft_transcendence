@@ -1,6 +1,7 @@
-import api from './api.js';
+import hooks from './hooks.js';
 import components from './components.js';
-import app from './app.js';
+import user from './user.js';
+import store from './store.js';
 import { VALIDATION_INPUTS } from './constants.js';
 
 class Forms {
@@ -8,39 +9,36 @@ class Forms {
         this.login = {};
         this.register = {};
         
-        // Listen for custom event when pages are shown
-        document.addEventListener('pageShown', (event) => {
-            console.log('Forms: pageShown event detected for page:', event.detail.page);
-            
-            // If login page is shown, initialize the forms
-            if (event.detail.page === 'login') {
-                console.log('Forms: Login page detected, initializing forms');
-                this.initLoginRegisterForms();
-                this.setupLoginRegisterTabs();
-            }
-        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            this.init();
         });
     }
 
-    setupLoginRegisterTabs() {
-        // Set up login/register tabs
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
+    init() {
+        console.log('Forms: Initializing forms');
         
-        if (loginTab && registerTab) {
-            // Default to showing login form
-            this.showLoginForm();
+        // Now it's safe to query for DOM elements if the page is loaded
+        this.initLoginRegisterForms();
+        
+        // Check if we're on the login page
+        if (window.location.pathname.includes('login')) {
             
-            // Attach tab event listeners
-            loginTab.addEventListener('click', this.showLoginForm.bind(this));
-            registerTab.addEventListener('click', this.showRegisterForm.bind(this));
-        } else {
-            console.warn('Forms: Login page tabs not found');
+            // Set up login/register tabs
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            
+            if (loginTab && registerTab) {
+                // Default to showing login form
+                this.showLoginForm();
+                
+            } else {
+                console.warn('Forms: Login page tabs not found');
+            }
         }
     }
     
     initLoginRegisterForms() {
-        console.log('Forms: Initializing login/register forms');
         
         // Login form elements
         this.login = {
@@ -65,9 +63,6 @@ class Forms {
             confirmPasswordField: document.getElementById('confirmPassword'),
             passwordMatchStatus: document.getElementById('passwordMatchStatus')
         };
-
-        console.log('Forms: Login button found:', !!this.login.submitBtn);
-        console.log('Forms: Login42Link found:', !!this.login.login42Link);
         
         // Add event listeners for login/register
         if (this.login.form) {
@@ -88,7 +83,6 @@ class Forms {
         }
         
         if (this.login.login42Link) {
-            console.log('Forms: Attaching 42 login handler');
             this.login.login42Link.onclick = this.handleLogin42.bind(this);
         }
         
@@ -125,6 +119,11 @@ class Forms {
                 });
                 this.initializeCharCount(this.register.confirmPasswordField, 'password');
             }
+        }
+        
+        if (this.login.tab && this.register.tab) {
+            this.login.tab.addEventListener('click', this.showLoginForm.bind(this));
+            this.register.tab.addEventListener('click', this.showRegisterForm.bind(this));
         }
     }
 
@@ -252,11 +251,14 @@ class Forms {
         };
         
         try {
-            // Use the API to submit the data
-            const result = await api.submitLoginForm(loginData);
+            // Use the hook to submit the data
+            const result = await hooks.useSubmitLoginForm(loginData);
             
             // Handle the result
             if (result.success) {
+                // Save username (but not password) in store for future use
+                store.saveFormData('loginForm', { username });
+                
                 // Clear password field
                 document.getElementById('loginPassword').value = '';
                 
@@ -266,20 +268,9 @@ class Forms {
                     passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
                 }
                 
-                // Fetch user data
-                const userResult = await api.fetchUserData();
-                if (userResult.success && userResult.userData) {
-                    // Update app state
-                    app.setAuthState(true, userResult.userData);
-                }
+                // Fetch user data to update UI
+                await hooks.useFetchUserData(true);
                 
-                // Show success message
-                components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
-                
-                // Redirect to home page
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1000);
             } else {
                 // Display error toast
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
@@ -342,9 +333,12 @@ class Forms {
             confirmPassword
         };
         
+        
         try {
-            // Use the API to submit the data
-            const result = await api.submitRegisterForm(registerData);
+            // Use the hook to submit the data
+            const result = await hooks.useSubmitRegisterForm(registerData);
+            
+            console.log('result', result);
             
             // Handle the result
             if (result.success) {
@@ -372,34 +366,77 @@ class Forms {
     }
 
     async handleLogin42(event) {
-        console.log('Forms: Handling 42 login button click');
+        
         if (event) {
             event.preventDefault();
+            // event.stopPropagation();
         }
         
+        // Show loading message
         components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
         
         try {
-            console.log('Forms: Requesting 42 auth URL from API');
-            const result = await api.get42AuthUrl();
             
-            console.log('Forms: Received API response for 42 auth:', result);
+            // Call the backend directly to get the auth URL - NOTE: adding trailing slash back
+            const response = await fetch('/api/users/oauth/42/', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             
-            if (!result.success || !result.auth_url) {
-                throw new Error(result.error || 'No authorization URL received');
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('42 OAuth error details:', text);
+                    throw new Error('Failed to initiate 42 login: ' + text);
+                });
+            }
+            
+            const data = await response.json();
+            
+            if (!data.auth_url) {
+                throw new Error('No authorization URL received from server');
             }
             
             // Show success message
             components.showToast('success', 'Connected', 'Redirecting to 42 login page...');
             
-            // Add a custom query parameter to the auth_url so we know we're coming from 42 login
-            let redirectUrl = result.auth_url;
-            
-        
-            window.location.href = redirectUrl;
+            window.location.href = data.auth_url;            
         } catch (error) {
             console.error('42 login error:', error);
             components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');
+        }
+    }
+
+    /**
+     * Restore saved form data to a form
+     * @param {HTMLFormElement} form - The form element to restore data to
+     * @param {Object} formData - The form data to restore
+     */
+    restoreFormData(form, formData) {
+        if (!form || !formData) return;
+        
+        try {
+            // Restore each field
+            Object.entries(formData).forEach(([key, value]) => {
+                const input = form.querySelector(`[name="${key}"], #${key}`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = value === true || value === 'true';
+                    } else if (input.tagName === 'SELECT') {
+                        const option = input.querySelector(`option[value="${value}"]`);
+                        if (option) {
+                            option.selected = true;
+                        }
+                    } else {
+                        input.value = value;
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error('Forms: Error restoring form data:', error);
         }
     }
 

@@ -16,7 +16,6 @@ export const ENDPOINTS = {
     // Authentication endpoints
     auth: {
         auth42: '/api/users/oauth/42/',
-        
         login: '/api/users/login/',
         register: '/api/users/register/',
         logout: '/api/users/logout/',
