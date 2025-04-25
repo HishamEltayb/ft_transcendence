@@ -77,6 +77,8 @@ class API {
 
       const result = await response.json();
 
+      console.log('API: Login result:', result);
+      
       if (!response.ok) {
         return { success: false, error: result.error || 'Login failed' };
       }
@@ -85,7 +87,7 @@ class API {
         utils.setCookie('authToken', result.token);
       }
       
-      return { success: true, data: result };
+      return { success: true, data: result.user };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: error.message };

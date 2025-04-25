@@ -3,6 +3,7 @@ import components from './components.js';
 import app from './app.js';
 import utils from './utils.js';
 import docHandler from './document.js';
+import router from './router.js';
 import { VALIDATION_INPUTS } from './constants.js';
 
 
@@ -11,7 +12,7 @@ class Forms {
         this.login = {};
         this.register = {};
         
-        // Listen for custom event when pages are shown
+        
         document.addEventListener('pageShown', (event) => {
             console.log('Forms: pageShown event detected for page:', event.detail.page);
             
@@ -147,26 +148,13 @@ class Forms {
                 if (passwordCounter) {
                     passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
                 }
-                
-                // Fetch user data
-                const userResult = await api.fetchUserData();
-                if (userResult.success && userResult.userData) {
-                    // Update app state
-                    if (app.setAuthState) {
-                        app.setAuthState(true, userResult.userData);
-                    } else {
-                        app.state.user = userResult.userData;
-                        app.updateUIAuthState();
-                    }
-                }
+
+                app.state.user = result.data;
                 
                 // Show success message
                 components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
                 
-                // Redirect to home page
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1000);
+                router.navigate('/');
             } else {
                 // Display error toast
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
