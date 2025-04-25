@@ -60,7 +60,6 @@ class Utils {
     
 
     cleanUp() {
-        console.log('Utils: Cleaning up all auth data');
         // Clear auth token cookie
         this.deleteCookie('authToken');
         
@@ -75,7 +74,6 @@ class Utils {
         // Reset internal state
         this.authToken = null;
         
-        console.log('Utils: All auth data cleared');
     }
     
     // Validate password matching

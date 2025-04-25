@@ -27,7 +27,6 @@ class Pages {
         this.pageSection.className = 'page-content';
         this.appContainer.appendChild(this.pageSection);
         
-        console.log('Pages: Initialized with App container and page section');
     }
     
     async loadAllPages() {
@@ -46,7 +45,6 @@ class Pages {
             this.isLoading = false;
             this.loadingComplete = true;
             
-            console.log('Pages: Successfully loaded all pages');
         } catch (error) {
             console.error("Error loading pages:", error);
             
@@ -64,7 +62,6 @@ class Pages {
     }
     
     showPage(pageName) {
-        console.log(`Showing page: ${pageName}`);
         // Get the content for the requested page
         const content = this.pages[pageName];
         
@@ -76,18 +73,14 @@ class Pages {
             
             // Special handling for game page to ensure proper initialization
             if (pageName === 'game') {
-                console.log('Game page detected, ensuring initialization...');
                 // Force dispatch of gamePageLoaded event to ensure game initializes properly
                 setTimeout(() => {
                     // Make sure the DOM is fully ready before dispatching
                     if (document.getElementById('pvpButton') && document.getElementById('pveButton')) {
-                        console.log('Game page buttons found, dispatching gamePageLoaded event');
                         document.dispatchEvent(new CustomEvent('gamePageLoaded'));
                     } else {
-                        console.log('Game buttons not found yet, waiting...');
                         // Try again after a delay if buttons aren't found yet
                         setTimeout(() => {
-                            console.log('Retrying game initialization...');
                             document.dispatchEvent(new CustomEvent('gamePageLoaded'));
                         }, 200);
                     }
@@ -128,12 +121,10 @@ class Pages {
             
             window.scrollTo(0, 0);
             
-            console.log(`Pages: Dispatching pageShown event for ${pageName}`);
             document.dispatchEvent(new CustomEvent('pageShown', { 
                 detail: { page: pageName } 
             }));
             
-            console.log(`Pages: Displayed ${pageName} page`);
         } catch (error) {
             console.error(`Error showing page ${pageName}:`, error);
             

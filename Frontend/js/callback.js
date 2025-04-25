@@ -1,7 +1,6 @@
 import utils from './utils.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Callback.js: Document loaded, starting OAuth callback processing');
     
     // Get the DOM elements
     const statusMsg = document.getElementById('statusMsg');
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const accessToken = utils.getUrlParameter('access_token');
         
         if (accessToken) {
-            console.log('Callback.js: Access token found, setting in cookie');
             
             // Save token to cookie with default 40-minute expiration
             utils.setCookie('authToken', accessToken);

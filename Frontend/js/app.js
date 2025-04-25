@@ -19,11 +19,9 @@ class App {
             gameSettings: {},
         };
         
-        console.log('App: Created instance');
     }
     
     async init() {
-        console.log("App: Initializing...");
         
         // Get the main application container using docHandler
         this.appContainer = docHandler.getAppContainer();
@@ -55,13 +53,11 @@ class App {
             this.registerRoutes();
             
             // Initialize router
-            console.log("App: Initializing router...");
             router.init();
             
             this.initialized = true;
             
             // Check authentication state from cookie or localStorage
-            console.log("App: Checking initial authentication state...");
             
             await this.checkAuthState();
             
@@ -76,7 +72,6 @@ class App {
                 detail: { app: this }
             }));
             
-            console.log("App: Initialization complete");
             return true;
         } catch (error) {
             console.error("App: Failed to initialize application:", error);
@@ -98,57 +93,48 @@ class App {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed page: home`);
             },
             
             '/home': () => {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed page: home`);
             },
             
             '/login': () => {
                 this.state.currentPage = 'login';
                 pages.showPage('login');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed page: login`);
             },
             
             '/game': () => {
                 this.state.currentPage = 'game';
                 pages.showPage('game');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed page: game`);
             },
             
             '*': (path) => {
-                console.log('Path not found -----------:', path);
                 
                 console.error(`404 Not Found: ${path}`);
                 this.state.currentPage = 'notFound';
                 pages.showPage('notFound');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed 404 page for route: ${path}`);
             }
         });
     }
     
    
     async checkAuthState() {
-        console.log('App: Checking authentication state');
         try {
             const result = await api.getUserData();
             
             if (result.success && result.userData) {
-                console.log('App: User is authenticated:', result.userData);
                 this.state.user = result.userData;
                 docHandler.updateUIAuthState(this);
                 
                 // Initialize logout button if user is authenticated
                 docHandler.initLogoutButton(this);
             } else {
-                console.log('App: User is not authenticated');
                 this.state.user = null;
             }
         } catch (error) {
@@ -159,7 +145,6 @@ class App {
 
     // Method to handle user logout
     async logout() {
-        console.log('App: Logging out user');
         components.showSpinner();
         
         try {

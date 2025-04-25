@@ -49,12 +49,10 @@ class Components {
                 this.navbarToggler = document.querySelector('.navbar-toggler');
                 this.navbarCollapse = document.querySelector('.navbar-collapse');
                 
-                console.log('Components: Header component inserted into DOM');
             } else {
                 console.error('Components: Header component not loaded');
             }
             
-            console.log('Components: All components loaded successfully');
             return this.components;
         } catch (error) {
             console.error('Components: Error loading components:', error);

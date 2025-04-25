@@ -23,6 +23,8 @@ class Router {
             // .closest() - Checks if the clicked element or any of its ancestors matches a selector
             // [id$="NavBtn"] - A CSS attribute selector that matches any element with an ID ending in "NavBtn"
             // [id$="Btn"] - A CSS attribute selector that matches any element with an ID ending in "Btn"
+            console.log('Router: navBtn', navBtn);
+            
             if (navBtn) {
                 event.preventDefault();
                 
@@ -103,11 +105,9 @@ class Router {
         // Get the current path
         const path = window.location.pathname || '/';
         
-        console.log('Router: Current path:', path);
         
         // Special handling for OAuth callback
         if (path.includes('/oauth/callback')) {
-            console.log('Router: Detected OAuth callback URL');
             this.handleOAuthCallback();
             return true;
         }
@@ -117,10 +117,8 @@ class Router {
         
         // If no exact match, use the wildcard handler 
         if (!handler && this.routes['*']) {
-            console.log(`Router: Path not found: ${path}, showing 404 page`);
             handler = this.routes['*'];
         } else if (!handler && this.routes['/']) {
-            console.log('Router: No route found, redirecting to home');
             handler = this.routes['/'];
         }
         
@@ -151,7 +149,6 @@ class Router {
      * Handle OAuth callback from 42 authentication
      */
     handleOAuthCallback() {
-        console.log('Router: Processing OAuth callback');
         
         // Get the access token from URL parameters or hash
         const urlParams = new URLSearchParams(window.location.search);
@@ -164,7 +161,6 @@ class Router {
         }
         
         if (accessToken) {
-            console.log('Router: Found access token in callback URL');
             
             // Store the token in localStorage
             utils.setCookie('authToken', accessToken);
@@ -214,7 +210,6 @@ class Router {
      */
     navigate(path) {
         if (this.currentPage === path) {
-            console.log(`Already on page: ${path}`);
             return;
         }
         

@@ -71,7 +71,6 @@ class DocumentHandler {
             tabs.loginTab.addEventListener('click', () => this.showLoginForm(formInstance));
             tabs.registerTab.addEventListener('click', () => this.showRegisterForm(formInstance));
             
-            console.log('DocumentHandler: Login/Register tabs initialized');
         } else {
             console.warn('DocumentHandler: Login/Register tabs not found');
         }
@@ -82,10 +81,8 @@ class DocumentHandler {
         formInstance.login = this.getLoginForm();
         formInstance.register = this.getRegisterForm();
 
-        console.log('DocumentHandler: this.getLoginForm', formInstance.login);
 
         if (formInstance.login.login42Link) {
-            console.log('DocumentHandler: Attaching 42 login handler');
             formInstance.login.login42Link.onclick = formInstance.handleLogin42.bind(formInstance);
         }
 
@@ -100,7 +97,6 @@ class DocumentHandler {
 
             // Add back button click handler
             if (formInstance.login.submitBtn) {
-                console.log('DocumentHandler: Attaching login handler');
                 formInstance.login.submitBtn.onclick = formInstance.handleLoginForm.bind(formInstance);
             }
         }
@@ -125,7 +121,6 @@ class DocumentHandler {
 
             // Add back button click handler
             if (formInstance.register.submitBtn) {
-                console.log('DocumentHandler: Attaching register handler');
                 formInstance.register.submitBtn.onclick = formInstance.handleRegistrationForm.bind(formInstance);
             }
         }
@@ -166,12 +161,10 @@ class DocumentHandler {
         container2.classList.remove('show', 'active');
         container2.classList.add('fade');
         
-        console.log('DocumentHandler: Switched to login tab');
     }
     
     // Method to show the register form tab
     showRegisterForm(formInstance) {
-        console.log('DocumentHandler: Switching to register tab');
         
         // Try to get fresh references to elements
         const loginTab = document.getElementById('loginTab');
@@ -209,7 +202,6 @@ class DocumentHandler {
 
     // Method to update UI based on authentication state
     updateUIAuthState(appInstance) {
-        console.log('DocumentHandler: Updating UI auth state, user =', appInstance.state.user);
         
         const loginNavBtn = this.getById('loginNavBtn');
         const loginBtn = this.getById('loginBtn');
@@ -272,7 +264,6 @@ class DocumentHandler {
         
         // Set the flag on the app instance
         appInstance.logoutInitialized = true;
-        console.log('DocumentHandler: Logout button listener initialized');
     }
 }
 
