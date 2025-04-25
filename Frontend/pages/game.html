@@ -2,57 +2,85 @@
     <div class="game-container text-center p-4">
         <h2 class="text-gold mb-4">Pong Game</h2>
         
-    <!-- Navigation Bar -->
-    <div class="navBar">
-        <button class="navButton" id="playButton">Play</button>
-        <button class="navButton" id="settingsButton">Settings</button>
-        <button class="navButton" id="howToPlayButton">How to Play</button>
-    </div>
-    
-    <!-- Game Mode Selection Menu -->
-    <div class="screen" id="playScreen">
-        <h3>Select Game Mode:</h3>
+        <!-- Video background removed from here as it's now inside gameArea -->
+        
+    <!-- Simple game selection instead of navigation bar -->
+    <div class="gameSelection">
         <button class="modeButton" id="pvpButton">1 vs 1</button>
         <button class="modeButton" id="pveButton">1 vs AI</button>
+        <button class="modeButton" id="multiplayerButton">4 Players</button>
+        <button class="modeButton" id="settingsLink">Game Settings</button>
+        <button class="modeButton" id="howToPlayLink">How to Play</button>
     </div>
+    
+    <!-- Game Mode Selection Menu removed as it's now part of the main interface -->
+    <div class="screen" id="playScreen" style="display: none;"></div>
     
     <!-- Settings Screen -->
     <div class="screen" id="settingsScreen">
         <h3>Game Settings</h3>
-        <div class="setting">
-            <label for="winScore">Points to Win:</label>
-            <select id="winScore">
-                <option value="3">3</option>
-                <option value="5" selected>5</option>
-                <option value="7">7</option>
-                <option value="10">10</option>
-            </select>
-        </div>
-        <div class="setting">
-            <label for="player1NameInput">Player 1 Name:</label>
-            <input type="text" id="player1NameInput" placeholder="Player 1" maxlength="10">
-        </div>
-        <div class="setting">
-            <label for="player2NameInput">Player 2 Name:</label>
-            <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
-        </div>
-        <div class="setting">
-            <label for="ballSpeedSelect">Ball Speed:</label>
-            <select id="ballSpeedSelect">
-                <option value="3">Slow</option>
-                <option value="5" selected>Normal</option>
-                <option value="8">Fast</option>
-                <option value="12">Insane</option>
-            </select>
-        </div>
-        <div class="setting" id="aiDifficultyContainer">
-            <label for="aiDifficultySelect">AI Difficulty:</label>
-            <select id="aiDifficultySelect">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
-                <!-- <option value="unbeatable">Unbeatable</option> -->
-            </select>
+        <div class="settings-container">
+            <div class="settings-column">
+                <div class="setting">
+                    <label for="winScore">Points to Win:</label>
+                    <select id="winScore">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="player1NameInput">Player 1 Name:</label>
+                    <input type="text" id="player1NameInput" placeholder="Player 1" maxlength="10">
+                </div>
+                <div class="setting">
+                    <label for="player2NameInput">Player 2 Name:</label>
+                    <input type="text" id="player2NameInput" placeholder="Player 2" maxlength="10">
+                </div>
+                <div class="setting setting-team" id="teamNameSetting">
+                    <label for="team1NameInput">Left Team Name:</label>
+                    <input type="text" id="team1NameInput" placeholder="Left Team" maxlength="10">
+                </div>
+                <div class="setting setting-team" id="team2NameSetting">
+                    <label for="team2NameInput">Right Team Name:</label>
+                    <input type="text" id="team2NameInput" placeholder="Right Team" maxlength="10">
+                </div>
+            </div>
+            <div class="settings-column">
+                <div class="setting">
+                    <label for="ballSpeedSelect">Ball Speed:</label>
+                    <select id="ballSpeedSelect">
+                        <option value="3">Slow</option>
+                        <option value="5" selected>Normal</option>
+                        <option value="8">Fast</option>
+                        <option value="12">Insane</option>
+                    </select>
+                </div>
+                <div class="setting" id="aiDifficultyContainer">
+                    <label for="aiDifficultySelect">AI Difficulty:</label>
+                    <select id="aiDifficultySelect">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="paddleSize">Paddle Size:</label>
+                    <select id="paddleSize">
+                        <option value="small">Small</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="backgroundSelect">Background:</label>
+                    <select id="backgroundSelect">
+                        <option value="classic" selected>Classic</option>
+                        <option value="video">Video Background</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <button class="modeButton" id="saveSettingsButton">Save Settings</button>
     </div>
@@ -65,12 +93,16 @@
                 <h4>Controls:</h4>
                 <p>Player 1: W (up) and S (down)</p>
                 <p>Player 2: ↑ (up) and ↓ (down)</p>
+                <p>In Multiplayer Mode:</p>
+                <p>Player 3: E (up) and D (down)</p>
+                <p>Player 4: I (up) and K (down)</p>
             </div>
             <div class="instructionSection">
                 <h4>Gameplay:</h4>
                 <p>Hit the ball with your paddle to return it to your opponent.</p>
                 <p>Score points when your opponent misses the ball.</p>
                 <p>First player to reach the win score wins the game!</p>
+                <p><strong>Multiplayer (4P) Mode:</strong> In this tag-team mode, when a paddle hits the ball, it becomes inactive until its teammate hits the ball. Teams score points together.</p>
             </div>
             <div class="instructionSection">
                 <h4>Tips:</h4>
@@ -99,8 +131,19 @@
         
         <!-- Game area in the middle -->
         <div class="gameArea">
+            <!-- Video Background - Hidden by default with inline style -->
+            <div class="video-background" id="videoBackground" style="display: none;">
+                <div class="video-overlay"></div>
+                <video autoplay muted loop playsinline> 
+                    <source src="../public/assets/videos/bg1.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
             <div class="paddle1 paddle" id="paddle1"></div>
             <div class="paddle2 paddle" id="paddle2"></div>
+            <div class="paddle3 paddle" id="paddle3" style="display: none;"></div>
+            <div class="paddle4 paddle" id="paddle4" style="display: none;"></div>
             <div class="ball" id="ball"></div>
             <div class="net"></div>
         </div>
@@ -129,4 +172,13 @@
     <audio src="../public/assets/sound/paddle.wav" id="paddleSound"></audio>
     <audio src="../public/assets/sound/wall.wav" id="wallSound"></audio>
     <audio src="../public/assets/sound/loss.wav" id="lossSound"></audio>
+    
+    <!-- Script tag to initialize game when loaded in SPA context -->
+    <script>
+        // Make sure the page is fully loaded before dispatching the event
+        setTimeout(() => {
+            console.log('Game page fully loaded, dispatching gamePageLoaded event');
+            document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+        }, 100);
+    </script>
 </div> 

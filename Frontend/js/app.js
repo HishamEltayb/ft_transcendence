@@ -4,6 +4,7 @@ import pages from './pages.js';
 import router from './router.js';
 import api from './api.js';
 import docHandler from './document.js';
+import gameLoader from './gameLoader.js'; 
 import forms from './forms.js';
 
 class App {
@@ -259,7 +260,6 @@ class App {
     }
 }
 
-// Create a singleton instance
 const app = new App();
 
 // Initialize app when DOM is ready
