@@ -96,9 +96,12 @@ class Forms {
         }
     }
 
-    async handleLogin(event) {
+    async handleLoginForm(event) {
         console.log('Forms: Handling login form submission');
-        event.preventDefault();
+        
+        if (event) {
+            event.preventDefault();
+        }
         
         // Get form values
         const username = document.getElementById('loginUsername').value;
@@ -133,7 +136,7 @@ class Forms {
         try {
             // Use the API to submit the data
             const result = await api.submitLoginForm(loginData);
-            
+            console.log('Forms: Login result:', result);
             // Handle the result
             if (result.success) {
                 // Clear password field
@@ -176,8 +179,12 @@ class Forms {
         }
     }
 
-    async handleRegistration(event) {
-        event.preventDefault();
+    async handleRegistrationForm(event) {
+        console.log('Forms: Handling registration form submission');
+        
+        if (event) {
+            event.preventDefault();
+        }
         
         // Get form values
         const username = document.getElementById('registerUsername').value;
@@ -187,8 +194,10 @@ class Forms {
         
         // Validate required fields
         if (!username || !email || !password || !confirmPassword) {
+            console.log("Form validation failed - empty fields");
             components.showToast('error', 'Registration Error', 'Please fill out all fields.');
-            return;
+            console.log("DEBUG: Returning early from registration due to empty fields");
+            return; // Early return to prevent form submission
         }
         
         // Validate length constraints
@@ -240,8 +249,9 @@ class Forms {
                 this.register.passwordMatchStatus.textContent = '';
                 this.register.passwordMatchStatus.className = 'form-text mt-1';
                 
-                // Switch to login form
-                this.showLoginForm();
+                // Switch to login tab after successful registration
+                docHandler.showLoginForm(this);
+                
                 this.setLoading(this.register.submitBtn, false);
             } else {
                 // Display error toast

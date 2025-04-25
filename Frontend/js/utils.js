@@ -30,25 +30,32 @@ class Utils {
         return progressInterval;
     }
     
-    setCookie(name, value, days) {
-        let expires = "";
-        if (days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
+    // Set a cookie - with expiration defaulting to 40 minutes if not specified
+    setCookie(name, value) {
+        let expires = ""; const date = new Date();
+        date.setTime(date.getTime() + (60 * 60 * 1000)); // 1 hour
+        expires = "; expires=" + date.toUTCString();
+        
         document.cookie = name + "=" + (value || "") + expires + "; path=/; Secure; SameSite=Strict";
     }
 
+    // Get a cookie by name
     getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
-        this.authToken = parts.length === 2 ? parts.pop().split(';').shift() : null;
-        return this.authToken;
+        const cookieValue = parts.length === 2 ? parts.pop().split(';').shift() : null;
+        
+        // Update the auth token if that's what was requested
+        if (name === 'authToken') {
+            this.authToken = cookieValue;
+        }
+        
+        return cookieValue;
     }
     
+    // Delete a cookie by setting its expiration to January 1, 2025
     deleteCookie(name) {
-        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; Secure; SameSite=Strict';
+        document.cookie = name + '=; expires=Wed, 01 Jan 2025 00:00:00 GMT; path=/; Secure; SameSite=Strict';
     }
     
     // Validate password matching

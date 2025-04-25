@@ -74,20 +74,18 @@ class API {
         },
         body: JSON.stringify(loginData)
       });
-      
-      if (!response.ok)
-        throw new Error('Login failed');
-      
-      const data = await response.json();
-      
-      if (data.token) {
-        // Store in both cookie and localStorage for compatibility
-        utils.setCookie('authToken', data.token, 7); // 7 days
-        localStorage.setItem('authToken', data.token);
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Login failed' };
       }
       
-      // Return the data for further processing if needed
-      return { success: true, data };
+      if (result.token) {
+        utils.setCookie('authToken', result.token);
+      }
+      
+      return { success: true, data: result };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: error.message };
@@ -95,8 +93,9 @@ class API {
   }
 
   async submitRegisterForm(registerData) {
+    console.log('API: Submitting registration form');
+    
     try {
-      // Validate password match
       if (registerData.password !== registerData.confirmPassword) {
         return {
           success: false,
@@ -115,15 +114,19 @@ class API {
         },
         body: JSON.stringify(registerData)
       });
+
+      const result = await response.json();
+
+
+      console.log('API: Registration result:', result);
       
       if (!response.ok) {
-        throw new Error('Registration failed');
+        return { success: false, error: result.error || 'Registration failed' };
       }
       
-      const data = await response.json();
       
       // Return success data
-      return { success: true, data };
+      return { success: true, data:response.data };
     } catch (error) {
       console.error('Registration error:', error);
       
@@ -209,41 +212,6 @@ class API {
       return { success: true, userData };
     } catch (error) {
       console.error('Error fetching user data:', error);
-      return { success: false, error: error.message };
-    }
-  }
-  
-  async submitFormData(endpoint, formData, method = 'POST') {
-    try {
-      // Get token - Check cookies first, then localStorage for backward compatibility
-      let token = utils.getCookie('authToken');
-      if (!token) {
-        token = localStorage.getItem('authToken');
-      }
-      
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(endpoint, {
-        method: method,
-        headers: headers,
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Request failed with status ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      return { success: true, data: responseData };
-    } catch (error) {
-      console.error(`Error submitting data to ${endpoint}:`, error);
       return { success: false, error: error.message };
     }
   }
