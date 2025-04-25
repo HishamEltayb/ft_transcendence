@@ -122,12 +122,14 @@ class App {
                 console.log(`App: Displayed page: game`);
             },
             
-            '*': () => {
-                console.error(`Route not found: ${path}`);
+            '*': (path) => {
+                console.log('Path not found -----------:', path);
+                
+                console.error(`404 Not Found: ${path}`);
                 this.state.currentPage = 'notFound';
                 pages.showPage('notFound');
                 docHandler.updateUIAuthState(this);
-                console.log(`App: Displayed page: notFound`);
+                console.log(`App: Displayed 404 page for route: ${path}`);
             }
         });
     }
@@ -136,7 +138,7 @@ class App {
     async checkAuthState() {
         console.log('App: Checking authentication state');
         try {
-            const result = await api.fetchUserData();
+            const result = await api.getUserData();
             
             if (result.success && result.userData) {
                 console.log('App: User is authenticated:', result.userData);

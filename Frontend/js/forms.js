@@ -3,15 +3,15 @@ import components from './components.js';
 import app from './app.js';
 import utils from './utils.js';
 import docHandler from './document.js';
+import router from './router.js';
 import { VALIDATION_INPUTS } from './constants.js';
-
 
 class Forms {
     constructor() {
         this.login = {};
         this.register = {};
         
-        // Listen for custom event when pages are shown
+        
         document.addEventListener('pageShown', (event) => {
             console.log('Forms: pageShown event detected for page:', event.detail.page);
             
@@ -96,9 +96,12 @@ class Forms {
         }
     }
 
-    async handleLogin(event) {
+    async handleLoginForm(event) {
         console.log('Forms: Handling login form submission');
-        event.preventDefault();
+        
+        if (event) {
+            event.preventDefault();
+        }
         
         // Get form values
         const username = document.getElementById('loginUsername').value;
@@ -132,8 +135,8 @@ class Forms {
         
         try {
             // Use the API to submit the data
-            const result = await api.submitLoginForm(loginData);
-            
+            const result = await api.login(loginData);
+            console.log('Forms: Login result:', result);
             // Handle the result
             if (result.success) {
                 // Clear password field
@@ -144,26 +147,13 @@ class Forms {
                 if (passwordCounter) {
                     passwordCounter.textContent = `0/${VALIDATION_INPUTS.password.maxLength}`;
                 }
-                
-                // Fetch user data
-                const userResult = await api.fetchUserData();
-                if (userResult.success && userResult.userData) {
-                    // Update app state
-                    if (app.setAuthState) {
-                        app.setAuthState(true, userResult.userData);
-                    } else {
-                        app.state.user = userResult.userData;
-                        app.updateUIAuthState();
-                    }
-                }
+
+                app.state.user = result.data;
                 
                 // Show success message
                 components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
                 
-                // Redirect to home page
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1000);
+                router.navigate('/');
             } else {
                 // Display error toast
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
@@ -176,8 +166,12 @@ class Forms {
         }
     }
 
-    async handleRegistration(event) {
-        event.preventDefault();
+    async handleRegistrationForm(event) {
+        console.log('Forms: Handling registration form submission');
+        
+        if (event) {
+            event.preventDefault();
+        }
         
         // Get form values
         const username = document.getElementById('registerUsername').value;
@@ -187,8 +181,10 @@ class Forms {
         
         // Validate required fields
         if (!username || !email || !password || !confirmPassword) {
+            console.log("Form validation failed - empty fields");
             components.showToast('error', 'Registration Error', 'Please fill out all fields.');
-            return;
+            console.log("DEBUG: Returning early from registration due to empty fields");
+            return; // Early return to prevent form submission
         }
         
         // Validate length constraints
@@ -240,8 +236,9 @@ class Forms {
                 this.register.passwordMatchStatus.textContent = '';
                 this.register.passwordMatchStatus.className = 'form-text mt-1';
                 
-                // Switch to login form
-                this.showLoginForm();
+                // Switch to login tab after successful registration
+                docHandler.showLoginForm(this);
+                
                 this.setLoading(this.register.submitBtn, false);
             } else {
                 // Display error toast

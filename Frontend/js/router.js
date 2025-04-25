@@ -115,24 +115,25 @@ class Router {
         // Find the matching route handler
         let handler = this.routes[path];
         
-        // If no exact match, try fallback to default
+        // If no exact match, use the wildcard handler 
         if (!handler && this.routes['*']) {
+            console.log(`Router: Path not found: ${path}, showing 404 page`);
             handler = this.routes['*'];
         } else if (!handler && this.routes['/']) {
+            console.log('Router: No route found, redirecting to home');
             handler = this.routes['/'];
         }
         
-        // If still no handler, show 404
+        // If still no handler, show error
         if (!handler) {
             console.error(`No route handler found for path: ${path}`);
-            // Could redirect to a 404 page here
             return false;
         }
         
         // Call the handler
         try {
             this.currentPage = path;
-            handler(path);
+            handler(path); // Pass the path to the handler
             
             // Dispatch navigation event
             document.dispatchEvent(new CustomEvent('navigationComplete', {
@@ -166,7 +167,7 @@ class Router {
             console.log('Router: Found access token in callback URL');
             
             // Store the token in localStorage
-            localStorage.setItem('authToken', accessToken);
+            utils.setCookie('authToken', accessToken);
             
             // Create a simple callback page - this could be made more sophisticated
             document.getElementById('pageSection').innerHTML = `

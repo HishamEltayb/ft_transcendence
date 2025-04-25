@@ -48,7 +48,7 @@ class DocumentHandler {
             tab: document.getElementById('registerTab'),
             container: document.getElementById('registerFormContainer'),
             form: document.getElementById('registerForm'),
-            submitBtn: document.getElementById('registerBtn'),
+            submitBtn: document.getElementById('registerFormButton'),
             usernameField: document.getElementById('registerUsername'),
             emailField: document.getElementById('registerEmail'),
             passwordField: document.getElementById('registerPassword'),
@@ -84,9 +84,12 @@ class DocumentHandler {
 
         console.log('DocumentHandler: this.getLoginForm', formInstance.login);
 
+        if (formInstance.login.login42Link) {
+            console.log('DocumentHandler: Attaching 42 login handler');
+            formInstance.login.login42Link.onclick = formInstance.handleLogin42.bind(formInstance);
+        }
+
         if (formInstance.login.form) {
-            formInstance.login.form.addEventListener('submit', formInstance.handleLogin.bind(formInstance));
-            
             if (formInstance.login.usernameField) {
                 formInstance.setupInputField(formInstance.login.usernameField, 'username');
             }
@@ -95,20 +98,14 @@ class DocumentHandler {
                 formInstance.setupInputField(formInstance.login.passwordField, 'password');
             }
 
+            // Add back button click handler
             if (formInstance.login.submitBtn) {
                 console.log('DocumentHandler: Attaching login handler');
-                formInstance.login.submitBtn.onclick = formInstance.handleLogin.bind(formInstance);
+                formInstance.login.submitBtn.onclick = formInstance.handleLoginForm.bind(formInstance);
             }
         }
         
-        if (formInstance.login.login42Link) {
-            console.log('DocumentHandler: Attaching 42 login handler');
-            formInstance.login.login42Link.onclick = formInstance.handleLogin42.bind(formInstance);
-        }
-        
         if (formInstance.register.form) {
-            formInstance.register.form.addEventListener('submit', formInstance.handleRegistration.bind(formInstance));
-            
             // Add validation for register fields
             if (formInstance.register.usernameField) {
                 formInstance.setupInputField(formInstance.register.usernameField, 'username');
@@ -124,6 +121,12 @@ class DocumentHandler {
             
             if (formInstance.register.confirmPasswordField) {
                 formInstance.setupPasswordField(formInstance.register.confirmPasswordField, 'password');
+            }
+
+            // Add back button click handler
+            if (formInstance.register.submitBtn) {
+                console.log('DocumentHandler: Attaching register handler');
+                formInstance.register.submitBtn.onclick = formInstance.handleRegistrationForm.bind(formInstance);
             }
         }
     }
