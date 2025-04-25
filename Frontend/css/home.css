@@ -1,5 +1,5 @@
 /* Home page specific styles */
-#homePage .landing-content {
+.landing-content {
     text-align: center;
     width: auto;
     max-width: 800px;
@@ -7,12 +7,15 @@
     border-radius: 8px;
     position: relative;
     z-index: 1;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(212, 175, 55, 0.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     margin: 0 auto;
+    backdrop-filter: blur(5px);
 }
 
+.landing-content h1, 
+.landing-content .display-4,
 .landing-content h2 {
     color: var(--gold);
     margin-bottom: 1.5rem;
@@ -29,6 +32,41 @@
     font-size: 1.3rem;
     line-height: 1.6;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Button styling specifically for the home page */
+.landing-content .btn-gold {
+    background-color: var(--gold);
+    color: var(--black);
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.landing-content .btn-gold:hover {
+    background-color: var(--gold-light);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.landing-content .btn-outline-gold {
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.landing-content .btn-outline-gold:hover {
+    background-color: var(--gold);
+    color: var(--black);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 .cta-buttons {

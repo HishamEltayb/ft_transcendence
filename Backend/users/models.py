@@ -1,11 +1,10 @@
-from sre_parse import State
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     bio = models.TextField(blank=True)
-    profile_image = models.CharField(max_length=255, blank=True)
+    profile_image = models.CharField(max_length=255, blank=True, null=True)
     
     # 42 OAuth related fields
     intra_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
@@ -15,13 +14,6 @@ class User(AbstractUser):
     
     # 2FA fields
     is_two_factor_enabled = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.username
-        
-
-class PlayerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     total_games = models.IntegerField(default=0)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
@@ -31,10 +23,10 @@ class PlayerProfile(models.Model):
     def win_rate(self):
         if self.total_games > 0:
             return round((self.wins / self.total_games) * 100, 2)
-        return 0
-    
+
     def __str__(self):
-        return f"{self.user.username}'s Profile"
+        return self.username
+        
 
 
 
@@ -60,4 +52,6 @@ class PlayerProfile(models.Model):
 #     intra_id VARCHAR(100) UNIQUE,
 #     intra_login VARCHAR(100),
 #     is_oauth_user BOOLEAN NOT NULL DEFAULT FALSE
+# );
+# );
 # );

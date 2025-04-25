@@ -1,13 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
-from rest_framework_simplejwt import authentication, tokens
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, RegisterSerializer, PlayerProfileSerializer
-from .models import User, PlayerProfile
+from .serializers import UserSerializer, RegisterSerializer
+from .models import User
 import requests
 import os
 import secrets
@@ -16,12 +14,8 @@ import pyotp
 import base64
 import qrcode
 import io
-import json
-from django.http import HttpResponse
-from django.shortcuts import redirect
-from django.conf import settings
-from django_otp import devices_for_user
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django.shortcuts import redirect
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -62,11 +56,35 @@ class LoginView(APIView):
         
         # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
-        return Response({
+        
+        # Create response with user data
+        response = Response({
             'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
+            'success': True
         })
+        
+        # Set JWT cookies as HttpOnly and Secure
+        # Access token (shorter expiration)
+        response.set_cookie(
+            key='access_token',
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=True,  # Use True in production with HTTPS
+            samesite='Lax',
+            max_age=60 * 30  # 30 minutes in seconds
+        )
+        
+        # Refresh token (longer expiration)
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=True,  # Use True in production with HTTPS
+            samesite='Lax',
+            max_age=60 * 60 * 24  # 1 day in seconds
+        )
+        
+        return response
 
 class Setup2FAView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -269,7 +287,7 @@ class FortyTwoCallbackView(APIView):
                 user = User.objects.get(intra_id=intra_id)
             except User.DoesNotExist:
                 # Create a new user if none exists
-                username = f"{intra_login}_{intra_id}"
+                username = intra_login
                 
                 # Generate a random password
                 password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
@@ -289,7 +307,7 @@ class FortyTwoCallbackView(APIView):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
-            
+        
             # Create the redirect URL with the tokens
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
             redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
@@ -299,43 +317,31 @@ class FortyTwoCallbackView(APIView):
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-# Player Profile Views
-class PlayerProfileDetailView(generics.RetrieveAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
 
-    def get_object(self):
-        # Get the profile for the currently authenticated user
-        try:
-            return self.request.user.profile
-        except PlayerProfile.DoesNotExist:  
-            # Create profile if it doesn't exist
-            return PlayerProfile.objects.create(user=self.request.user)
 
 class PlayerProfileUpdateView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
+    serializer_class = UserSerializer
     
     def get_object(self):
-        return self.request.user.profile
+        return self.request.user
 
     def update(self, request, *args, **kwargs):
-        profile = self.get_object()
+        user = self.get_object()
         
         game_result = request.data.get('game_result')
         if game_result:
-            profile.total_games += 1
+            user.total_games += 1
             if game_result.lower() == 'win':
-                profile.wins += 1
-                profile.rank += 10
+                user.wins += 1
+                user.rank += 10
             elif game_result.lower() == 'loss':
-                profile.losses += 1
+                user.losses += 1
                 # Decrement rank for losing, but not below 0
-                profile.rank = max(0, profile.rank - 5)
-            profile.save()
-            return Response(self.get_serializer(profile).data)
+                user.rank = max(0, user.rank - 5)
+            user.save()
+            return Response(self.get_serializer(user).data)
         
         # Handle direct stats update (admin or system use)
         return super().update(request, *args, **kwargs)
@@ -343,64 +349,20 @@ class PlayerProfileUpdateView(generics.UpdateAPIView):
 class LeaderboardView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PlayerProfileSerializer
-    queryset = PlayerProfile.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
+    serializer_class = UserSerializer
+    queryset = User.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
 
-    """
-This file contains all the views for the users app.
 
-The views are:
+class LogoutView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        response = Response({'success': True, 'message': 'Logged out successfully'})
+        
+        # Clear JWT cookies
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        return response
 
-* RegisterView: Handles user registration
-	1. Receive a POST request with the user's registration details
-	2. Validate the request data
-	3. Create a new user instance
-	4. Save the user to the database
-	5. Return a JSON response with the user's details
-* LoginView: Handles user login
-	1. Receive a POST request with the user's login credentials
-	2. Validate the request data
-	3. Authenticate the user
-	4. Return a JSON response with the user's details and a token
-* Setup2FAView: Handles setting up 2FA for a user
-	1. Receive a POST request with the user's 2FA setup details
-	2. Validate the request data
-	3. Generate a QR code for the user
-	4. Return a JSON response with the QR code and a secret key
-* Verify2FAView: Handles verifying a user's 2FA token
-	1. Receive a POST request with the user's 2FA token
-	2. Validate the request data
-	3. Verify the token with the user's secret key
-	4. Return a JSON response with a success message
-* Disable2FAView: Handles disabling 2FA for a user
-	1. Receive a POST request with the user's 2FA disable details
-	2. Validate the request data
-	3. Disable 2FA for the user
-	4. Return a JSON response with a success message
-* UserDetailView: Handles retrieving a user's profile
-	1. Receive a GET request with the user's ID
-	2. Retrieve the user from the database
-	3. Return a JSON response with the user's details
-* FortyTwoLoginView: Handles redirecting the user to 42's OAuth authorization page
-	1. Receive a GET request with the user's ID
-	2. Redirect the user to 42's OAuth authorization page
-* FortyTwoCallbackView: Handles the callback from 42's OAuth service
-	1. Receive a GET request with the user's authorization code
-	2. Exchange the authorization code for an access token
-	3. Retrieve the user's details from 42's API
-	4. Create a new user instance
-	5. Save the user to the database
-	6. Return a JSON response with the user's details and a token
-* PlayerProfileDetailView: Handles retrieving a player's profile
-	1. Receive a GET request with the player's ID
-	2. Retrieve the player from the database
-	3. Return a JSON response with the player's details
-* PlayerProfileUpdateView: Handles updating a player's profile
-	1. Receive a PATCH or PUT request with the player's updated details
-	2. Validate the request data
-	3. Update the player's profile
-	4. Return a JSON response with the player's updated details
-* LeaderboardView: Handles retrieving the top 10 players by rank
-	1. Retrieve the top 10 players from the database
-	2. Return a JSON response with the players' details
-""" 
