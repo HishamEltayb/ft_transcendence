@@ -23,8 +23,6 @@ class Router {
             // .closest() - Checks if the clicked element or any of its ancestors matches a selector
             // [id$="NavBtn"] - A CSS attribute selector that matches any element with an ID ending in "NavBtn"
             // [id$="Btn"] - A CSS attribute selector that matches any element with an ID ending in "Btn"
-            console.log('Router: navBtn', navBtn);
-            
             if (navBtn) {
                 event.preventDefault();
                 
