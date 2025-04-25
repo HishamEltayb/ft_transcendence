@@ -137,7 +137,7 @@ class App {
     async checkAuthState() {
         console.log('App: Checking authentication state');
         try {
-            const result = await api.fetchUserData();
+            const result = await api.getUserData();
             
             if (result.success && result.userData) {
                 console.log('App: User is authenticated:', result.userData);

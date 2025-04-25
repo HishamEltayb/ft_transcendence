@@ -61,7 +61,7 @@ class API {
     }
   }
 
-  async submitLoginForm(loginData) {
+  async login(loginData) {
     try {
       console.log('API: Submitting login form');
       
@@ -77,8 +77,6 @@ class API {
 
       const result = await response.json();
 
-      console.log('API: Login result:', result);
-      
       if (!response.ok) {
         return { success: false, error: result.error || 'Login failed' };
       }
@@ -86,6 +84,10 @@ class API {
       if (result.token) {
         utils.setCookie('authToken', result.token);
       }
+
+      console.log('API: Login result:', result.user);
+
+      localStorage.setItem('user', JSON.stringify(result.user));
       
       return { success: true, data: result.user };
     } catch (error) {
@@ -148,7 +150,6 @@ class API {
         headers: {
           'Accept': 'application/json'
         },
-        // Important: Include credentials to allow cookies to be set
         credentials: 'include'
       });
       
@@ -177,7 +178,7 @@ class API {
     }
   }
 
-  async fetchUserData() {
+  async getUserData() {
     try {
       console.log('API: Fetching fresh user data from API');
       const userMeEndpoint = ENDPOINTS.user.me;
@@ -191,6 +192,14 @@ class API {
         console.log('API: Auth token from localStorage:', token ? 'Present' : 'Missing');
       }
       
+      console.log('API: Token:', token);
+
+      const user = localStorage.getItem('user');
+
+      if (user) {
+        return { success: true, userData: JSON.parse(user) };
+      }
+
       if (!token) {
         return { success: true, userData: null };
       }

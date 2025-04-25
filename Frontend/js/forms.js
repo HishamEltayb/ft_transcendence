@@ -6,7 +6,6 @@ import docHandler from './document.js';
 import router from './router.js';
 import { VALIDATION_INPUTS } from './constants.js';
 
-
 class Forms {
     constructor() {
         this.login = {};
@@ -136,7 +135,7 @@ class Forms {
         
         try {
             // Use the API to submit the data
-            const result = await api.submitLoginForm(loginData);
+            const result = await api.login(loginData);
             console.log('Forms: Login result:', result);
             // Handle the result
             if (result.success) {
