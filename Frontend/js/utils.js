@@ -58,6 +58,26 @@ class Utils {
         document.cookie = name + '=; expires=Wed, 01 Jan 2025 00:00:00 GMT; path=/; Secure; SameSite=Strict';
     }
     
+
+    cleanUp() {
+        console.log('Utils: Cleaning up all auth data');
+        // Clear auth token cookie
+        this.deleteCookie('authToken');
+        
+        // Clear all possible auth tokens from localStorage
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        
+        // Clear user data
+        localStorage.removeItem('user');
+        
+        // Reset internal state
+        this.authToken = null;
+        
+        console.log('Utils: All auth data cleared');
+    }
+    
     // Validate password matching
     validatePasswordMatch(passwordField, confirmPasswordField, statusElement) {
         if (!passwordField || !confirmPasswordField || !statusElement) {

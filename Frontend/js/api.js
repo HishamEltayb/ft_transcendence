@@ -181,6 +181,12 @@ class API {
   async getUserData() {
     try {
       console.log('API: Fetching fresh user data from API');
+      const user = localStorage.getItem('user');
+
+      if (user) {
+        return { success: true, userData: JSON.parse(user) };
+      }
+
       const userMeEndpoint = ENDPOINTS.user.me;
       
       // Get token - Check cookies first, then localStorage for backward compatibility
@@ -192,14 +198,6 @@ class API {
         console.log('API: Auth token from localStorage:', token ? 'Present' : 'Missing');
       }
       
-      console.log('API: Token:', token);
-
-      const user = localStorage.getItem('user');
-
-      if (user) {
-        return { success: true, userData: JSON.parse(user) };
-      }
-
       if (!token) {
         return { success: true, userData: null };
       }
@@ -237,6 +235,7 @@ class API {
       
       if (!token) {
         console.log('API: No token found, user already logged out');
+        utils.cleanUp();
         return { success: true };
       }
       
@@ -248,13 +247,9 @@ class API {
         }
       });
       
-      utils.deleteCookie('authToken');
-      localStorage.removeItem('authToken');
-      
       return { success: true };
     } catch (error) {
-      utils.deleteCookie('authToken');
-      localStorage.removeItem('authToken');
+      utils.cleanUp();
       
       return { success: false, error: error.message };
     }
