@@ -61,7 +61,7 @@ class API {
     }
   }
 
-  async submitLoginForm(loginData) {
+  async login(loginData) {
     try {
       console.log('API: Submitting login form');
       
@@ -74,20 +74,22 @@ class API {
         },
         body: JSON.stringify(loginData)
       });
-      
-      if (!response.ok)
-        throw new Error('Login failed');
-      
-      const data = await response.json();
-      
-      if (data.token) {
-        // Store in both cookie and localStorage for compatibility
-        utils.setCookie('authToken', data.token, 7); // 7 days
-        localStorage.setItem('authToken', data.token);
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Login failed' };
       }
       
-      // Return the data for further processing if needed
-      return { success: true, data };
+      if (result.token) {
+        utils.setCookie('authToken', result.token);
+      }
+
+      console.log('API: Login result:', result.user);
+
+      localStorage.setItem('user', JSON.stringify(result.user));
+      
+      return { success: true, data: result.user };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: error.message };
@@ -95,8 +97,9 @@ class API {
   }
 
   async submitRegisterForm(registerData) {
+    console.log('API: Submitting registration form');
+    
     try {
-      // Validate password match
       if (registerData.password !== registerData.confirmPassword) {
         return {
           success: false,
@@ -115,15 +118,19 @@ class API {
         },
         body: JSON.stringify(registerData)
       });
+
+      const result = await response.json();
+
+
+      console.log('API: Registration result:', result);
       
       if (!response.ok) {
-        throw new Error('Registration failed');
+        return { success: false, error: result.error || 'Registration failed' };
       }
       
-      const data = await response.json();
       
       // Return success data
-      return { success: true, data };
+      return { success: true, data:response.data };
     } catch (error) {
       console.error('Registration error:', error);
       
@@ -143,7 +150,6 @@ class API {
         headers: {
           'Accept': 'application/json'
         },
-        // Important: Include credentials to allow cookies to be set
         credentials: 'include'
       });
       
@@ -172,9 +178,15 @@ class API {
     }
   }
 
-  async fetchUserData() {
+  async getUserData() {
     try {
       console.log('API: Fetching fresh user data from API');
+      const user = localStorage.getItem('user');
+
+      if (user) {
+        return { success: true, userData: JSON.parse(user) };
+      }
+
       const userMeEndpoint = ENDPOINTS.user.me;
       
       // Get token - Check cookies first, then localStorage for backward compatibility
@@ -212,41 +224,6 @@ class API {
       return { success: false, error: error.message };
     }
   }
-  
-  async submitFormData(endpoint, formData, method = 'POST') {
-    try {
-      // Get token - Check cookies first, then localStorage for backward compatibility
-      let token = utils.getCookie('authToken');
-      if (!token) {
-        token = localStorage.getItem('authToken');
-      }
-      
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(endpoint, {
-        method: method,
-        headers: headers,
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Request failed with status ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      return { success: true, data: responseData };
-    } catch (error) {
-      console.error(`Error submitting data to ${endpoint}:`, error);
-      return { success: false, error: error.message };
-    }
-  }
 
   async logout() {
     try {
@@ -258,6 +235,7 @@ class API {
       
       if (!token) {
         console.log('API: No token found, user already logged out');
+        utils.cleanUp();
         return { success: true };
       }
       
@@ -269,13 +247,9 @@ class API {
         }
       });
       
-      utils.deleteCookie('authToken');
-      localStorage.removeItem('authToken');
-      
       return { success: true };
     } catch (error) {
-      utils.deleteCookie('authToken');
-      localStorage.removeItem('authToken');
+      utils.cleanUp();
       
       return { success: false, error: error.message };
     }
