@@ -1,4 +1,3 @@
-// Import necessary modules
 import utils from './utils.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -13,8 +12,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
     
-    // Initialize progress animation
-    const progressInterval = utils.startProgressAnimation(progressBar);
+    utils.startProgressAnimation(progressBar);
     
     try {
         // Get tokens from URL
@@ -23,8 +21,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (accessToken) {
             console.log('Callback.js: Access token found, setting in cookie');
             
-            // Save token to cookie only
-            utils.setCookie('authToken', accessToken, 7);
+            // Save token to cookie with default 40-minute expiration
+            utils.setCookie('authToken', accessToken);
             
             // Update status message
             statusMsg.textContent = 'Login successful! Redirecting...';
@@ -40,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             statusMsg.style.color = '#e74c3c';
             
             // Clear any existing auth data
-            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            utils.deleteCookie('authToken');
             
             // Redirect to login page
             setTimeout(() => {
