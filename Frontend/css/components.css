@@ -116,33 +116,57 @@
     padding: 5px;
 }
 
-.dropdown-item.logout-btn {
-    color: var(--gold);
+.dropdown-item.logout-btn,
+.dropdown-menu .dropdown-item#profileNavBtn {
+    color: var(--gold) !important;
     font-weight: 500;
     padding: 10px 16px;
     transition: all 0.2s ease;
     border-radius: 6px;
     margin: 2px 0;
+    background-color: transparent !important;
+    text-decoration: none !important;
 }
 
-.dropdown-item.logout-btn i {
+.dropdown-item.logout-btn i,
+.dropdown-menu .dropdown-item#profileNavBtn i {
     font-size: 16px;
-    color: var(--gold);
+    color: var(--gold) !important;
     transition: all 0.2s ease;
 }
 
 .dropdown-item.logout-btn:hover, 
-.dropdown-item.logout-btn:focus {
-    background-color: var(--gold);
-    color: #000;
+.dropdown-item.logout-btn:focus,
+.dropdown-menu .dropdown-item#profileNavBtn:hover,
+.dropdown-menu .dropdown-item#profileNavBtn:focus {
+    background-color: var(--gold) !important;
+    color: #000 !important;
 }
 
+/* Change icon color on hover */
 .dropdown-item.logout-btn:hover i, 
-.dropdown-item.logout-btn:focus i {
-    color: #000;
+.dropdown-item.logout-btn:focus i,
+.dropdown-menu .dropdown-item#profileNavBtn:hover i,
+.dropdown-menu .dropdown-item#profileNavBtn:focus i {
+    color: #000 !important;
 }
 
-/* Removed dropdown styles */
+/* Ensure the profile button is identical to the logout button */
+a#profileNavBtn.dropdown-item {
+    color: var(--gold) !important;
+    background-color: transparent !important;
+}
+
+a#profileNavBtn.dropdown-item:hover,
+a#profileNavBtn.dropdown-item:focus {
+    background-color: var(--gold) !important;
+    color: #000 !important;
+}
+
+a#profileNavBtn.dropdown-item:hover i,
+a#profileNavBtn.dropdown-item:focus i {
+    color: #000 !important;
+}
 
 /* ===== FOOTER STYLES ===== */
 footer {

@@ -2,34 +2,45 @@
 .profile-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 100px; /* Base padding */
-    padding-bottom: 70px; /* Account for footer */
+    padding: 20px;
+    width: 100%;
+    margin-top: 180px;
 }
 
 /* Fix for ensuring content fits on small screens */
 body.profile-page {
-    padding-bottom: 0;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--black);
 }
 
 .profile-card {
     background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 8px;
-    height: auto; /* Let content determine height */
+    height: auto;
     margin-bottom: 1.5rem;
 }
 
 /* Profile page wrapper to control overall height */
 .profile-page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    padding-top: 60px; /* Reduced padding for header */
+    min-height: calc(100vh - 60px); /* Account for header */
 }
 
-/* Remove custom flex layout - let Bootstrap handle it */
+/* Profile sections layout */
 .profile-sections {
-    /* Bootstrap's .row already handles the layout */
-    margin-bottom: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-sections > div {
+    margin-bottom: 20px;
 }
 
 /* Profile avatar */
@@ -63,102 +74,42 @@ body.profile-page {
     font-weight: 500;
 }
 
-@media (max-width: 992px) {
-    .profile-container {
-        padding-top: 500px; /* Significantly increased to push content down */
-    }
-    
-    .profile-card {
-        margin-bottom: 1.5rem;
-    }
+/* Mobile-first approach for responsive design */
+/* Base styles are for mobile, then we adjust for larger screens */
+.profile-container {
+    padding-top: 15px; /* Reduced padding since profile-page-wrapper has more padding */
 }
 
-@media (max-width: 768px) {
-    .profile-container {
-        padding-top: 500px; /* Significantly increased to push content down */
-    }
+/* 2FA Toggle Responsive Styles */
+.form-check-input#setting2fa {
+    width: 3em;
+    height: 1.5em;
+    margin-right: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
-@media (max-width: 576px) {
-    .profile-container {
-        padding-top: 560px; /* Significantly increased to push content down */
-    }
-    
-    .avatar-container {
-        width: 120px;
-        height: 120px;
-        margin-bottom: 0.5rem;
-    }
-    
-    .card {
-        margin-bottom: 1rem;
-    }
-    
-    /* Make form elements more compact on mobile */
-    .form-control {
-        padding: 8px 12px;
-    }
-    
-    .mb-3 {
-        margin-bottom: 0.75rem !important;
-    }
-    
-    /* Reduce some text sizes */
-    #profileUsername {
-        font-size: 1.3rem;
-    }
-    
-    /* Further reduce spacing on the smallest screens */
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .card-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    /* Remove excess whitespace */
-    .profile-sections {
-        row-gap: 0.75rem !important;
-    }
-    
-    /* Make the edit profile button shorter */
-    #editProfileBtn {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.875rem;
-    }
-    
-    /* Adjust text spacing */
-    p.mb-3 {
-        margin-bottom: 0.5rem !important;
-    }
-    
-    h5.card-title.mb-3 {
-        margin-bottom: 0.75rem !important;
-    }
+.form-check-label {
+    cursor: pointer;
+    font-size: 1.1rem !important;
 }
 
-/* Extra small device adjustments */
-@media (max-width: 375px) {
-    .profile-container {
-        padding-top: 450px; /* Extra padding for very small screens */
-    }
-    
-    /* Make things even more compact */
-    .avatar-container {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .card-body {
-        padding: 0.75rem;
-    }
-    
-    /* Smaller margin/padding for all elements */
-    #profileUsername {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem !important;
-    }
+/* Fix for 2FA container on all screen sizes */
+.p-3.border.rounded.bg-dark.border-gold {
+    padding: 1rem !important;
+    margin-bottom: 1.5rem;
+}
+
+/* Ensure the form switch container properly wraps on mobile */
+.form-check.form-switch {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.text-light.small.mt-2.mb-0 {
+    width: 100%;
+    margin-top: 0.75rem !important;
 }
 
 /* Intra Login styling */
@@ -226,24 +177,46 @@ body.profile-page {
     font-weight: 600;
 }
 
-/* Large screen layout adjustments */
-@media (min-width: 992px) {
+/* CONSOLIDATED MEDIA QUERIES */
+@media (min-width: 768px) and (max-width: 991px) {
+    .profile-page-wrapper {
+        margin-top: 420px;
+    }
+    
     .profile-container {
-        padding-top: 120px;
+        padding: 25px;
+    }
+}
+
+/* Small Screens (576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .profile-page-wrapper {
+        margin-top: 360px;
     }
     
-    .profile-card {
-        margin-bottom: 0;
+    .profile-container {
+        padding: 20px 15px;
+    }
+}
+
+/* Extra Small Screens (375px to 575px) */
+@media (min-width: 376px) and (max-width: 575px) {
+    .profile-page-wrapper {
+        margin-top: 500px;
     }
     
-    /* Ensure equal height columns */
-    .row.profile-sections {
-        display: flex;
-        flex-wrap: wrap;
+    .profile-container {
+        padding: 15px 10px;
+    }
+}
+
+/* Very Small Screens (up to 375px) */
+@media (max-width: 375px) {
+    .profile-page-wrapper {
+        margin-top: 500px;
     }
     
-    /* Ensure proper spacing of cards on large screens */
-    .card.mb-4 {
-        margin-bottom: 1.5rem !important;
+    .profile-container {
+        padding: 10px;
     }
 } 

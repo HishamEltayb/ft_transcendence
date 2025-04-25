@@ -1,0 +1,144 @@
+<!-- Profile Page -->
+<div class="profile-page-wrapper">
+    <div class="container profile-container">
+        <div class="row profile-sections">
+            <!-- Profile Card -->
+            <div class="col-lg-4">
+                <div class="card profile-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3" id="profileUsername">Username</h5>
+                        <div class="avatar-container mb-3">
+                            <img src="../public/assets/images/default-avatar.png" class="rounded-circle img-fluid" id="profileAvatar">
+                        </div>
+                        <p class="text-muted mb-3" id="profileIntraLogin"></p>
+                        <button class="btn btn-gold btn-sm" id="editProfileBtn">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats and Settings -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">Player Statistics</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="mb-0">Total Games</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0" id="statsTotalGames">0</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="mb-0">Wins</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0" id="statsWins">0</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="mb-0">Losses</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0" id="statsLosses">0</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="mb-0">Win Rate</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0" id="statsWinRate">0%</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="mb-0">Rank</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0" id="statsRank">Beginner</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">Account Settings</div>
+                    <div class="card-body">
+                        <form id="settingsForm">
+                            <div class="mb-3">
+                                <label for="settingDisplayName" class="form-label">Display Name</label>
+                                <input type="text" class="form-control" id="settingDisplayName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="settingEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="settingEmail">
+                            </div>
+                            <div class="mb-3">
+                                <label for="settingPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="settingPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label for="settingConfirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="settingConfirmPassword">
+                            </div>
+                            <div class="mb-4 p-3 border rounded bg-dark border-gold">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="setting2fa">
+                                        <label class="form-check-label ms-2 fw-bold text-gold" for="setting2fa">
+                                            Enable Two-Factor Authentication
+                                        </label>
+                                    </div>
+                                </div>
+                                <p class="text-light small mt-2 mb-0">
+                                    <i class="bi bi-shield-lock-fill me-1"></i>
+                                    Secure your account with an additional layer of protection using an authenticator app.
+                                </p>
+                            </div>
+                            <button type="submit" class="btn btn-gold" id="saveSettingsBtn">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Match History Section -->
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">Recent Matches</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Opponent</th>
+                                        <th>Score</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matchHistoryTable">
+                                    <!-- Match history will be populated dynamically -->
+                                    <tr>
+                                        <td colspan="4" class="text-center">No match history available</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add the profile-page class to the body when profile page is loaded
+    document.body.classList.add('profile-page');
+</script> 

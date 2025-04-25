@@ -6,6 +6,7 @@ import api from './api.js';
 import docHandler from './document.js';
 import gameLoader from './gameLoader.js'; 
 import forms from './forms.js';
+import profile from './profile.js';
 
 class App {
     constructor() {
@@ -101,10 +102,48 @@ class App {
                 docHandler.updateUIAuthState(this);
             },
             
-            '/login': () => {
-                this.state.currentPage = 'login';
-                pages.showPage('login');
-                docHandler.updateUIAuthState(this);
+            '/login': async () => {
+                console.log('Checking login state');
+                
+                // Show spinner while checking
+                components.showSpinner();
+                
+                try {
+                    // First check if we already have a user in state (memory)
+                    if (this.state.user) {
+                        console.log('User already logged in, redirecting to profile');
+                        components.showToast('info', 'Already Logged In', 'You are already logged in.');
+                        router.navigate('/profile');
+                        components.hideSpinner();
+                        return;
+                    }
+                    
+                    // If state is empty (might be after refresh), check with API
+                    const result = await api.getUserData();
+                    
+                    if (result.success && result.userData) {
+                        // User is authenticated but state was empty (after refresh)
+                        this.state.user = result.userData;
+                        docHandler.updateUIAuthState(this);
+                        console.log('User authenticated after refresh, redirecting to profile');
+                        components.showToast('info', 'Session Restored', 'Your session has been restored.');
+                        router.navigate('/profile');
+                        return;
+                    } else {
+                        // User is truly not authenticated, show login page
+                        this.state.currentPage = 'login';
+                        pages.showPage('login');
+                        docHandler.updateUIAuthState(this);
+                    }
+                } catch (error) {
+                    console.error('Error checking auth for login page:', error);
+                    // On error, default to showing login page
+                    this.state.currentPage = 'login';
+                    pages.showPage('login');
+                    docHandler.updateUIAuthState(this);
+                } finally {
+                    components.hideSpinner();
+                }
             },
             
             '/game': () => {
@@ -113,9 +152,48 @@ class App {
                 docHandler.updateUIAuthState(this);
             },
             
-            '*': (path) => {
+            '/profile': async () => {
+                this.state.currentPage = 'profile';
                 
-                console.error(`404 Not Found: ${path}`);
+                // Show spinner while checking auth
+                components.showSpinner();
+                
+                try {
+                    // First check if we already have a user in state
+                    if (this.state.user) {
+                        // User is already authenticated, show profile directly
+                        console.log('User already authenticated, showing profile');
+                        pages.showPage('profile');
+                        docHandler.updateUIAuthState(this);
+                        components.hideSpinner();
+                        return;
+                    }
+                    
+                    // If we don't have a user, check authentication state
+                    const result = await api.getUserData();
+                    
+                    if (result.success && result.userData) {
+                        // User is authenticated, update state and show profile
+                        this.state.user = result.userData;
+                        docHandler.updateUIAuthState(this);
+                        pages.showPage('profile');
+                    } else {
+                        // User is not authenticated, redirect to login
+                        console.log('Not authenticated, redirecting to login');
+                        components.showToast('warning', 'Authentication Required', 'Please log in to view your profile.');
+                        router.navigate('/login');
+                    }
+                } catch (error) {
+                    console.error('Error checking auth for profile page:', error);
+                    components.showToast('error', 'Authentication Error', 'An error occurred while checking authentication.');
+                    router.navigate('/login');
+                } finally {
+                    components.hideSpinner();
+                }
+            },
+            
+            '*': () => {
+                // console.error(`404 Not Found: ${path}`);
                 this.state.currentPage = 'notFound';
                 pages.showPage('notFound');
                 docHandler.updateUIAuthState(this);
@@ -145,6 +223,8 @@ class App {
 
     // Method to handle user logout
     async logout() {
+        console.log('App: Logging out');
+        
         components.showSpinner();
         
         try {

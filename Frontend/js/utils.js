@@ -60,6 +60,7 @@ class Utils {
     
 
     cleanUp() {
+        console.log('Utils: Cleaning up');
         // Clear auth token cookie
         this.deleteCookie('authToken');
         

@@ -216,11 +216,15 @@ class API {
   }
 
   async logout() {
+    console.log('API: Logging out');
+
     try {
       const logoutEndpoint = ENDPOINTS.auth.logout;
       
       // Get token
       const token = utils.getCookie('authToken') || localStorage.getItem('authToken');
+      
+      console.log('API: Token:', token);
       
       if (!token) {
         utils.cleanUp();
@@ -234,6 +238,8 @@ class API {
           'Content-Type': 'application/json'
         }
       });
+
+      utils.cleanUp();
       
       return { success: true };
     } catch (error) {

@@ -1,19 +1,18 @@
 import api from './api.js';
 import components from './components.js';
 import docHandler from './document.js';
-import { AVAILABLE_PAGES } from './constants.js';
+import { AVAILABLE_PAGES, PAGES } from './constants.js';
 
 class Pages {
     constructor() {
         this.appContainer = null;
         this.pageSection = null;
         
-        this.pages = {
-            home: null,
-            game: null,
-            login: null,
-            notFound: null
-        };
+        // Initialize pages object with all pages from AVAILABLE_PAGES
+        this.pages = {};
+        AVAILABLE_PAGES.forEach(page => {
+            this.pages[page] = null;
+        });
         
         this.isLoading = false;
         this.loadingComplete = false;
@@ -26,7 +25,6 @@ class Pages {
         this.pageSection.id = 'pageSection';
         this.pageSection.className = 'page-content';
         this.appContainer.appendChild(this.pageSection);
-        
     }
     
     async loadAllPages() {
@@ -35,15 +33,21 @@ class Pages {
         components.showSpinner();
         
         try {
+            // Fetch all pages from the API
             const htmlPages = await api.fetchAllPages();
             
-            this.pages.home = htmlPages.homePage ? htmlPages.homePage.innerHTML : null;
-            this.pages.game = htmlPages.gamePage ? htmlPages.gamePage.innerHTML : null;
-            this.pages.login = htmlPages.loginPage ? htmlPages.loginPage.innerHTML : null;
-            this.pages.notFound = htmlPages.notFoundPage ? htmlPages.notFoundPage.innerHTML : null;
+            // Store each page in our pages object
+            Object.entries(htmlPages).forEach(([pageName, element]) => {
+                if (element) {
+                    this.pages[pageName] = element.innerHTML;
+                }
+            });
             
             this.isLoading = false;
             this.loadingComplete = true;
+            components.hideSpinner();
+            
+            console.log('Pages loaded:', Object.keys(this.pages).filter(key => this.pages[key] !== null));
             
         } catch (error) {
             console.error("Error loading pages:", error);
@@ -166,12 +170,10 @@ class Pages {
     }
     
     isLoaded() {
+        // Check that loading is complete and all required pages are loaded
         return this.loadingComplete && 
             !this.isLoading && 
-            this.pages.home && 
-            this.pages.game && 
-            this.pages.login && 
-            this.pages.notFound;
+            AVAILABLE_PAGES.every(page => this.pages[page] !== null);
     }
 }
 
