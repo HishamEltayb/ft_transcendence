@@ -271,6 +271,7 @@ function initializePositions() {
   
   // Position paddles at the correct heights
   if (isMultiplayerMode) {
+    console.log('Initializing positions for multiplayer mode');
     // Position paddles in their respective quarters
     paddle1Y = gameHeight * 0.25 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight * 0.25 - paddle2.clientHeight / 2;
@@ -293,14 +294,18 @@ function initializePositions() {
       rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
     };
   } else {
-    console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+    console.log('Initializing positions for standard mode');
     // Standard 2-player positioning
     paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
     
     // Hide multiplayer paddles in normal mode
-    paddle3.style.display = 'none';
-    paddle4.style.display = 'none';
+    if (paddle3) paddle3.style.display = 'none';
+    if (paddle4) paddle4.style.display = 'none';
+    
+    // Make sure standard paddles are not disabled
+    paddle1.classList.remove('paddle-disabled');
+    paddle2.classList.remove('paddle-disabled');
   }
   
   // Set the paddle width based on the game area width (responsive)
@@ -577,10 +582,10 @@ howToPlayLink.addEventListener('click', () => {
 
 // Game Mode buttons with simpler direct start
 pvpButton.addEventListener('click', () => {
-  window.isAIMode = false;
-  isAIMode = false; // Set both local and global
-  isMultiplayerMode = false;
-  console.log('1111111111111111111111111111111111111');
+  // Use the new setGameMode function to set up PVP properly
+  setGameMode('pvp');
+  
+  // Hide all screens
   hideAllScreens();
   
   // Apply current settings
@@ -592,10 +597,10 @@ pvpButton.addEventListener('click', () => {
 });
 
 pveButton.addEventListener('click', () => {
-  window.isAIMode = true;
-  isAIMode = true; // Set both local and global
-  isMultiplayerMode = false;
-  console.log('AIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAI');
+  // Use the new setGameMode function to set up AI mode properly
+  setGameMode('ai');
+  
+  // Hide all screens
   hideAllScreens();
   
   // Apply current settings
@@ -608,10 +613,10 @@ pveButton.addEventListener('click', () => {
 
 // Add event listener for multiplayer button
 multiplayerButton.addEventListener('click', () => {
-  window.isAIMode = false;
-  isAIMode = false; // Set both local and global
-  isMultiplayerMode = true;
-  console.log('4444444444444444444444444444444444444');
+  // Use the new setGameMode function to set up multiplayer properly
+  setGameMode('multiplayer');
+  
+  // Hide all screens
   hideAllScreens();
   
   // Apply current settings
@@ -866,6 +871,12 @@ function resetGame() {
   team2Score = 0;
   updateScoreboard();
   
+  // First clear any disabled state
+  paddle1.classList.remove('paddle-disabled');
+  paddle2.classList.remove('paddle-disabled');
+  paddle3.classList.remove('paddle-disabled');
+  paddle4.classList.remove('paddle-disabled');
+  
   // Reset paddles and ball
   initializePositions();
   
@@ -882,8 +893,9 @@ function resetGame() {
   gameOver = false;
   collisionProcessedThisFrame = false;
   
-  // In multiplayer mode, set initial paddle states
+  // In multiplayer mode, set proper initial paddle states
   if (isMultiplayerMode) {
+    console.log('Setting up multiplayer in resetGame');
     // Initialize the lastPaddleHit tracker
     lastPaddleHit = {
       leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
@@ -891,28 +903,29 @@ function resetGame() {
     };
     
     // Apply visual states
-    resetPaddleVisuals();
+    paddle3.classList.add('paddle-disabled');
+    paddle4.classList.add('paddle-disabled');
   } else {
     lastPaddleHit = null;
   }
   
   // Update player names display (ensuring they're always visible)
-  if (isMultiplayerMode) {
-    player1NameElement.textContent = team1Name || "Left Team";
-    player2NameElement.textContent = team2Name || "Right Team";
-  } else {
-    player1NameElement.textContent = player1Name || "Player 1";
-    player2NameElement.textContent = player2Name || "Player 2";
-  }
+  updatePlayerNames();
   
   // Hide the ball until game starts
   ball.style.display = 'none';
+  
+  // Explicitly update paddle visibility
+  updatePaddleVisibility();
   
   // Apply background based on settings
   toggleVideoBackground();
   
   // Reset last time to ensure game loop functions properly on restart
   lastTime = null;
+  
+  // Log the current state
+  console.log('Game reset. isMultiplayerMode:', isMultiplayerMode, 'lastPaddleHit:', lastPaddleHit);
 }
 
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
@@ -1725,3 +1738,127 @@ window.paddleSizeMultiplier = paddleSizeMultiplier;
 window.currentBackground = currentBackground;
 window.toggleVideoBackground = toggleVideoBackground;
 window.updatePaddleSizes = updatePaddleSizes;
+
+// Function to update paddle visibility based on game mode
+function updatePaddleVisibility() {
+    console.log('Updating paddle visibility, isMultiplayerMode:', isMultiplayerMode);
+    
+    // Always remove the disabled class from all paddles first
+    paddle1.classList.remove('paddle-disabled');
+    paddle2.classList.remove('paddle-disabled');
+    paddle3.classList.remove('paddle-disabled');
+    paddle4.classList.remove('paddle-disabled');
+    
+    if (!isMultiplayerMode) {
+        // Explicitly hide multiplayer paddles
+        if (paddle3) paddle3.style.display = 'none';
+        if (paddle4) paddle4.style.display = 'none';
+        
+        // Reset last paddle hit
+        lastPaddleHit = null;
+    } else {
+        // Show multiplayer paddles
+        if (paddle3) paddle3.style.display = 'block';
+        if (paddle4) paddle4.style.display = 'block';
+        
+        // Initialize proper lastPaddleHit if not already set
+        if (!lastPaddleHit) {
+            lastPaddleHit = {
+                leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
+                rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
+            };
+        }
+        
+        // Apply disabled class to the appropriate paddles based on lastPaddleHit
+        if (lastPaddleHit.leftSide === 'paddle1') {
+            paddle1.classList.add('paddle-disabled');
+        } else {
+            paddle3.classList.add('paddle-disabled');
+        }
+        
+        if (lastPaddleHit.rightSide === 'paddle2') {
+            paddle2.classList.add('paddle-disabled');
+        } else {
+            paddle4.classList.add('paddle-disabled');
+        }
+        
+        console.log('Multiplayer paddle visibility updated, lastPaddleHit:', lastPaddleHit);
+    }
+}
+
+// Export updatePaddleVisibility to the window for access
+window.updatePaddleVisibility = updatePaddleVisibility;
+
+// Add this new function to explicitly set the game mode
+function setGameMode(mode) {
+  console.log('Setting game mode to:', mode);
+  
+  // Reset paddle classes first - important to clear any previous state
+  paddle1.classList.remove('paddle-disabled');
+  paddle2.classList.remove('paddle-disabled');
+  paddle3.classList.remove('paddle-disabled');
+  paddle4.classList.remove('paddle-disabled');
+  
+  if (mode === 'multiplayer') {
+    window.isAIMode = false;
+    isAIMode = false;
+    isMultiplayerMode = true;
+    
+    // Show multiplayer paddles
+    paddle3.style.display = 'block';
+    paddle4.style.display = 'block';
+    
+    // Set lastPaddleHit to initialize paddle1 and paddle2 as active
+    lastPaddleHit = {
+      leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
+      rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
+    };
+    
+    // Disable the appropriate paddles
+    paddle3.classList.add('paddle-disabled');
+    paddle4.classList.add('paddle-disabled');
+    
+    console.log('Multiplayer mode initialized with lastPaddleHit:', lastPaddleHit);
+  } 
+  else if (mode === 'ai') {
+    window.isAIMode = true;
+    isAIMode = true;
+    isMultiplayerMode = false;
+    
+    // Hide multiplayer paddles
+    paddle3.style.display = 'none';
+    paddle4.style.display = 'none';
+    
+    // Reset lastPaddleHit
+    lastPaddleHit = null;
+  } 
+  else { // pvp mode
+    window.isAIMode = false;
+    isAIMode = false;
+    isMultiplayerMode = false;
+    
+    // Hide multiplayer paddles
+    paddle3.style.display = 'none';
+    paddle4.style.display = 'none';
+    
+    // Reset lastPaddleHit
+    lastPaddleHit = null;
+  }
+  
+  // Update player names
+  updatePlayerNames();
+  
+  // Update paddle visibility
+  updatePaddleVisibility();
+}
+
+// Helper function to update player names based on game mode
+function updatePlayerNames() {
+  if (isMultiplayerMode) {
+    player1NameElement.textContent = team1Name;
+    player2NameElement.textContent = team2Name;
+  } else {
+    player1NameElement.textContent = player1Name;
+    player2NameElement.textContent = isAIMode ? "AI" : player2Name;
+  }
+}

@@ -19,8 +19,6 @@ class GameLoader {
     }
     
     loadGame() {
-        console.log('Game page loaded, initializing game...');
-        
         // Reset initialization state to make sure everything gets set up correctly
         this.isGameInitialized = false;
         
@@ -44,7 +42,7 @@ class GameLoader {
             
             // Check if game.js is already loaded
             if (typeof window.applySettings === 'function') {
-                console.log('Game script already loaded, setting up direct button handlers');
+    
                 this.setupDirectButtonHandlers();
                 this.ensureGameElementsAreVisible();
                 this.isGameInitialized = true;
@@ -56,7 +54,7 @@ class GameLoader {
                 
                 // When script loads, set up direct event handlers for buttons
                 script.onload = () => {
-                    console.log('Game script loaded, setting up direct button handlers');
+        
                     // We need a longer delay to ensure everything is processed
                     setTimeout(() => {
                         this.setupDirectButtonHandlers();
@@ -81,7 +79,7 @@ class GameLoader {
         if (startText && startText.style.display === 'block' && 
             typeof window.startGame === 'function' && 
             !window.gameRunning && !window.gameOver) {
-            console.log("Handling key press to start game:", e.key);
+
             window.startGame();
         }
     }
@@ -104,16 +102,15 @@ class GameLoader {
     }
     
     setupDirectButtonHandlers() {
-        console.log('Setting up direct button handlers...');
         
         // Verify we have the main game buttons before proceeding
         const pvpButton = document.getElementById('pvpButton');
         const pveButton = document.getElementById('pveButton');
+        const multiplayerButton = document.getElementById('multiplayerButton');
         
         if (!pvpButton || !pveButton) {
             console.error('Game buttons not found, cannot set up handlers!');
-            console.log('pvpButton exists:', !!pvpButton);
-            console.log('pveButton exists:', !!pveButton);
+
             // Try again after a delay
             setTimeout(() => this.setupDirectButtonHandlers(), 200);
             return;
@@ -123,8 +120,6 @@ class GameLoader {
         const setupButton = (id, action) => {
             const button = document.getElementById(id);
             if (button) {
-                console.log(`Setting up handler for ${id}`);
-                
                 // First remove any existing listeners
                 const oldButton = button;
                 const newButton = button.cloneNode(true);
@@ -134,130 +129,130 @@ class GameLoader {
                     console.error(`Button ${id} has no parent node!`);
                     return;
                 }
-                
                 // Add both click and touch events for better mobile compatibility
                 newButton.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log(`${id} clicked, executing action`);
+        
                     action();
                 });
-                
                 newButton.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    console.log(`${id} touched, executing action`);
+        
                     action();
                 });
             } else {
                 console.error(`Button with id ${id} not found`);
             }
         };
-        
         // Execute button setup immediately
         // PVP Button
         setupButton('pvpButton', () => {
-            console.log('Starting PVP game');
-            // Set global isAIMode flag to false
-            window.isAIMode = false;
+            console.log('PVP button clicked (from gameLoader)');
+            
+            // Use the setGameMode function if available, otherwise fallback
+            if (typeof window.setGameMode === 'function') {
+                window.setGameMode('pvp');
+            } else {
+                // Set global flags directly (fallback)
+                window.isAIMode = false;
+                window.isMultiplayerMode = false;
+            }
+            
             this.hideAllScreens();
             this.applySettings(false);
             this.resetGame();
             this.startGame();
         });
-        
         // PVE (AI) Button
         setupButton('pveButton', () => {
-            console.log('Starting PVE game');
-            // Set global isAIMode flag to true
-            window.isAIMode = true;
+            console.log('PVE button clicked (from gameLoader)');
+            
+            // Use the setGameMode function if available, otherwise fallback
+            if (typeof window.setGameMode === 'function') {
+                window.setGameMode('ai');
+            } else {
+                // Set global flags directly (fallback)
+                window.isAIMode = true;
+                window.isMultiplayerMode = false;
+            }
+            
             this.hideAllScreens();
             this.applySettings(true);
             this.resetGame();
             this.startGame();
         });
-        
+        // Multiplayer Button
+        setupButton('multiplayerButton', () => {
+            console.log('Multiplayer button clicked (from gameLoader)');
+            
+            // Use the setGameMode function if available, otherwise fallback
+            if (typeof window.setGameMode === 'function') {
+                window.setGameMode('multiplayer');
+            } else {
+                // Set global flags directly (fallback)
+                window.isAIMode = false;
+                window.isMultiplayerMode = true;
+            }
+            
+            this.hideAllScreens();
+            this.applySettings(false);
+            this.resetGame();
+            this.startGame();
+        });
         // Settings Link
         setupButton('settingsLink', () => {
             this.hideAllScreens();
             const settingsScreen = document.getElementById('settingsScreen');
             if (settingsScreen) settingsScreen.style.display = 'block';
         });
-        
         // How to Play Link
         setupButton('howToPlayLink', () => {
             this.hideAllScreens();
             const howToPlayScreen = document.getElementById('howToPlayScreen');
             if (howToPlayScreen) howToPlayScreen.style.display = 'block';
         });
-        
         // Save Settings Button
         setupButton('saveSettingsButton', () => {
+            console.log('Save settings button clicked (from gameLoader)');
+            
             // Apply settings based on current values
             const isAIMode = window.isAIMode || false;
             this.applySettings(isAIMode);
-                this.applySettings(false);
-                this.resetGame();
-                this.startGame();
-            });
             
-            // PVE (AI) Button
-            setupButton('pveButton', () => {
-                console.log('Starting PVE game');
-                // Set global isAIMode flag to true
-                window.isAIMode = true;
-                this.hideAllScreens();
-                this.applySettings(true);
-                this.resetGame();
-                this.startGame();
-            });
+            // Go back to game selection - do NOT start the game
+            this.hideAllScreens();
+            const gameSelection = document.querySelector('.gameSelection');
+            if (gameSelection) gameSelection.style.display = 'block';
+        });
+        // Back from How to Play Button
+        setupButton('backFromHowToPlayButton', () => {
+            this.hideAllScreens();
+            const gameSelection = document.querySelector('.gameSelection');
+            if (gameSelection) gameSelection.style.display = 'block';
+        });
+        // Restart Button
+        setupButton('restartButton', () => {
+            console.log('Restart button clicked (from gameLoader)');
+            const winScreen = document.getElementById('winScreen');
+            if (winScreen) winScreen.style.display = 'none';
             
-            // Settings Link
-            setupButton('settingsLink', () => {
-                this.hideAllScreens();
-                const settingsScreen = document.getElementById('settingsScreen');
-                if (settingsScreen) settingsScreen.style.display = 'block';
-            });
+            // Reset game mode to default PVP
+            if (typeof window.setGameMode === 'function') {
+                window.setGameMode('pvp');
+            } else {
+                // Set global flags directly (fallback)
+                window.isAIMode = false;
+                window.isMultiplayerMode = false;
+            }
             
-            // How to Play Link
-            setupButton('howToPlayLink', () => {
-                this.hideAllScreens();
-                const howToPlayScreen = document.getElementById('howToPlayScreen');
-                if (howToPlayScreen) howToPlayScreen.style.display = 'block';
-            });
+            this.resetGame();
+            this.hideAllScreens();
             
-            // Save Settings Button
-            setupButton('saveSettingsButton', () => {
-                // Apply settings based on current values
-                const isAIMode = window.isAIMode || false;
-                this.applySettings(isAIMode);
-                
-                // Go back to game selection
-                this.hideAllScreens();
-                const gameSelection = document.querySelector('.gameSelection');
-                if (gameSelection) gameSelection.style.display = 'block';
-            });
-            
-            // Back from How to Play Button
-            setupButton('backFromHowToPlayButton', () => {
-                this.hideAllScreens();
-                const gameSelection = document.querySelector('.gameSelection');
-                if (gameSelection) gameSelection.style.display = 'block';
-            });
-            
-            // Restart Button
-            setupButton('restartButton', () => {
-                const winScreen = document.getElementById('winScreen');
-                if (winScreen) winScreen.style.display = 'none';
-                
-                this.resetGame();
-                this.hideAllScreens();
-                
-                const gameSelection = document.querySelector('.gameSelection');
-                if (gameSelection) gameSelection.style.display = 'block';
-            });
-            
+            const gameSelection = document.querySelector('.gameSelection');
+            if (gameSelection) gameSelection.style.display = 'block';
+        });
         // No delay needed here as we now handle the delay at the loadGame level
     }
-    
     // Helper functions to support button actions
     hideAllScreens() {
         const screens = [
@@ -267,26 +262,30 @@ class GameLoader {
             document.getElementById('startText'),
             document.getElementById('winScreen')
         ];
-        
         screens.forEach(screen => {
             if (screen) screen.style.display = 'none';
         });
-        
         const gameSelection = document.querySelector('.gameSelection');
         if (gameSelection) gameSelection.style.display = 'none';
     }
-    
     applySettings(isAIMode) {
-        console.log('Setting AI mode to:', isAIMode);
-        
         // IMPORTANT: Store AI mode in both global and local variables to ensure consistency
         window.isAIMode = isAIMode;
+        
+        // Check if we're in multiplayer mode (don't change it if we are)
+        const isMultiplayerMode = window.isMultiplayerMode || false;
         
         // Make sure the AI difficulty container is always visible
         const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
         if (aiDifficultyContainer) {
             aiDifficultyContainer.style.display = 'block';
         }
+        
+        // Update team name settings visibility based on multiplayer mode
+        const teamNameSettings = document.querySelectorAll('.setting-team');
+        teamNameSettings.forEach(setting => {
+            setting.style.display = isMultiplayerMode ? 'block' : 'none';
+        });
         
         // Update AI name based on difficulty level
         this.updateAINameBasedOnDifficulty();
@@ -343,12 +342,13 @@ class GameLoader {
     waitForGameButtons(callback) {
         const pvpButton = document.getElementById('pvpButton');
         const pveButton = document.getElementById('pveButton');
+        const multiplayerButton = document.getElementById('multiplayerButton');
         
         if (pvpButton && pveButton) {
-            console.log('Game buttons found, proceeding with initialization');
+            console.log('Game buttons found, initializing...');
             callback();
         } else {
-            console.log('Waiting for game buttons to be available...');
+            console.log('Waiting for game buttons to load...');
             setTimeout(() => this.waitForGameButtons(callback), 100);
         }
     }
@@ -365,7 +365,7 @@ class GameLoader {
             const difficulty = aiDifficultySelect.value;
             const difficultyName = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
             player2NameElement.textContent = `AI (${difficultyName})`;
-            console.log(`Updated AI name to: AI (${difficultyName})`);
+
         } else {
             console.error('Could not update AI name, elements not found');
         }
