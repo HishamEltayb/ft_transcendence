@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Router Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+        }
+        .nav a:hover {
+            background-color: #ddd;
+        }
+        #content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Router Test</h1>
+    
+    <div class="nav">
+        <a href="/" id="home-link">Home</a>
+        <a href="/about" id="about-link">About</a>
+        <a href="/contact" id="contact-link">Contact</a>
+        <a href="/nonexistent" id="error-link">404 Test</a>
+    </div>
+    
+    <div id="content">
+        <p>Click on the navigation links above to test the router.</p>
+    </div>
+    
+    <script>
+        // Simple router implementation for testing
+        class Router {
+            constructor() {
+                this.routes = {};
+                this.currentPath = window.location.pathname;
+                
+                // Add event listeners
+                window.addEventListener('popstate', this.handleUrl.bind(this));
+                document.body.addEventListener('click', this.handleClick.bind(this));
+            }
+            
+            addRoute(path, handler) {
+                this.routes[path] = handler;
+                return this;
+            }
+            
+            handleClick(event) {
+                // Find closest anchor tag
+                const link = event.target.closest('a');
+                
+                // Only handle internal links
+                if (link && link.href && link.href.startsWith(window.location.origin)) {
+                    event.preventDefault();
+                    
+                    // Extract pathname
+                    const path = new URL(link.href).pathname;
+                    
+                    // Navigate
+                    this.navigate(path);
+                }
+            }
+            
+            handleUrl() {
+                const path = window.location.pathname || '/';
+                
+                // Find handler
+                let handler = this.routes[path];
+                
+                // If no handler, try fallback
+                if (!handler && this.routes['*']) {
+                    handler = this.routes['*'];
+                }
+                
+                // Execute handler if found
+                if (handler) {
+                    this.currentPath = path;
+                    handler(path);
+                } else {
+                    console.error(`No handler for path: ${path}`);
+                }
+            }
+            
+            navigate(path) {
+                if (this.currentPath === path) return;
+                
+                // Update browser history without refreshing
+                window.history.pushState({}, '', path);
+                
+                // Handle the new URL
+                this.handleUrl();
+            }
+        }
+        
+        // Initialize router when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentEl = document.getElementById('content');
+            
+            const router = new Router();
+            
+            // Register routes
+            router
+                .addRoute('/', () => {
+                    contentEl.innerHTML = '<h2>Home Page</h2><p>This is the home page content.</p>';
+                    document.title = 'Home - Router Test';
+                })
+                .addRoute('/about', () => {
+                    contentEl.innerHTML = '<h2>About Page</h2><p>This is the about page content.</p>';
+                    document.title = 'About - Router Test';
+                })
+                .addRoute('/contact', () => {
+                    contentEl.innerHTML = '<h2>Contact Page</h2><p>This is the contact page content.</p>';
+                    document.title = 'Contact - Router Test';
+                })
+                .addRoute('*', (path) => {
+                    contentEl.innerHTML = `
+                        <h2>Page Not Found</h2>
+                        <p>Sorry, the page "${path}" was not found.</p>
+                        <a href="/" class="back-link">Go back to home</a>
+                    `;
+                    document.title = '404 Not Found - Router Test';
+                });
+            
+            // Initial route handling
+            router.handleUrl();
+        });
+    </script>
+</body>
+</html> 

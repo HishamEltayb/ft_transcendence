@@ -230,10 +230,6 @@ class Hooks {
       
       const userData = await response.json();
 
-      // Save to localStorage with timestamp
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('userDataTimestamp', Date.now().toString());
-
       return { success: true, userData };
     } catch (error) {
       console.error('Error fetching user data:', error);
