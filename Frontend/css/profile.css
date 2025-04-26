@@ -2,34 +2,44 @@
 .profile-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 100px; /* Base padding */
-    padding-bottom: 70px; /* Account for footer */
+    padding: 20px;
+    width: 100%;
 }
 
 /* Fix for ensuring content fits on small screens */
 body.profile-page {
-    padding-bottom: 0;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--black);
 }
 
 .profile-card {
     background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 8px;
-    height: auto; /* Let content determine height */
+    height: auto;
     margin-bottom: 1.5rem;
 }
 
 /* Profile page wrapper to control overall height */
 .profile-page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    padding-top: 60px; /* Reduced padding for header */
+    min-height: calc(100vh - 60px); /* Account for header */
 }
 
-/* Remove custom flex layout - let Bootstrap handle it */
+/* Profile sections layout */
 .profile-sections {
-    /* Bootstrap's .row already handles the layout */
-    margin-bottom: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-sections > div {
+    margin-bottom: 20px;
 }
 
 /* Profile avatar */
@@ -49,116 +59,51 @@ body.profile-page {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Username styling */
-#profileUsername {
-    color: var(--gold) !important;
-    font-weight: 600;
-    font-size: 1.5rem;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
 /* Avatar URL styling */
 #avatarUrl {
     color: var(--gold) !important;
     font-weight: 500;
 }
 
-@media (max-width: 992px) {
-    .profile-container {
-        padding-top: 500px; /* Significantly increased to push content down */
-    }
-    
-    .profile-card {
-        margin-bottom: 1.5rem;
-    }
+/* Mobile-first approach for responsive design */
+/* Base styles are for mobile, then we adjust for larger screens */
+.profile-container {
+    padding-top: 15px; /* Reduced padding since profile-page-wrapper has more padding */
 }
 
-@media (max-width: 768px) {
-    .profile-container {
-        padding-top: 500px; /* Significantly increased to push content down */
-    }
+/* Read-only form controls - specifically for text inputs */
+input[type="text"].form-control[readonly],
+input[type="email"].form-control[readonly] {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(212, 175, 55, 0.2);
+    color: var(--white);
+    cursor: default;
+    pointer-events: none;
 }
 
+input[type="text"].form-control[readonly]:focus,
+input[type="email"].form-control[readonly]:focus {
+    box-shadow: none;
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+/* Fix for 2FA container on all screen sizes */
+.p-3.border.rounded.bg-dark.border-gold {
+    padding: 1rem !important;
+    margin-bottom: 1.5rem;
+}
+
+/* Ensure the form switch container properly wraps on mobile */
 @media (max-width: 576px) {
-    .profile-container {
-        padding-top: 560px; /* Significantly increased to push content down */
-    }
-    
-    .avatar-container {
-        width: 120px;
-        height: 120px;
-        margin-bottom: 0.5rem;
-    }
-    
-    .card {
-        margin-bottom: 1rem;
-    }
-    
-    /* Make form elements more compact on mobile */
-    .form-control {
-        padding: 8px 12px;
-    }
-    
-    .mb-3 {
-        margin-bottom: 0.75rem !important;
-    }
-    
-    /* Reduce some text sizes */
-    #profileUsername {
-        font-size: 1.3rem;
-    }
-    
-    /* Further reduce spacing on the smallest screens */
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .card-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    /* Remove excess whitespace */
-    .profile-sections {
-        row-gap: 0.75rem !important;
-    }
-    
-    /* Make the edit profile button shorter */
-    #editProfileBtn {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.875rem;
-    }
-    
-    /* Adjust text spacing */
-    p.mb-3 {
-        margin-bottom: 0.5rem !important;
-    }
-    
-    h5.card-title.mb-3 {
-        margin-bottom: 0.75rem !important;
+    .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
     }
 }
 
-/* Extra small device adjustments */
-@media (max-width: 375px) {
-    .profile-container {
-        padding-top: 450px; /* Extra padding for very small screens */
-    }
-    
-    /* Make things even more compact */
-    .avatar-container {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .card-body {
-        padding: 0.75rem;
-    }
-    
-    /* Smaller margin/padding for all elements */
-    #profileUsername {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem !important;
-    }
+.text-light.small.mt-2.mb-0 {
+    width: 100%;
+    margin-top: 0.75rem !important;
 }
 
 /* Intra Login styling */
@@ -218,32 +163,182 @@ body.profile-page {
     transition: opacity 0.5s ease;
 }
 
-/* Settings button */
-#editProfileBtn, #saveSettingsBtn {
-    background-color: var(--gold);
-    color: var(--black);
-    border: none;
-    font-weight: 600;
+/* Two-Factor Authentication Styles */
+/* 2FA Status Badge */
+#twoFAStatus {
+    font-weight: 500;
+    transition: background-color 0.3s ease;
 }
 
-/* Large screen layout adjustments */
-@media (min-width: 992px) {
+/* 2FA Buttons */
+#enableTwoFABtn, #disableTwoFABtn {
+    transition: all 0.3s ease;
+}
+
+#enableTwoFABtn:hover {
+    background-color: var(--gold);
+    color: var(--black);
+}
+
+#disableTwoFABtn:hover {
+    background-color: #dc3545;
+    color: var(--white);
+}
+
+/* Two-Factor Authentication Modal Styles */
+.two-fa-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.two-fa-content {
+    background-color: #212529;
+    border-radius: 8px;
+    border: 1px solid #DAA520;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.two-fa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #343a40;
+}
+
+.two-fa-title {
+    color: #DAA520;
+    margin: 0;
+    font-weight: bold;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.close-button:hover {
+    color: #DAA520;
+}
+
+.two-fa-body {
+    padding: 20px;
+}
+
+.two-fa-text {
+    margin-bottom: 20px;
+    color: #f8f9fa;
+}
+
+.form-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.verify-button {
+    background-color: #DAA520;
+    color: #212529;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.verify-button:hover {
+    background-color: #c69500;
+}
+
+.verify-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* QR Code Styles */
+.qr-code-container {
+    background-color: #fff;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.qr-code-container img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.secret-key {
+    font-family: monospace;
+    border-radius: 4px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    display: inline-block;
+    max-width: 100%;
+    text-align: center;
+}
+
+/* CONSOLIDATED MEDIA QUERIES */
+@media (min-width: 768px) and (max-width: 991px) {
+    .profile-page-wrapper {
+        margin-top: 350px;
+    }
+    
     .profile-container {
-        padding-top: 120px;
+        padding: 25px;
+    }
+}
+
+/* Small Screens (576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .profile-page-wrapper {
+        margin-top: 550px;
     }
     
-    .profile-card {
-        margin-bottom: 0;
+    .profile-container {
+        padding: 20px 15px;
+    }
+}
+
+/* Extra Small Screens (375px to 575px) */
+@media (min-width: 376px) and (max-width: 575px) {
+    .profile-page-wrapper {
+        margin-top: 800px;
     }
     
-    /* Ensure equal height columns */
-    .row.profile-sections {
-        display: flex;
-        flex-wrap: wrap;
+    .profile-container {
+        padding: 15px 10px;
+    }
+}
+
+/* Very Small Screens (up to 375px) */
+@media (max-width: 375px) {
+    .profile-page-wrapper {
+        margin-top: 950px;
     }
     
-    /* Ensure proper spacing of cards on large screens */
-    .card.mb-4 {
-        margin-bottom: 1.5rem !important;
+    .profile-container {
+        padding: 10px;
     }
 } 

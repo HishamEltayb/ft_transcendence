@@ -13,11 +13,9 @@ class Forms {
         
         
         document.addEventListener('pageShown', (event) => {
-            console.log('Forms: pageShown event detected for page:', event.detail.page);
             
             // If login page is shown, initialize the forms
             if (event.detail.page === 'login') {
-                console.log('Forms: Login page detected, initializing forms');
                 
                 // Use DocumentHandler methods instead
                 docHandler.initLoginRegisterForms(this);
@@ -65,7 +63,6 @@ class Forms {
     }
     
     async handleLogin42(event) {
-        console.log('Forms: Handling 42 login button click');
         if (event) {
             event.preventDefault();
         }
@@ -73,10 +70,8 @@ class Forms {
         components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
         
         try {
-            console.log('Forms: Requesting 42 auth URL from API');
             const result = await api.get42AuthUrl();
-            
-            console.log('Forms: Received API response for 42 auth:', result);
+
             
             if (!result.success || !result.auth_url) {
                 throw new Error(result.error || 'No authorization URL received');
@@ -97,7 +92,6 @@ class Forms {
     }
 
     async handleLoginForm(event) {
-        console.log('Forms: Handling login form submission');
         
         if (event) {
             event.preventDefault();
@@ -136,7 +130,6 @@ class Forms {
         try {
             // Use the API to submit the data
             const result = await api.login(loginData);
-            console.log('Forms: Login result:', result);
             // Handle the result
             if (result.success) {
                 // Clear password field
@@ -167,7 +160,6 @@ class Forms {
     }
 
     async handleRegistrationForm(event) {
-        console.log('Forms: Handling registration form submission');
         
         if (event) {
             event.preventDefault();
@@ -181,9 +173,7 @@ class Forms {
         
         // Validate required fields
         if (!username || !email || !password || !confirmPassword) {
-            console.log("Form validation failed - empty fields");
             components.showToast('error', 'Registration Error', 'Please fill out all fields.');
-            console.log("DEBUG: Returning early from registration due to empty fields");
             return; // Early return to prevent form submission
         }
         
@@ -252,7 +242,6 @@ class Forms {
         }
     }
 
-    // Helper method to show loading state on a submitBtn
     setLoading(submitBtn, isLoading) {
         if (!submitBtn) return;
         

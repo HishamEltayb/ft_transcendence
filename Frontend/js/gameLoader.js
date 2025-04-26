@@ -147,7 +147,6 @@ class GameLoader {
         // Execute button setup immediately
         // PVP Button
         setupButton('pvpButton', () => {
-            console.log('PVP button clicked (from gameLoader)');
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -165,7 +164,6 @@ class GameLoader {
         });
         // PVE (AI) Button
         setupButton('pveButton', () => {
-            console.log('PVE button clicked (from gameLoader)');
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -183,7 +181,6 @@ class GameLoader {
         });
         // Multiplayer Button
         setupButton('multiplayerButton', () => {
-            console.log('Multiplayer button clicked (from gameLoader)');
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -213,7 +210,6 @@ class GameLoader {
         });
         // Save Settings Button
         setupButton('saveSettingsButton', () => {
-            console.log('Save settings button clicked (from gameLoader)');
             
             // Apply settings based on current values
             const isAIMode = window.isAIMode || false;
@@ -232,7 +228,6 @@ class GameLoader {
         });
         // Restart Button
         setupButton('restartButton', () => {
-            console.log('Restart button clicked (from gameLoader)');
             const winScreen = document.getElementById('winScreen');
             if (winScreen) winScreen.style.display = 'none';
             
@@ -345,10 +340,8 @@ class GameLoader {
         const multiplayerButton = document.getElementById('multiplayerButton');
         
         if (pvpButton && pveButton) {
-            console.log('Game buttons found, initializing...');
             callback();
         } else {
-            console.log('Waiting for game buttons to load...');
             setTimeout(() => this.waitForGameButtons(callback), 100);
         }
     }

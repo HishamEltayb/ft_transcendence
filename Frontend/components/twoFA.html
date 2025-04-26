@@ -1,0 +1,27 @@
+<div id="twoFAModal" class="two-fa-container">
+    <div class="two-fa-content">
+        <div class="two-fa-header">
+            <h5 class="two-fa-title">Two-Factor Authentication</h5>
+            <button type="button" class="close-button" id="twoFACloseButton">&times;</button>
+        </div>
+        <div class="two-fa-body">
+            <div class="alert alert-danger d-none" id="twofa-error"></div>
+            <p class="two-fa-text">Enter the 6-digit verification code from your authenticator app.</p>
+            
+            <form id="twoFAForm">
+                <div class="form-group">
+                    <label for="twoFACode" class="form-label">Verification Code</label>
+                    <input type="text" class="form-control" id="twoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="123456" required>
+                    <div class="invalid-feedback">Please enter a valid 6-digit code</div>
+                </div>
+                
+                <div class="form-button-container">
+                    <button type="submit" class="verify-button">
+                        <span class="spinner d-none" data-spinner></span>
+                        <span data-button-text>Verify</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
