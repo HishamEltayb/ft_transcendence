@@ -48,9 +48,9 @@ jobs:
 
       - name: Run Django users app tests in backend container
         run: |
-          	docker compose exec backend python3 manage.py test users.tests_register --verbosity=2
-	          docker compose exec backend python3 manage.py test users.tests_login.LoginViewTests --verbosity=2
-	          docker compose exec backend python3 manage.py test users.tests_2fa --verbosity=2
+          docker compose exec backend python3 manage.py test users.tests_register --verbosity=2
+          docker compose exec backend python3 manage.py test users.tests_login.LoginViewTests --verbosity=2
+          docker compose exec backend python3 manage.py test users.tests_2fa --verbosity=2
 
       - name: Show backend logs on failure
         if: failure()
