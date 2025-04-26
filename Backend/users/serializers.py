@@ -3,12 +3,10 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
-    win_rate = serializers.ReadOnlyField()
-
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'bio', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'rank', 'win_rate']
-        read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user', 'win_rate']
+        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'rank']
+        read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
