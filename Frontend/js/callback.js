@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (accessToken) {
             
             // Save token to cookie with default 40-minute expiration
-            utils.setCookie('authToken', accessToken);
+            utils.setCookie('access_token', accessToken);
             
             // Update status message
             statusMsg.textContent = 'Login successful! Redirecting...';
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             statusMsg.style.color = '#e74c3c';
             
             // Clear any existing auth data
-            utils.deleteCookie('authToken');
+            utils.deleteCookie('access_token');
             
             // Redirect to login page
             setTimeout(() => {

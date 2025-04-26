@@ -71,7 +71,7 @@ class Forms {
         
         try {
             const result = await api.get42AuthUrl();
-            
+
             
             if (!result.success || !result.auth_url) {
                 throw new Error(result.error || 'No authorization URL received');
@@ -242,7 +242,6 @@ class Forms {
         }
     }
 
-    // Helper method to show loading state on a submitBtn
     setLoading(submitBtn, isLoading) {
         if (!submitBtn) return;
         

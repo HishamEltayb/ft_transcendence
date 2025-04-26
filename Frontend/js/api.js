@@ -76,12 +76,14 @@ class API {
 
       const result = await response.json();
 
+      console.log('Login result:', result);
+      
       if (!response.ok) {
         return { success: false, error: result.error || 'Login failed' };
       }
       
       if (result.token) {
-        utils.setCookie('authToken', result.token);
+        utils.setCookie('access_token', result.token);
       }
 
 
@@ -183,10 +185,10 @@ class API {
       const userMeEndpoint = ENDPOINTS.user.me;
       
       // Get token - Check cookies first, then localStorage for backward compatibility
-      let token = utils.getCookie('authToken');
+      let token = utils.getCookie('access_token');
       
       if (!token) {
-        token = localStorage.getItem('authToken');
+        token = localStorage.getItem('access_token');
       }
       
       if (!token) {
@@ -222,7 +224,7 @@ class API {
       const logoutEndpoint = ENDPOINTS.auth.logout;
       
       // Get token
-      const token = utils.getCookie('authToken') || localStorage.getItem('authToken');
+      const token = utils.getCookie('access_token') || localStorage.getItem('access_token');
       
       console.log('API: Token:', token);
       

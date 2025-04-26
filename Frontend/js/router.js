@@ -161,7 +161,7 @@ class Router {
         if (accessToken) {
             
             // Store the token in localStorage
-            utils.setCookie('authToken', accessToken);
+            utils.setCookie('access_token', accessToken);
             
             // Create a simple callback page - this could be made more sophisticated
             document.getElementById('pageSection').innerHTML = `

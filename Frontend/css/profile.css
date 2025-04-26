@@ -87,30 +87,6 @@ input[type="email"].form-control[readonly]:focus {
     border-color: rgba(212, 175, 55, 0.2);
 }
 
-/* 2FA Toggle Styles */
-.form-check-input#setting2fa {
-    width: 3em;
-    height: 1.5em;
-    cursor: pointer;
-    margin: 0;
-    opacity: 1;
-}
-
-.form-check-input#setting2fa:checked {
-    background-color: var(--gold);
-    border-color: var(--gold);
-}
-
-.form-check-input#setting2fa:not(:checked) {
-    background-color: rgba(0, 0, 0, 0.5);
-    border-color: rgba(212, 175, 55, 0.3);
-}
-
-.form-check-label {
-    cursor: pointer;
-    font-size: 1.1rem !important;
-}
-
 /* Fix for 2FA container on all screen sizes */
 .p-3.border.rounded.bg-dark.border-gold {
     padding: 1rem !important;
@@ -118,21 +94,10 @@ input[type="email"].form-control[readonly]:focus {
 }
 
 /* Ensure the form switch container properly wraps on mobile */
-.form-check.form-switch {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-}
-
 @media (max-width: 576px) {
     .d-flex.align-items-center.justify-content-between {
         flex-direction: column;
         gap: 1rem;
-    }
-    
-    .form-check-label {
-        text-align: center;
     }
 }
 
@@ -196,6 +161,142 @@ input[type="email"].form-control[readonly]:focus {
     padding: 10px 15px;
     margin-top: 15px;
     transition: opacity 0.5s ease;
+}
+
+/* Two-Factor Authentication Styles */
+/* 2FA Status Badge */
+#twoFAStatus {
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+/* 2FA Buttons */
+#enableTwoFABtn, #disableTwoFABtn {
+    transition: all 0.3s ease;
+}
+
+#enableTwoFABtn:hover {
+    background-color: var(--gold);
+    color: var(--black);
+}
+
+#disableTwoFABtn:hover {
+    background-color: #dc3545;
+    color: var(--white);
+}
+
+/* Two-Factor Authentication Modal Styles */
+.two-fa-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.two-fa-content {
+    background-color: #212529;
+    border-radius: 8px;
+    border: 1px solid #DAA520;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.two-fa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #343a40;
+}
+
+.two-fa-title {
+    color: #DAA520;
+    margin: 0;
+    font-weight: bold;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.close-button:hover {
+    color: #DAA520;
+}
+
+.two-fa-body {
+    padding: 20px;
+}
+
+.two-fa-text {
+    margin-bottom: 20px;
+    color: #f8f9fa;
+}
+
+.form-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.verify-button {
+    background-color: #DAA520;
+    color: #212529;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.verify-button:hover {
+    background-color: #c69500;
+}
+
+.verify-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* QR Code Styles */
+.qr-code-container {
+    background-color: #fff;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.qr-code-container img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.secret-key {
+    font-family: monospace;
+    border-radius: 4px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    display: inline-block;
+    max-width: 100%;
+    text-align: center;
 }
 
 /* CONSOLIDATED MEDIA QUERIES */

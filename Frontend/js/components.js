@@ -8,14 +8,16 @@ class Components {
         this.headerComponent = null;
         this.footerComponent = null;
         this.toastComponent = null;
-        this.twoFAModalComponent = null;
         this.toastTitle = null;
         this.toastMessage = null;
         this.toastIcon = null;
         this.toastTimeout = null;
+        
+        console.log('Components class initialized');
     }
     
     init(appContainer) {
+        console.log('Components init called with container:', appContainer);
         this.appContainer = appContainer;
         
         this.spinnerComponent = document.getElementById('spinnerContainer');
@@ -25,10 +27,12 @@ class Components {
         this.toastIcon = document.querySelector('.toast-icon');
         
         this.hideSpinner();
+        console.log('Components initialization complete');
     }
 
     async loadAllComponents() {
         try {
+            console.log('Loading all components...');
             this.showSpinner();
             const componentsHtml = await api.fetchAllComponents();
             
@@ -36,10 +40,12 @@ class Components {
                 throw new Error('No components returned from API');
             }
             
+            console.log('Components fetched:', Object.keys(componentsHtml));
+            
             // Directly assign components instead of storing in a container
             this.headerComponent = componentsHtml.headerComponent;
             this.footerComponent = componentsHtml.footerComponent;
-            this.twoFAModalComponent = componentsHtml.twoFAModalComponent;
+            
             
             // Header is special and should be inserted at the top of the page
             if (this.headerComponent) {
@@ -56,6 +62,7 @@ class Components {
             }
             
             this.hideSpinner();
+            console.log('Components loading complete');
             return componentsHtml;
         } catch (error) {
             this.hideSpinner();

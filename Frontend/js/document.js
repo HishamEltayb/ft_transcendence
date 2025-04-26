@@ -62,7 +62,6 @@ class DocumentHandler {
     getProfileForm() {
         return {
             profileUsername: document.getElementById('profileUsername'),
-            profileIntraLogin: document.getElementById('profileIntraLogin'),
             profileAvatar: document.getElementById('profileAvatar'),
             displayNameField: document.getElementById('settingDisplayName'),
             emailField: document.getElementById('settingEmail'),
@@ -224,9 +223,6 @@ class DocumentHandler {
         const loggedInUserImg = this.getById('loggedInUserImg');
         const loggedInUsername = this.getById('loggedInUsername');
         
-        // Update 2FA switches
-        this.update2FASwitch(app);
-        
         if (app.state.user) {
             // User is logged in - show user profile, hide login button
             if (loginNavBtn) loginNavBtn.parentElement.style.display = 'none';
@@ -260,34 +256,17 @@ class DocumentHandler {
                     loggedInUsername.style.display = 'none';
                 }
             }
+            
+            // Update 2FA switch in profile form if present
+            const profileSwitch = this.getById('setting2fa');
+            if (profileSwitch) {
+                profileSwitch.checked = app.getIs2FAEnabled ? app.getIs2FAEnabled() : false;
+            }
         } else {
             // User is not logged in - show login button, hide user profile
             if (loginNavBtn) loginNavBtn.parentElement.style.display = 'block';
             if (loginBtn) loginBtn.style.display = 'block';
             if (loginDropdown) loginDropdown.style.display = 'none';
-        }
-    }
-    
-    // Method to update 2FA toggle switches based on user state
-    update2FASwitch(app) {
-        // Only proceed if user is logged in
-        if (!app.state.user) return;
-        
-        // Get both 2FA switches (header dropdown and profile page)
-        const headerSwitch = this.getById('enable2FASwitch');
-        const profileSwitch = this.getById('setting2fa');
-        
-        // Get current 2FA status
-        const is2FAEnabled = app.getIs2FAEnabled ? app.getIs2FAEnabled() : false;
-        
-        // Update header dropdown switch if it exists
-        if (headerSwitch) {
-            headerSwitch.checked = is2FAEnabled;
-        }
-        
-        // Update profile page switch if it exists
-        if (profileSwitch) {
-            profileSwitch.checked = is2FAEnabled;
         }
     }
 
@@ -305,16 +284,6 @@ class DocumentHandler {
         
         // Set the flag on the app instance
         app.logoutInitialized = true;
-    }
-    
-    // Method to initialize 2FA switch in header
-    init2FASwitch() {
-        // Initialize the header 2FA switch
-        const headerSwitch = this.getById('enable2FASwitch');
-        if (headerSwitch) {
-            // Initial state will be set by updateUIAuthState
-            headerSwitch.disabled = false;
-        }
     }
 }
 

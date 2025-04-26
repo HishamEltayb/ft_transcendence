@@ -1,9 +1,12 @@
 class Utils {
     constructor() {
-        this.authToken = null;
+        this.access_token = null;
     }
     
     getUrlParameter(name) {
+
+        console.log('Getting URL parameter:', name);
+        
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
@@ -46,8 +49,8 @@ class Utils {
         const cookieValue = parts.length === 2 ? parts.pop().split(';').shift() : null;
         
         // Update the auth token if that's what was requested
-        if (name === 'authToken') {
-            this.authToken = cookieValue;
+        if (name === 'access_token') {
+            this.access_token = cookieValue;
         }
         
         return cookieValue;
@@ -62,10 +65,10 @@ class Utils {
     cleanUp() {
         console.log('Utils: Cleaning up');
         // Clear auth token cookie
-        this.deleteCookie('authToken');
+        this.deleteCookie('access_token');
         
         // Clear all possible auth tokens from localStorage
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('access_token');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         
@@ -73,7 +76,7 @@ class Utils {
         localStorage.removeItem('user');
         
         // Reset internal state
-        this.authToken = null;
+        this.access_token = null;
         
     }
     
