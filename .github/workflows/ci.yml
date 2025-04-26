@@ -44,7 +44,7 @@ jobs:
 
       - name: Wait for backend to be healthy
         run: |
-          docker compose exec backend bash -c "until pg_isready -h postgres -U $POSTGRES_USER; do sleep 1; done"
+          docker compose exec backend /bin/sh -c "until pg_isready -h postgres -U $POSTGRES_USER; do sleep 1; done"
 
       - name: Run Django users app tests in backend container
         run: |
