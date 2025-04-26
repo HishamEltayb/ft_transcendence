@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .authentication import JWTCookieAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, BlacklistMixin
 
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -95,7 +95,7 @@ class LoginView(APIView):
 
 class Setup2FAView(APIView):
     authentication_classes = [JWTCookieAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
@@ -361,14 +361,21 @@ class LeaderboardView(generics.ListAPIView):
 
 
 class LogoutView(APIView):
-    authentication_classes = [JWTCookieAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     
     def post(self):
         response = Response({'success': True, 'message': 'Logged out successfully'})
         
-        response.set_cookie('access_token', '', expires=0)
-        response.set_cookie('refresh_token', '', expires=0)
+        access_token = self.request.COOKIES.get('access_token')
+        refresh_token = self.request.COOKIES.get('refresh_token')
+        
+        if access_token:
+            blacklist(access_token)
+        if refresh_token:
+            blacklist(refresh_token)
+        
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
         
         return response
 

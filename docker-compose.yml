@@ -70,6 +70,24 @@ services:
     restart: unless-stopped
 
 
+  # elasticsearch:
+  #   build: ./Infrastructure/elasticsearch
+  #   image: elasticsearch
+  #   container_name: elasticsearch
+  #   expose:
+  #     - "9200"
+  #   volumes:
+  #     - elasticsearch:/usr/share/elasticsearch/data
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - transcendence
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9200"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
 
 volumes:
   backend:
@@ -78,6 +96,8 @@ volumes:
     name: postgres
   ssl: 
     name: ssl
+  elasticsearch:
+    name: elasticsearch
 
 
 
