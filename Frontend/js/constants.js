@@ -1,58 +1,36 @@
-export const AVAILABLE_PAGES = ['home', 'game', 'login', 'profile', 'notFound'];
+export const AVAILABLE_PAGES = ['home', 'game', 'login', 'profile', 'notFound', 'twoFA'];
 
 export const PAGES = {
     home: '/pages/home.html',
     login: '/pages/login.html',
     game: '/pages/game.html',
     notFound: '/pages/notFound.html',
-    profile: '/pages/profile.html'
+    profile: '/pages/profile.html',
+    twoFA: '/pages/twoFA.html'
 };
 
 export const TOAST_TYPES = ['error', 'warning', 'success', 'info'];
 
 export const ENDPOINTS = {
-    // Authentication endpoints
     auth: {
         auth42: '/api/users/oauth/42/',
         login: '/api/users/login/',
         register: '/api/users/register/',
         logout: '/api/users/logout/',
         setup2FA: '/api/users/2fa/setup/',
-        verfiy2FA: '/api/users/2fa/verify/',
+        verify2FA: '/api/users/2fa/verify/',
         disable2FA: '/api/users/2fa/disable/',
         refreshToken: '/api/users/token/refresh/',
-
-        // verifyEmail: '/api/users/verify-email/',
-        // forgotPassword: '/api/users/forgot-password/',
-        // resetPassword: '/api/users/reset-password/',
     },
-    
-    // User endpoints
     user: {
         me: '/api/users/me/',
-
-        // profile: '/api/users/profile/',
-        // updateProfile: '/api/users/profile/',
-        // changePassword: '/api/users/change-password/',
-        // avatar: '/api/users/avatar/',
-        // friends: '/api/users/friends/',
-        // search: '/api/users/search/',
-        // update: '/api/users/profile/update/'
     },
-    
-    // Game endpoints
     // game: {
     //     create: '/api/games/create/',
     //     join: '/api/games/join/',
     //     status: '/api/games/status/',
     //     history: '/api/games/history/',
     //     leaderboard: '/api/games/leaderboard/'
-    // },
-    
-    // Stats endpoints
-    // stats: {
-    //     user: '/api/stats/user/',
-    //     global: '/api/stats/global/'
     // },
 }; 
 

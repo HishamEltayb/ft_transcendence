@@ -1,9 +1,9 @@
 import api from './api.js';
 import app from './app.js';
 import utils from './utils.js';
-import components from './components.js';
 import router from './router.js';
 import register from './register.js';
+import components from './components.js';
 
 class Login {
     constructor() {
@@ -131,16 +131,13 @@ class Login {
                 if (passwordCounter) 
                     passwordCounter.textContent = `0/${utils.VALIDATION_INPUTS.password.maxLength}`;
                 
-                // Store user data and update state
                 const userData = result.data;
                 app.state.user = userData;
                 localStorage.setItem('user', JSON.stringify(userData));
                 
-                // Update UI and show success message
                 this.updateUIAuthState();
                 components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
                 
-                // Navigate to home page
                 router.navigate('/');
             } else {
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
@@ -192,24 +189,21 @@ class Login {
     // =================================
 
     async handle42LoginBtnClick(event) {
-        if (event) {
+        if (event)
             event.preventDefault();
-        }
         
         components.showToast('info', 'Connecting', 'Initializing 42 authentication...');
         
         try {
             const result = await api.get42AuthUrl();
             
-            if (!result.success || !result.auth_url) {
+            if (!result.success || !result.auth_url)
                 throw new Error(result.error || 'No authorization URL received');
-            }
             
             components.showToast('success', 'Connected', 'Redirecting to 42 login page...');
             
             window.location.href = result.auth_url;
         } catch (error) {
-            console.error('42 login error:', error);
             components.showToast('error', '42 Login Failed', error.message || 'Could not connect to 42 authentication service.');
         }
     }
@@ -218,16 +212,15 @@ class Login {
         const accessToken = utils.getCookie('access_token');
         
         const pageSection = utils.getPageSection();
+
         if (!pageSection) {
             console.error('OAuth Callback: pageSection not found');
             return;
         }
         
         if (accessToken) {
-            // Set the access token cookie first
             utils.setCookie('access_token', accessToken);
             
-            // Handle successful OAuth
             this.handleSuccessfulOAuth(pageSection, router);
         } else {
             console.error('OAuth Callback: No access token found in callback URL');
@@ -236,7 +229,6 @@ class Login {
     }
 
     async handleSuccessfulOAuth(pageSection, router) {
-        // Show loading state
         pageSection.innerHTML = `
             <div class="auth-container text-center p-5">
                 <h2 class="text-gold mb-4">Authentication Successful</h2>
@@ -250,16 +242,13 @@ class Login {
         `;
         
         try {
-            // Fetch user data
             const result = await api.getUserData();
             
-            if (!result.success || !result.userData) {
+            if (!result.success || !result.userData) 
                 throw new Error('Could not retrieve user data');
-            }
             
             const userData = result.userData;
             
-            // Complete login process
             this.completeOAuthLogin(pageSection, userData);
         } catch (error) {
             console.error('OAuth user data error:', error);
@@ -268,11 +257,9 @@ class Login {
     }
     
     completeOAuthLogin(pageSection, userData) {
-        // Store user data
         app.state.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
         
-        // Show success message
         pageSection.innerHTML = `
             <div class="auth-container text-center p-5">
                 <h2 class="text-gold mb-4">Authentication Successful</h2>
@@ -286,7 +273,6 @@ class Login {
             </div>
         `;
         
-        // Redirect to home page after a short delay
         setTimeout(() => {
             window.location.href = '/';
         }, 2000);
