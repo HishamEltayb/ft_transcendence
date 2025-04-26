@@ -3,12 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .authentication import JWTCookieAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, BlacklistMixin
-
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
-
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
 from .models import User, RevokedAccessToken
@@ -22,7 +19,7 @@ import qrcode
 import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.shortcuts import get_object_or_404, redirect
-
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -43,6 +40,9 @@ class LoginView(APIView):
             
         # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
+        access_token_str = str(refresh.access_token)
+        refresh_token_str = str(refresh)
+
         
         # Create response with user data
         response = Response({
@@ -54,7 +54,7 @@ class LoginView(APIView):
         # Access token (shorter expiration)
         response.set_cookie(
             key='access_token',
-            value=str(refresh.access_token),
+            value=access_token_str,
             httponly=True,
             secure=True,  # Use True in production with HTTPS
             samesite='Lax',
@@ -64,7 +64,7 @@ class LoginView(APIView):
         # Refresh token (longer expiration)
         response.set_cookie(
             key='refresh_token',
-            value=str(refresh),
+            value=refresh_token_str,
             httponly=True,
             secure=True,  # Use True in production with HTTPS
             samesite='Lax',
@@ -72,6 +72,7 @@ class LoginView(APIView):
         )
         
         return response
+
 
 class Setup2FAView(APIView):
     authentication_classes = [JWTCookieAuthentication]
@@ -349,11 +350,6 @@ class LogoutView(APIView):
         access_token_string = request.COOKIES.get('access_token')
         refresh_token_string = request.COOKIES.get('refresh_token')
 
-        # --- DEBUG PRINTS START ---
-        print(f"DEBUG LogoutView: Received access_token cookie: {access_token_string}")
-        print(f"DEBUG LogoutView: Received refresh_token cookie: {refresh_token_string}")
-        # --- DEBUG PRINTS END ---
-
         # 1. Revoke the Access Token by adding the full string to our custom blacklist
         if access_token_string:
             try:
@@ -363,11 +359,7 @@ class LogoutView(APIView):
                     user=request.user # Use the authenticated user
                     # Defaults will handle revoked_at
                 )
-                # print(f"Access token added to revocation list.") # Optional debug
             except Exception as e:
-                # Catch potential database errors (like if token was already added)
-                # or other unexpected issues.
-                # print(f"Unexpected error revoking access token: {e}") # Optional debug
                 pass # Still proceed with logout
 
         # 2. Blacklist the Refresh Token using simplejwt's built-in mechanism (still recommended)
@@ -433,4 +425,4 @@ class CookieTokenRefreshView(APIView):
             return response
             
         except (InvalidToken, TokenError) as e:
-            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+            pass
