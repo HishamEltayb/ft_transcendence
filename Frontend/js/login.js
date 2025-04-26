@@ -131,174 +131,27 @@ class Login {
                 if (passwordCounter) 
                     passwordCounter.textContent = `0/${utils.VALIDATION_INPUTS.password.maxLength}`;
                 
-                // Store user temporarily
+                // Store user data and update state
                 const userData = result.data;
+                app.state.user = userData;
+                localStorage.setItem('user', JSON.stringify(userData));
                 
-                console.log('userData', userData);
+                // Update UI and show success message
+                this.updateUIAuthState();
+                components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
                 
-                // Check if 2FA is enabled
-                if (userData.is_two_factor_enabled) {
-                    // Show 2FA verification modal
-                    this.show2FALoginVerification(userData);
-                } else {
-                    // Complete login if 2FA is not enabled
-                    this.completeLogin(userData);
-                }
+                // Navigate to home page
+                router.navigate('/');
             } else {
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
-                utils.setFormLoading(this.loginForm.submitBtn, false);
             }
+            
+            utils.setFormLoading(this.loginForm.submitBtn, false);
         } catch (error) {
             console.error('Login submission error:', error);
             components.showToast('error', 'System Error', 'An unexpected error occurred. Please try again later.');
             utils.setFormLoading(this.loginForm.submitBtn, false);
         }
-    }
-    
-    // New method to show 2FA verification modal after login
-    show2FALoginVerification(userData) {
-        // Create 2FA verification modal if it doesn't exist
-        let twoFAModal = document.getElementById('loginTwoFAModal');
-        
-        if (!twoFAModal) {
-            twoFAModal = document.createElement('div');
-            twoFAModal.id = 'loginTwoFAModal';
-            twoFAModal.className = 'two-fa-container';
-            
-            twoFAModal.innerHTML = `
-                <div class="two-fa-content">
-                    <div class="two-fa-header">
-                        <h5 class="two-fa-title">Two-Factor Authentication Required</h5>
-                        <button type="button" class="close-button" id="loginTwoFACloseButton">&times;</button>
-                    </div>
-                    <div class="two-fa-body">
-                        <div class="alert alert-danger d-none" id="login-twofa-error"></div>
-                        
-                        <p class="two-fa-text">Please enter the 6-digit verification code from your authenticator app to complete login.</p>
-                        
-                        <form id="loginTwoFAForm">
-                            <div class="form-group">
-                                <label for="loginTwoFACode" class="form-label">Verification Code</label>
-                                <input type="text" class="form-control" id="loginTwoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="123456" required>
-                                <div class="invalid-feedback">Please enter a valid 6-digit code</div>
-                            </div>
-                            
-                            <div class="form-button-container">
-                                <button type="submit" class="verify-button">
-                                    <span class="spinner d-none" data-spinner></span>
-                                    <span data-button-text>Verify</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            `;
-            
-            app.appContainer.appendChild(twoFAModal);
-        }
-        
-        // Show the modal
-        twoFAModal.classList.remove('d-none');
-        
-        // Set up event listeners
-        const closeBtn = document.getElementById('loginTwoFACloseButton');
-        const form = document.getElementById('loginTwoFAForm');
-        
-        // Handle close button - cancel login and cleanup
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                utils.cleanUp(); // Clear any auth data
-                twoFAModal.classList.add('d-none');
-                utils.setFormLoading(this.loginForm.submitBtn, false);
-                components.showToast('info', 'Login Cancelled', 'Two-factor authentication is required to login.');
-            });
-        }
-        
-        // Handle form submission for 2FA verification
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const codeInput = document.getElementById('loginTwoFACode');
-                const errorElement = document.getElementById('login-twofa-error');
-                const submitButton = form.querySelector('button[type="submit"]');
-                
-                if (!codeInput) return;
-                
-                const code = codeInput.value;
-                
-                if (!code || code.length !== 6 || !/^\d+$/.test(code)) {
-                    if (errorElement) {
-                        errorElement.textContent = 'Please enter a valid 6-digit code';
-                        errorElement.classList.remove('d-none');
-                    }
-                    return;
-                }
-                
-                utils.setFormLoading(submitButton, true);
-                
-                try {
-                    const data = await api.verify2FA(code);
-                    
-                    utils.setFormLoading(submitButton, false);
-                    
-                    if (data.success) {
-                        // Complete login after successful 2FA verification
-                        twoFAModal.classList.add('d-none');
-                        this.completeLogin(userData);
-                    } else {
-                        if (errorElement) {
-                            errorElement.textContent = data.error || 'Verification failed';
-                            errorElement.classList.remove('d-none');
-                        }
-                        
-                        // If authentication expired, cleanup and reset
-                        if (data.authExpired) {
-                            utils.cleanUp();
-                            twoFAModal.classList.add('d-none');
-                            utils.setFormLoading(this.loginForm.submitBtn, false);
-                            components.showToast('error', 'Authentication Expired', 'Please try logging in again.');
-                        }
-                    }
-                } catch (error) {
-                    console.error('2FA verification error:', error);
-                    
-                    utils.setFormLoading(submitButton, false);
-                    
-                    if (errorElement) {
-                        errorElement.textContent = error.message || 'Failed to verify 2FA code';
-                        errorElement.classList.remove('d-none');
-                    }
-                }
-            });
-        }
-        
-        // Close modal when clicking outside
-        twoFAModal.addEventListener('click', (e) => {
-            if (e.target === twoFAModal) {
-                utils.cleanUp(); // Clear any auth data
-                twoFAModal.classList.add('d-none');
-                utils.setFormLoading(this.loginForm.submitBtn, false);
-                components.showToast('info', 'Login Cancelled', 'Two-factor authentication is required to login.');
-            }
-        });
-    }
-    
-    // New method to complete login after all verifications
-    completeLogin(userData) {
-        // Store user data and update state
-        app.state.user = userData;
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Update UI and show success message
-        login.updateUIAuthState();
-        components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
-        
-        // Navigate to home page
-        router.navigate('/');
-        
-        // Reset form loading state
-        utils.setFormLoading(this.loginForm.submitBtn, false);
     }
     
     updateUIAuthState() {
@@ -362,7 +215,7 @@ class Login {
     }
 
     handleOAuthCallback(router) {
-        const { accessToken } = this.processOAuthCallback();
+        const accessToken = utils.getCookie('access_token');
         
         const pageSection = utils.getPageSection();
         if (!pageSection) {
@@ -374,7 +227,7 @@ class Login {
             // Set the access token cookie first
             utils.setCookie('access_token', accessToken);
             
-            // Try to get user data to check 2FA status
+            // Handle successful OAuth
             this.handleSuccessfulOAuth(pageSection, router);
         } else {
             console.error('OAuth Callback: No access token found in callback URL');
@@ -382,18 +235,6 @@ class Login {
         }
     }
 
-    processOAuthCallback() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let accessToken = urlParams.get('access_token');
-        
-        if (!accessToken && window.location.hash) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            accessToken = hashParams.get('access_token');
-        }
-        
-        return { accessToken };
-    }
-    
     async handleSuccessfulOAuth(pageSection, router) {
         // Show loading state
         pageSection.innerHTML = `
@@ -409,7 +250,7 @@ class Login {
         `;
         
         try {
-            // Fetch user data to check 2FA status
+            // Fetch user data
             const result = await api.getUserData();
             
             if (!result.success || !result.userData) {
@@ -418,113 +259,11 @@ class Login {
             
             const userData = result.userData;
             
-            // Check if 2FA is enabled
-            if (userData.is_two_factor_enabled) {
-                // Show 2FA verification UI
-                this.showOAuth2FAVerification(pageSection, userData);
-            } else {
-                // Complete login if 2FA is not enabled
-                this.completeOAuthLogin(pageSection, userData);
-            }
+            // Complete login process
+            this.completeOAuthLogin(pageSection, userData);
         } catch (error) {
             console.error('OAuth user data error:', error);
             this.handleFailedAuth(pageSection, router);
-        }
-    }
-    
-    showOAuth2FAVerification(pageSection, userData) {
-        // Show 2FA verification UI in the page section
-        pageSection.innerHTML = `
-            <div class="auth-container text-center p-5">
-                <h2 class="text-gold mb-4">Two-Factor Authentication Required</h2>
-                <div class="alert alert-danger d-none" id="oauth-twofa-error"></div>
-                <p class="text-white mb-4">Please enter the 6-digit verification code from your authenticator app to complete login.</p>
-                
-                <form id="oauthTwoFAForm" class="mb-4">
-                    <div class="form-group mb-3">
-                        <input type="text" class="form-control form-control-lg mx-auto" style="max-width: 200px;" 
-                            id="oauthTwoFACode" maxlength="6" inputmode="numeric" pattern="[0-9]*" 
-                            placeholder="123456" required>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-gold mt-2" id="oauthVerifyBtn">
-                        Verify and Login
-                    </button>
-                </form>
-                
-                <button id="oauthCancelBtn" class="btn btn-outline-light">Cancel</button>
-            </div>
-        `;
-        
-        // Setup form submission
-        const form = document.getElementById('oauthTwoFAForm');
-        const cancelBtn = document.getElementById('oauthCancelBtn');
-        
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const codeInput = document.getElementById('oauthTwoFACode');
-                const errorElement = document.getElementById('oauth-twofa-error');
-                const submitButton = document.getElementById('oauthVerifyBtn');
-                
-                if (!codeInput) return;
-                
-                const code = codeInput.value;
-                
-                if (!code || code.length !== 6 || !/^\d+$/.test(code)) {
-                    if (errorElement) {
-                        errorElement.textContent = 'Please enter a valid 6-digit code';
-                        errorElement.classList.remove('d-none');
-                    }
-                    return;
-                }
-                
-                utils.setFormLoading(submitButton, true);
-                
-                try {
-                    const data = await api.verify2FA(code);
-                    
-                    utils.setFormLoading(submitButton, false);
-                    
-                    if (data.success) {
-                        // Complete login after successful 2FA verification
-                        this.completeOAuthLogin(pageSection, userData);
-                    } else {
-                        if (errorElement) {
-                            errorElement.textContent = data.error || 'Verification failed';
-                            errorElement.classList.remove('d-none');
-                        }
-                        
-                        // If authentication expired, redirect to login
-                        if (data.authExpired) {
-                            utils.cleanUp();
-                            this.handleFailedAuth(pageSection, router);
-                        }
-                    }
-                } catch (error) {
-                    console.error('2FA verification error:', error);
-                    
-                    utils.setFormLoading(submitButton, false);
-                    
-                    if (errorElement) {
-                        errorElement.textContent = error.message || 'Failed to verify 2FA code';
-                        errorElement.classList.remove('d-none');
-                    }
-                }
-            });
-        }
-        
-        // Handle cancel button
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                utils.cleanUp();
-                if (router && router.navigate) {
-                    router.navigate('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            });
         }
     }
     
