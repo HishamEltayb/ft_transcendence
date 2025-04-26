@@ -163,8 +163,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
-    'EMAIL_FIELD': 'email',
-    'USERNAME_FIELD': 'username',
 }
 
 # Media settings for uploaded files to be stored in media directory which is mounted to /media
