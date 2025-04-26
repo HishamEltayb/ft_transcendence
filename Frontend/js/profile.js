@@ -24,7 +24,6 @@ class Profile {
             profileAvatar: document.getElementById('profileAvatar'),
             displayNameField: document.getElementById('settingDisplayName'),
             emailField: document.getElementById('settingEmail'),
-            twoFASwitch: document.getElementById('setting2fa'),
             statsTotalGames: document.getElementById('statsTotalGames'),
             statsWins: document.getElementById('statsWins'),
             statsLosses: document.getElementById('statsLosses'),
@@ -147,7 +146,20 @@ class Profile {
         
         // Set up enable button
         if (enableBtn) {
-            enableBtn.addEventListener('click', () => {
+            enableBtn.addEventListener('click', (event) => {
+                // Prevent any default behavior
+                event.preventDefault();
+                event.stopPropagation();
+                
+                console.log('Enable 2FA button clicked');
+                
+                // Prevent form submission if the button is inside a form
+                let parentForm = enableBtn.closest('form');
+                if (parentForm) {
+                    console.log('Parent form detected, preventing submission');
+                    parentForm.onsubmit = (e) => e.preventDefault();
+                }
+                
                 // Show modal
                 if (modal) {
                     // Show QR code section
@@ -166,12 +178,28 @@ class Profile {
                     // Fetch QR code
                     this.setup2FA();
                 }
+                
+                // Return false to prevent any navigation
+                return false;
             });
         }
         
         // Set up disable button
         if (disableBtn) {
-            disableBtn.addEventListener('click', () => {
+            disableBtn.addEventListener('click', (event) => {
+                // Prevent any default behavior
+                event.preventDefault();
+                event.stopPropagation();
+                
+                console.log('Disable 2FA button clicked');
+                
+                // Prevent form submission if the button is inside a form
+                let parentForm = disableBtn.closest('form');
+                if (parentForm) {
+                    console.log('Parent form detected, preventing submission');
+                    parentForm.onsubmit = (e) => e.preventDefault();
+                }
+                
                 // Show modal
                 if (modal) {
                     // Hide QR code section
@@ -187,6 +215,9 @@ class Profile {
                     // Show modal
                     modal.classList.remove('d-none');
                 }
+                
+                // Return false to prevent any navigation
+                return false;
             });
         }
         
@@ -222,12 +253,22 @@ class Profile {
     }
     
     // Setup 2FA by generating QR code
-    setup2FA() {
+    async setup2FA() {
+        console.log('setup2FA: Starting setup process');
+        
         const qrCodeContainer = document.getElementById('qrCodeContainer');
         const secretKeyElement = document.getElementById('secretKey');
         const errorElement = document.getElementById('twofa-error');
         
-        if (!qrCodeContainer || !secretKeyElement) return;
+        if (!qrCodeContainer || !secretKeyElement) {
+            console.error('setup2FA: Required elements not found', { 
+                qrCodeContainer: !!qrCodeContainer, 
+                secretKeyElement: !!secretKeyElement 
+            });
+            return;
+        }
+        
+        console.log('setup2FA: All required elements found, showing loading state');
         
         // Show loading state
         qrCodeContainer.innerHTML = `<div class="spinner-border text-gold" role="status">
@@ -238,26 +279,21 @@ class Profile {
         // Hide error
         if (errorElement) errorElement.classList.add('d-none');
         
-        // Get token
-        const accessToken = utils.getCookie('access_token');
-        
         // Log API request for debugging
         console.log('Sending 2FA setup request to API');
         
-        // Use the API module instead of direct fetch
-        fetch(`/api/users/2fa/setup/`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-        .then(data => {
-            console.log('2FA setup response:', data);
+        try {
+            // Use the API module to get 2FA setup data
+            const response = await api.get2FASetup();
+            console.log('2FA setup response:', response);
+            
+            if (!response || !response.qr_code || !response.secret_key) {
+                throw new Error('Invalid 2FA setup response');
+            }
             
             // Display QR code
             const qrImg = document.createElement('img');
-            qrImg.src = data.qr_code;
+            qrImg.src = response.qr_code;
             qrImg.alt = 'QR Code for 2FA';
             qrImg.className = 'qr-code';
             
@@ -266,9 +302,8 @@ class Profile {
             qrCodeContainer.appendChild(qrImg);
             
             // Display secret key
-            secretKeyElement.textContent = data.secret_key;
-        })
-        .catch(error => {
+            secretKeyElement.textContent = response.secret_key;
+        } catch (error) {
             console.error('2FA setup error:', error);
             
             qrCodeContainer.innerHTML = '<div class="text-danger">Failed to load QR code</div>';
@@ -279,11 +314,11 @@ class Profile {
                 errorElement.textContent = error.message || 'Failed to set up 2FA';
                 errorElement.classList.remove('d-none');
             }
-        });
+        }
     }
     
     // Verify 2FA code and enable 2FA
-    verify2FACode() {
+    async verify2FACode() {
         const codeInput = document.getElementById('twoFACode');
         const errorElement = document.getElementById('twofa-error');
         const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
@@ -304,15 +339,12 @@ class Profile {
         // Show loading state using utils function
         utils.setFormLoading(submitButton, true);
         
-        // Get token
-        const accessToken = utils.getCookie('access_token');
-        
         // Log API request for debugging
         console.log('Sending 2FA verify request with code:', code);
         
-        // Use the API module instead of direct fetch
-        api.post('2fa/verify', { otp_token: code }, accessToken)
-        .then(data => {
+        try {
+            // Use the dedicated API method for 2FA verification
+            const data = await api.verify2FA(code);
             console.log('2FA verify response:', data);
             
             // Reset button state using utils function
@@ -341,8 +373,7 @@ class Profile {
                     errorElement.classList.remove('d-none');
                 }
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('2FA verification error:', error);
             
             // Reset button state using utils function
@@ -353,11 +384,11 @@ class Profile {
                 errorElement.textContent = error.message || 'Failed to enable 2FA';
                 errorElement.classList.remove('d-none');
             }
-        });
+        }
     }
     
     // Disable 2FA
-    disable2FA() {
+    async disable2FA() {
         const codeInput = document.getElementById('twoFACode');
         const errorElement = document.getElementById('twofa-error');
         const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
@@ -378,15 +409,12 @@ class Profile {
         // Show loading state using utils function
         utils.setFormLoading(submitButton, true);
         
-        // Get token
-        const accessToken = utils.getCookie('access_token');
-        
         // Log API request for debugging
         console.log('Sending 2FA disable request with code:', code);
         
-        // Use the API module instead of direct fetch
-        api.post('2fa/disable', { otp_token: code }, accessToken)
-        .then(data => {
+        try {
+            // Use the dedicated API method for disabling 2FA
+            const data = await api.disable2FA(code);
             console.log('2FA disable response:', data);
             
             // Reset button state using utils function
@@ -415,8 +443,7 @@ class Profile {
                     errorElement.classList.remove('d-none');
                 }
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Disable 2FA error:', error);
             
             // Reset button state using utils function
@@ -427,7 +454,7 @@ class Profile {
                 errorElement.textContent = error.message || 'Failed to disable 2FA';
                 errorElement.classList.remove('d-none');
             }
-        });
+        }
     }
 }
 

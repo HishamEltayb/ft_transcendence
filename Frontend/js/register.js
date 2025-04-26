@@ -118,7 +118,7 @@ class Register {
             return;
         }
         
-        utils.setFormLoading(this.registerForm.submitBtn, true);
+        utils.setLoading(this.registerForm.submitBtn, true);
         
         const registerData = {
             username,
@@ -145,15 +145,15 @@ class Register {
                 login.showLoginForm();
                 console.log("4");
                 
-                utils.setFormLoading(this.registerForm.submitBtn, false);
+                utils.setLoading(this.registerForm.submitBtn, false);
             } else {
                 components.showToast('error', 'Registration Failed', result.error || 'Please try again with a different username or email.');
-                utils.setFormLoading(this.registerForm.submitBtn, false);
+                utils.setLoading(this.registerForm.submitBtn, false);
             }
         } catch (error) {
             console.error('Registration submission error:', error);
             components.showToast('error', 'System Error', 'An unexpected error occurred. Please try again later.');
-            utils.setFormLoading(this.registerForm.submitBtn, false);
+            utils.setLoading(this.registerForm.submitBtn, false);
         }
     }
 }

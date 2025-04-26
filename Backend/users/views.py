@@ -95,7 +95,7 @@ class LoginView(APIView):
 
 class Setup2FAView(APIView):
     authentication_classes = [JWTCookieAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user

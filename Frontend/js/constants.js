@@ -8,11 +8,6 @@ export const PAGES = {
     profile: '/pages/profile.html'
 };
 
-export const COMPONENTS = {
-    // Header and footer are now in index.html
-    twoFAComponent: '/components/twoFA.html'
-};
-
 export const TOAST_TYPES = ['error', 'warning', 'success', 'info'];
 
 export const ENDPOINTS = {
@@ -22,12 +17,14 @@ export const ENDPOINTS = {
         login: '/api/users/login/',
         register: '/api/users/register/',
         logout: '/api/users/logout/',
-        twoFactorAuth: '/api/users/2fa/',
+        twoFASetup: '/api/users/2fa/setup/',
+        twoFAEnable: '/api/users/2fa/enable/',
+        twoFADisable: '/api/users/2fa/disable/',
+        refreshToken: '/api/users/token/refresh/',
 
-        refreshToken: '/api/users/refresh-token/',
-        verifyEmail: '/api/users/verify-email/',
-        forgotPassword: '/api/users/forgot-password/',
-        resetPassword: '/api/users/reset-password/',
+        // verifyEmail: '/api/users/verify-email/',
+        // forgotPassword: '/api/users/forgot-password/',
+        // resetPassword: '/api/users/reset-password/',
     },
     
     // User endpoints
