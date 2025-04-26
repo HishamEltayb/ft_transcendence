@@ -27,132 +27,90 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 class LoginView(APIView):
+    """
+    View for user login
+    post request with username and password
+    returns access and refresh tokens
+    cookies are set with HttpOnly and Secure flags
+    """
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
         username = request.data.get('username', '').lower()
         password = request.data.get('password', '')
-        otp_token = request.data.get('otp_token', None)
-
         user = authenticate(username=username, password=password)
-
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-            
-        # Check if 2FA is enabled for this user
-        if user.is_two_factor_enabled:
-            # If no OTP token was provided, tell the client to request one
-            if not otp_token:
-                return Response({
-                    'require_2fa': True,
-                    'user_id': user.id,
-                    'message': 'Please provide an OTP token'}, 
-                    status=status.HTTP_200_OK)
-            
-            # Verify the provided OTP token
-            devices = TOTPDevice.objects.filter(user=user)
-            if not devices.exists():
-                return Response({'error': 'No 2FA device found for this user'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            device = devices.first()
-            if not device.verify_token(otp_token):
-                return Response({'error': 'Invalid OTP token'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
         access_token_str = str(refresh.access_token)
         refresh_token_str = str(refresh)
-
-        
-        # Create response with user data
         response = Response({
             'user': UserSerializer(user).data,
             'success': True
         })
-        
-        # Set JWT cookies as HttpOnly and Secure
-        # Access token (shorter expiration)
-        response.set_cookie(
-            key='access_token',
-            value=access_token_str,
-            httponly=True,
-            secure=True,  # Use True in production with HTTPS
-            samesite='Lax',
-            max_age=60 * 30  # 30 minutes in seconds
-        )
-        
-        # Refresh token (longer expiration)
-        response.set_cookie(
-            key='refresh_token',
-            value=refresh_token_str,
-            httponly=True,
-            secure=True,  # Use True in production with HTTPS
-            samesite='Lax',
-            max_age=60 * 60 * 24  # 1 day in seconds
-        )
-        
+        response.set_cookie(key='access_token', value=access_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 30)
+        response.set_cookie(key='refresh_token', value=refresh_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 60 * 24)
         return response
 
-
 class Setup2FAView(APIView):
+    """
+    View for setting up 2FA
+    post request with user credentials
+    delete any existing TOTP devices for this user
+    create a new TOTP device
+    generate the TOTP secret key
+    create the OTP provisioning URI
+    generate a QR code for the URI
+    return secret key and QR code
+    """
     authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
         user = request.user
-        
-        # Delete any existing TOTP devices for this user
-        TOTPDevice.objects.filter(user=user).delete()
-        
-        # Create a new TOTP device
+        TOTPDevice.objects.filter(user=user).delete() #delete any existing TOTP devices for this user
         device = TOTPDevice.objects.create(
             user=user,
             name=f"2FA Device for {user.username}",
             confirmed=False
-        )
-        
-        # Generate the TOTP secret key
-        secret_key = base64.b32encode(device.bin_key).decode('utf-8')
-        
-        # Create the OTP provisioning URI
-        totp = pyotp.TOTP(secret_key)
+        ) # create a new TOTP device
+        secret_key = base64.b32encode(device.bin_key).decode('utf-8') # Generate the TOTP secret key
+        totp = pyotp.TOTP(secret_key) # Create the OTP provisioning URI
         provisioning_uri = totp.provisioning_uri(user.email, issuer_name="ft_transcendence")
-        
-        # Generate a QR code for the URI
-        qr = qrcode.make(provisioning_uri)
+        qr = qrcode.make(provisioning_uri) # Generate a QR code for the URI
         qr_buffer = io.BytesIO()
         qr.save(qr_buffer, format="PNG")
         qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
-        
         return Response({
             'secret_key': secret_key,
             'qr_code': f"data:image/png;base64,{qr_base64}"
         })
 
 class Verify2FAView(APIView):
+    """
+    View for verifying 2FA
+    post request with otp_token
+    verify the token
+    if valid, mark the device as confirmed and enable 2FA for the user
+    returns success message
+    """
     authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
         otp_token = request.data.get('otp_token')
-        
         if not otp_token:
             return Response({'error': 'OTP token required'}, status=status.HTTP_400_BAD_REQUEST)
-        
         devices = TOTPDevice.objects.filter(user=user)
         if not devices.exists():
             return Response({'error': 'No 2FA device found. Please set up 2FA first.'}, status=status.HTTP_400_BAD_REQUEST)
-        
         device = devices.first()
         if device.verify_token(otp_token):
-            # Mark device as confirmed and enable 2FA for the user
             device.confirmed = True
             device.save()
-            
             user.is_two_factor_enabled = True
             user.save()
-            
             return Response({
                 'success': True,
                 'message': '2FA has been enabled successfully',
@@ -165,30 +123,31 @@ class Verify2FAView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 class Disable2FAView(APIView):
+    """
+    View for disabling 2FA
+    post request with otp_token
+    verify the token
+    if valid, disable 2FA for the user
+    returns success message
+    """
     authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
         user = request.user
         otp_token = request.data.get('otp_token')
-        
         if not user.is_two_factor_enabled:
             return Response({'error': '2FA is not enabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
-        
         if not otp_token:
             return Response({'error': 'OTP token required'}, status=status.HTTP_400_BAD_REQUEST)
-        
         devices = TOTPDevice.objects.filter(user=user)
         if not devices.exists():
             return Response({'error': 'No 2FA device found'}, status=status.HTTP_400_BAD_REQUEST)
-        
         device = devices.first()
         if device.verify_token(otp_token):
-            # Disable 2FA and remove device
             user.is_two_factor_enabled = False
             user.save()
             device.delete()
-            
             return Response({
                 'success': True,
                 'message': '2FA has been disabled successfully',
@@ -202,9 +161,13 @@ class Disable2FAView(APIView):
         
 
 class UserDetailView(generics.RetrieveAPIView):
+    """
+    View for user details
+    get request with user credentials
+    returns user details
+    """
     authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
@@ -213,20 +176,19 @@ class UserDetailView(generics.RetrieveAPIView):
 
 class FortyTwoLoginView(APIView):
     """
-    Redirect the user to 42's OAuth authorization page
+    View for 42 login
+    get request with user credentials
+    redirect to 42's OAuth authorization page with client_id, redirect_uri, response_type, state, scope
+    returns access and refresh tokens
+    cookies are set with HttpOnly and Secure flags
     """
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
-        # Get 42 OAuth credentials from environment variables
         client_id = os.environ.get('FT_CLIENT_ID')
         redirect_uri = os.environ.get('FT_REDIRECT_URI')
-        
-        # Generate a random state value for security
         state = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
         request.session['oauth_state'] = state
-        
-        # Construct the authorization URL
         auth_url = (
             f"https://api.intra.42.fr/oauth/authorize"
             f"?client_id={client_id}"
@@ -235,34 +197,29 @@ class FortyTwoLoginView(APIView):
             f"&state={state}"
             f"&scope=public"
         )
-        
         return Response({"auth_url": auth_url})
 
 class FortyTwoCallbackView(APIView):
     """
-    Handle the callback from 42's OAuth service
+    View for 42 callback
+    get request with code and state
+    exchange code with 42 for access and refresh tokens
+    set cookies with HttpOnly and Secure flags
+    returns access and refresh tokens
     """
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
         code = request.query_params.get('code')
         state = request.query_params.get('state')
-        
-        # Verify the state parameter matches the one we set earlier
         stored_state = request.session.get('oauth_state')
-        if not stored_state or state != stored_state:
+        if not stored_state or state != stored_state: # Check if the state matches
             return Response({"error": "Invalid state parameter"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Clear the state from the session
-        request.session.pop('oauth_state', None)
-        
-        # Get 42 OAuth credentials from environment variables
+        request.session.pop('oauth_state', None) # Clear the state from the session
         client_id = os.environ.get('FT_CLIENT_ID')
         client_secret = os.environ.get('FT_CLIENT_SECRET')
         redirect_uri = os.environ.get('FT_REDIRECT_URI')
-        
-        # Exchange the code for an access token
-        token_url = "https://api.intra.42.fr/oauth/token"
+        token_url = "https://api.intra.42.fr/oauth/token" # Exchange the code for an access token
         token_data = {
             "grant_type": "authorization_code",
             "client_id": client_id,
@@ -270,37 +227,24 @@ class FortyTwoCallbackView(APIView):
             "code": code,
             "redirect_uri": redirect_uri,
         }
-        
         try:
-            token_response = requests.post(token_url, data=token_data)
-            token_response.raise_for_status()
+            token_response = requests.post(token_url, data=token_data) # Exchange the code for an access token
+            token_response.raise_for_status() # Raise an exception if the request fails
             token_json = token_response.json()
             access_token = token_json.get("access_token")
-            
-            # Use the access token to get the user's 42 profile
-            profile_url = "https://api.intra.42.fr/v2/me"
-            headers = {"Authorization": f"Bearer {access_token}"}
-            
-            profile_response = requests.get(profile_url, headers=headers)
-            profile_response.raise_for_status()
-            profile_data = profile_response.json()
-            
-            # Extract relevant user data
+            profile_url = "https://api.intra.42.fr/v2/me" # Get the user's 42 profile
+            headers = {"Authorization": f"Bearer {access_token}"} # Use the access token to get the user's 42 profile
+            profile_response = requests.get(profile_url, headers=headers) # Get the user's 42 profile
+            profile_response.raise_for_status() # Raise an exception if the request fails
+            profile_data = profile_response.json() # Get the user's 42 profile
             intra_id = str(profile_data.get('id'))
             intra_login = profile_data.get('login')
             email = profile_data.get('email')
-            
-            # Try to find an existing user with this intra_id
             try:
-                user = User.objects.get(intra_id=intra_id)
+                user = User.objects.get(intra_id=intra_id) # Try to find an existing user with this intra_id
             except User.DoesNotExist:
-                # Create a new user if none exists
-                username = intra_login
-                
-                # Generate a random password
-                password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
-                
-                # Create the user
+                username = intra_login # Create a new user if none exists
+                password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16)) # Generate a random password
                 user = User.objects.create_user(
                     username=username,
                     email=email,
@@ -310,18 +254,12 @@ class FortyTwoCallbackView(APIView):
                     is_oauth_user=True,
                     profile_image=profile_data.get('image', {}).get('link', '')
                 )
-            
-            # Generate JWT tokens for the user
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
-        
-            # Create the redirect URL with the tokens
-            frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+            refresh = RefreshToken.for_user(user) # Generate JWT tokens for the user
+            access_token = str(refresh.access_token) # from refresh token we get access token
+            refresh_token = str(refresh) # from refresh token we get refresh token
+            frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') # Get the frontend URL from environment
             redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
-            
             return redirect(redirect_url)
-            
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
@@ -362,87 +300,74 @@ class LeaderboardView(generics.ListAPIView):
 
 
 class LogoutView(APIView):
+    """
+    View for logout
+    post request with user credentials
+    returns success message
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         response = Response({'success': True, 'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
-
         access_token_string = request.COOKIES.get('access_token')
         refresh_token_string = request.COOKIES.get('refresh_token')
-
-        # 1. Revoke the Access Token by adding the full string to our custom blacklist
         if access_token_string:
             try:
-                # No need to decode the token here, just store the raw string
                 RevokedAccessToken.objects.get_or_create(
                     token=access_token_string,
-                    user=request.user # Use the authenticated user
-                    # Defaults will handle revoked_at
-                )
-            except Exception as e:
-                pass # Still proceed with logout
-
-        # 2. Blacklist the Refresh Token using simplejwt's built-in mechanism (still recommended)
+                    user=request.user
+                ) # Store the access token in the blacklist
+            except Exception:
+                pass
         if refresh_token_string:
             try:
                 token = RefreshToken(refresh_token_string)
                 token.blacklist()
-                # print("Refresh token blacklisted successfully.") # Optional debug
-            except TokenError as e:
-                # print(f"Error blacklisting refresh token: {e}.") # Optional debug
+            except TokenError:
                 pass
-            except Exception as e:
-                # print(f"Unexpected error blacklisting refresh token: {e}") # Optional debug
+            except Exception:
                 pass
 
-        # 3. Delete the cookies
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
-
         return response
 
 
 class CookieTokenRefreshView(APIView):
+    """
+    View for token refresh
+    post request with refresh token
+    returns new access and refresh tokens
+    """
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        # Get the refresh token from the cookie
         refresh_token = request.COOKIES.get('refresh_token')
-        
         if not refresh_token:
             return Response({"error": "No refresh token found in cookies"}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
-            # Get a new token
             refresh = RefreshToken(refresh_token)
-            
-            # Create response with new tokens
             response = Response({
                 'success': True,
                 'message': 'Token refreshed successfully'
             })
-            
-            # Set new JWT cookies
             response.set_cookie(
                 key='access_token',
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=True,  # Use True in production with HTTPS
+                secure=True,
                 samesite='Lax',
                 max_age=60 * 30  # 30 minutes in seconds
             )
-            
-            # Set the same refresh token back (or a new one if rotation is enabled)
             response.set_cookie(
                 key='refresh_token',
                 value=str(refresh),
                 httponly=True,
-                secure=True,  # Use True in production with HTTPS
+                secure=True,
                 samesite='Lax',
                 max_age=60 * 60 * 24  # 1 day in seconds
             )
-            
             return response
-            
         except (InvalidToken, TokenError) as e:
             pass
