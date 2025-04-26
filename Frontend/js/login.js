@@ -55,7 +55,7 @@ class Login {
                 utils.setupInputField(this.loginForm.passwordField, 'password', components);
             
             if (this.loginForm.submitBtn) 
-                this.loginForm.submitBtn.onclick = this.submitLoginForm.bind(this);
+                this.loginForm.submitBtn.onclick = this.handleLoginBtnClick.bind(this);
         }
     }
     
@@ -93,7 +93,7 @@ class Login {
         registerContainer.classList.add('fade');
     }
     
-    async submitLoginForm(event) {
+    async handleLoginBtnClick(event) {
         if (event) 
             event.preventDefault();
         
@@ -131,16 +131,22 @@ class Login {
                 if (passwordCounter) 
                     passwordCounter.textContent = `0/${utils.VALIDATION_INPUTS.password.maxLength}`;
                 
-                app.state.user = result.data;
+                // Store user data and update state
+                const userData = result.data;
+                app.state.user = userData;
+                localStorage.setItem('user', JSON.stringify(userData));
                 
+                // Update UI and show success message
+                this.updateUIAuthState();
                 components.showToast('success', 'Login Successful', 'You have been logged in successfully.');
                 
+                // Navigate to home page
                 router.navigate('/');
             } else {
-                // Display error toast
                 components.showToast('error', 'Login Failed', result.error || 'Invalid username or password.');
-                utils.setFormLoading(this.loginForm.submitBtn, false);
             }
+            
+            utils.setFormLoading(this.loginForm.submitBtn, false);
         } catch (error) {
             console.error('Login submission error:', error);
             components.showToast('error', 'System Error', 'An unexpected error occurred. Please try again later.');
@@ -156,12 +162,10 @@ class Login {
         const loggedInUsername = document.getElementById('loggedInUsername');
         
         if (app.state.user) {
-            // User is logged in - show user profile, hide login button
             if (loginNavBtn) loginNavBtn.parentElement.style.display = 'none';
             if (loginBtn) loginBtn.style.display = 'none';
             if (loginDropdown) loginDropdown.style.display = 'block';
             
-            // Handle user display based on login type (42 or regular)
             if (app.getIs42User && app.getIs42User()) {
                 if (app.getUserImg && app.getUserImg() && loggedInUserImg) {
                     loggedInUserImg.src = app.getUserImg();
@@ -178,7 +182,6 @@ class Login {
                 }
             }
         } else {
-            // User is not logged in - show login button, hide user profile
             if (loginNavBtn) loginNavBtn.parentElement.style.display = 'block';
             if (loginBtn) loginBtn.style.display = 'block';
             if (loginDropdown) loginDropdown.style.display = 'none';
@@ -202,10 +205,8 @@ class Login {
                 throw new Error(result.error || 'No authorization URL received');
             }
             
-            // Show success message
             components.showToast('success', 'Connected', 'Redirecting to 42 login page...');
             
-            // Redirect to 42 login page
             window.location.href = result.auth_url;
         } catch (error) {
             console.error('42 login error:', error);
@@ -213,12 +214,9 @@ class Login {
         }
     }
 
-    // Main handler for OAuth callback - called from router
     handleOAuthCallback(router) {
-        // Process the callback URL
-        const { accessToken } = this.processOAuthCallback();
+        const accessToken = utils.getCookie('access_token');
         
-        // Get the page section
         const pageSection = utils.getPageSection();
         if (!pageSection) {
             console.error('OAuth Callback: pageSection not found');
@@ -226,37 +224,55 @@ class Login {
         }
         
         if (accessToken) {
-            // Handle successful authentication
-            this.handleSuccessfulAuth(accessToken, pageSection);
+            // Set the access token cookie first
+            utils.setCookie('access_token', accessToken);
+            
+            // Handle successful OAuth
+            this.handleSuccessfulOAuth(pageSection, router);
         } else {
             console.error('OAuth Callback: No access token found in callback URL');
-            
-            // Handle failed authentication
             this.handleFailedAuth(pageSection, router);
         }
     }
 
-    // Process OAuth callback URL parameters
-    processOAuthCallback() {
-        // Get the access token from URL parameters or hash
-        const urlParams = new URLSearchParams(window.location.search);
-        let accessToken = urlParams.get('access_token');
+    async handleSuccessfulOAuth(pageSection, router) {
+        // Show loading state
+        pageSection.innerHTML = `
+            <div class="auth-container text-center p-5">
+                <h2 class="text-gold mb-4">Authentication Successful</h2>
+                <div class="mb-4">
+                    <div class="progress">
+                        <div id="authProgress" class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <p class="text-white">Verifying account...</p>
+            </div>
+        `;
         
-        // If not in search params, try the hash
-        if (!accessToken && window.location.hash) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            accessToken = hashParams.get('access_token');
+        try {
+            // Fetch user data
+            const result = await api.getUserData();
+            
+            if (!result.success || !result.userData) {
+                throw new Error('Could not retrieve user data');
+            }
+            
+            const userData = result.userData;
+            
+            // Complete login process
+            this.completeOAuthLogin(pageSection, userData);
+        } catch (error) {
+            console.error('OAuth user data error:', error);
+            this.handleFailedAuth(pageSection, router);
         }
-        
-        return { accessToken };
     }
     
-    // Handle OAuth successful authentication
-    handleSuccessfulAuth(accessToken, pageSection) {
-        // Store the token
-        utils.setCookie('access_token', accessToken);
+    completeOAuthLogin(pageSection, userData) {
+        // Store user data
+        app.state.user = userData;
+        localStorage.setItem('user', JSON.stringify(userData));
         
-        // Create a success UI
+        // Show success message
         pageSection.innerHTML = `
             <div class="auth-container text-center p-5">
                 <h2 class="text-gold mb-4">Authentication Successful</h2>
@@ -270,15 +286,13 @@ class Login {
             </div>
         `;
         
-        // Redirect after a short delay
+        // Redirect to home page after a short delay
         setTimeout(() => {
             window.location.href = '/';
         }, 2000);
     }
     
-    // Handle OAuth authentication failure
     handleFailedAuth(pageSection, router) {
-        // Create a failure UI
         pageSection.innerHTML = `
             <div class="auth-container text-center p-5">
                 <h2 class="text-danger mb-4">Authentication Failed</h2>
@@ -288,7 +302,6 @@ class Login {
             </div>
         `;
         
-        // Add event listener to the retry button
         setTimeout(() => {
             const retryBtn = document.getElementById('retryAuthBtn');
             if (retryBtn) {
@@ -304,7 +317,6 @@ class Login {
     }
 }
 
-// Create an instance when this module is imported
 const login = new Login();
 
 export default login;
