@@ -11,10 +11,262 @@
 
     /* Toast colors */
     --toast-error-border: #dc3545;
-    --toast-error-bg: rgba(220, 53, 69, 0.08);
+    --toast-bg: rgba(0, 0, 0, 0.7);
     --toast-warning-color: #ffc107;
     --toast-success-color: #28a745;
     --toast-info-color: #17a2b8;
+}
+
+/* ===== HEADER STYLES ===== */
+.navbar {
+    background-color: #000000;
+    border-bottom: 2px solid var(--gold);
+    z-index: 1000;
+    padding: 10px 15px;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    font-weight: bold;
+    color: var(--gold) !important;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.logo-text {
+    color: var(--gold);
+    font-weight: bold;
+}
+
+.nav-link-gold {
+    color: #ffffff !important;
+    padding: 8px 15px !important;
+    margin: 0 5px;
+}
+
+.nav-link-gold:hover, .nav-link-gold.active {
+    color: var(--gold) !important;
+}
+
+/* Simple underline instead of animated one */
+.nav-link-gold.active {
+    border-bottom: 2px solid var(--gold);
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--gold);
+}
+
+.navbar-toggler {
+    border: 1px solid var(--gold);
+    padding: 6px 10px;
+}
+
+.navbar-toggler:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.navbar-dark .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28212, 175, 55, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.user-profile {
+    padding: 8px 15px !important;
+    margin: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 100%;
+    transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    border-radius: 4px;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+/* Simple header avatar */
+.header-avatar {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+}
+
+/* Profile dropdown styles */
+.profile-dropdown {
+    display: none; /* Hidden by default, shown via JS when user is logged in */
+}
+
+.profile-dropdown-menu {
+    background-color: #1a1a1a;
+    border: 1px solid var(--gold);
+    margin-top: 8px !important;
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 180px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    padding: 5px;
+}
+
+.dropdown-item.logout-btn,
+.dropdown-menu .dropdown-item#profileNavBtn {
+    color: var(--gold) !important;
+    font-weight: 500;
+    padding: 10px 16px;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    margin: 2px 0;
+    background-color: transparent !important;
+    text-decoration: none !important;
+}
+
+.dropdown-item.logout-btn i,
+.dropdown-menu .dropdown-item#profileNavBtn i {
+    font-size: 16px;
+    color: var(--gold) !important;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item.logout-btn:hover, 
+.dropdown-item.logout-btn:focus,
+.dropdown-menu .dropdown-item#profileNavBtn:hover,
+.dropdown-menu .dropdown-item#profileNavBtn:focus {
+    background-color: var(--gold) !important;
+    color: #000 !important;
+}
+
+/* Change icon color on hover */
+.dropdown-item.logout-btn:hover i, 
+.dropdown-item.logout-btn:focus i,
+.dropdown-menu .dropdown-item#profileNavBtn:hover i,
+.dropdown-menu .dropdown-item#profileNavBtn:focus i {
+    color: #000 !important;
+}
+
+/* Ensure the profile button is identical to the logout button */
+a#profileNavBtn.dropdown-item {
+    color: var(--gold) !important;
+    background-color: transparent !important;
+}
+
+a#profileNavBtn.dropdown-item:hover,
+a#profileNavBtn.dropdown-item:focus {
+    background-color: var(--gold) !important;
+    color: #000 !important;
+}
+
+a#profileNavBtn.dropdown-item:hover i,
+a#profileNavBtn.dropdown-item:focus i {
+    color: #000 !important;
+}
+
+/* ===== FOOTER STYLES ===== */
+footer {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--gray);
+    border-top: 1px solid var(--gold-dark);
+    padding: 10px 0;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 50px; /* Fixed height */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Add padding to main content to prevent footer overlap */
+body {
+    padding-bottom: 60px; /* Slightly more than footer height */
+}
+
+/* Responsive adjustments for header and footer */
+@media (max-width: 991.98px) {
+    /* Collapsed navbar styling */
+    .navbar-collapse {
+        background-color: #000;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    
+    .nav-item {
+        margin: 5px 0;
+    }
+    
+    /* Center all items in collapsed menu */
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    /* Make dropdown centered and full width */
+    .dropdown-menu {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Center user profile in mobile view */
+    .user-profile {
+        justify-content: center;
+        padding: 8px 0 !important;
+        width: 100%;
+    }
+    
+    /* Profile dropdown in mobile */
+    .profile-dropdown-menu {
+        width: 100%;
+        margin: 5px auto !important;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo-text {
+        font-size: 1.2rem;
+    }
+    
+    .nav-link-gold {
+        padding: 6px 10px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar {
+        padding: 8px 10px;
+    }
+    
+    .logo-text {
+        font-size: 1rem;
+    }
 }
 
 /* Body Styles */
@@ -137,7 +389,7 @@ body, html {
 /* Toast types */
 .toast-error {
     border-left-color: var(--toast-error-border);
-    background-color: var(--toast-error-bg);
+    background-color: var(--toast-bg);
 }
 
 .toast-error .toast-icon-container,
@@ -147,7 +399,7 @@ body, html {
 
 .toast-warning {
     border-left-color: var(--toast-warning-color);
-    background-color: rgba(255, 193, 7, 0.08);
+    background-color: var(--toast-bg)
 }
 
 .toast-warning .toast-icon-container,
@@ -157,7 +409,7 @@ body, html {
 
 .toast-success {
     border-left-color: var(--toast-success-color);
-    background-color: rgba(40, 167, 69, 0.08);
+    background-color: var(--toast-bg)
 }
 
 .toast-success .toast-icon-container,
@@ -167,7 +419,7 @@ body, html {
 
 .toast-info {
     border-left-color: var(--toast-info-color);
-    background-color: rgba(23, 162, 184, 0.08);
+    background-color: var(--toast-bg)
 }
 
 .toast-info .toast-icon-container,

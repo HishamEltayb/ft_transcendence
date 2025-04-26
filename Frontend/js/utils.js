@@ -1,10 +1,46 @@
+import { VALIDATION_INPUTS } from './constants.js';
+import components from './components.js';
+
 class Utils {
     constructor() {
         this.access_token = null;
+        this.VALIDATION_INPUTS = VALIDATION_INPUTS;
+    }
+    
+    // Helper method to find elements by ID (from document.js)
+    getById(id) {
+        return document.getElementById(id);
+    }
+    
+    // Helper method to find elements by selector (from document.js)
+    queryAll(selector) {
+        return document.querySelectorAll(selector);
+    }
+    
+    // Helper method to find first element matching selector (from document.js)
+    query(selector) {
+        return document.querySelector(selector);
+    }
+    
+    // Get the main app container (from document.js)
+    getAppContainer() {
+        return this.getById('App');
+    }
+    
+    // Get the page section (from document.js)
+    getPageSection() {
+        return this.getById('pageSection');
+    }
+    
+    // Get login/register tabs (from document.js)
+    getLoginRegisterTabs() {
+        return {
+            loginTab: this.getById('loginTab'),
+            registerTab: this.getById('registerTab')
+        };
     }
     
     getUrlParameter(name) {
-
         console.log('Getting URL parameter:', name);
         
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -112,13 +148,13 @@ class Utils {
     }
 
     // Initialize character count display
-    initializeCharCount(inputElement, fieldType, validationRules) {
+    initializeCharCount(inputElement, fieldType) {
         if (!inputElement) return;
         
         const charCountElement = inputElement.parentElement.querySelector('.char-count');
         if (charCountElement) {
             const currentLength = inputElement.value.length;
-            const maxLength = validationRules[fieldType].maxLength;
+            const maxLength = this.VALIDATION_INPUTS[fieldType].maxLength;
             charCountElement.textContent = `${currentLength}/${maxLength}`;
             
             // Change color when approaching the limit, keeping text visible
@@ -133,10 +169,10 @@ class Utils {
     }
     
     // Validate input length with character counter
-    validateInputLength(fieldType, event, validationRules, componentsRef) {
+    validateInputLength(fieldType, event, componentsRef) {
         const input = event.target;
         const value = input.value;
-        const validation = validationRules[fieldType];
+        const validation = this.VALIDATION_INPUTS[fieldType];
         
         // Check if exceeding max length (should not happen due to maxLength attribute, but as a safeguard)
         if (value.length > validation.maxLength) {
@@ -167,6 +203,87 @@ class Utils {
             }
         }
     }
+
+    // Helper method to setup an input field with validation
+    setupInputField(inputField, fieldType, componentsRef) {
+        if (!inputField) return;
+        
+        inputField.maxLength = this.VALIDATION_INPUTS[fieldType].maxLength;
+        inputField.addEventListener('input', (event) => {
+            this.validateInputLength(fieldType, event, componentsRef);
+        });
+        this.initializeCharCount(inputField, fieldType);
+    }
+
+    setupPasswordField(passwordField, fieldType, validatePasswordMatchFn) {
+        if (!passwordField) return;
+        
+        this.setupInputField(passwordField, fieldType, components);
+        
+        passwordField.addEventListener('input', () => {
+            validatePasswordMatchFn();
+        });
+    }
+
+    // New method to set up password fields with validation
+    setupPasswordValidation(passwordField, confirmPasswordField, statusElement) {
+        if (!passwordField || !confirmPasswordField || !statusElement) return;
+        
+        // Setup character count for both fields
+        this.setupInputField(passwordField, 'password', components);
+        this.setupInputField(confirmPasswordField, 'password', components);
+        
+        // Add input event listeners for password validation
+        const validateFn = () => this.validatePasswordMatch(passwordField, confirmPasswordField, statusElement);
+        
+        passwordField.addEventListener('input', validateFn);
+        confirmPasswordField.addEventListener('input', validateFn);
+    }
+
+    // Validate password match for a form
+    validatePasswordMatchFields(passwordField, confirmPasswordField, statusElement) {
+        if (!passwordField || !confirmPasswordField || !statusElement) {
+            return;
+        }
+        
+        this.validatePasswordMatch(
+            passwordField,
+            confirmPasswordField,
+            statusElement
+        );
+    }
+
+    setFormLoading(submitBtn, isLoading) {
+        if (!submitBtn) return;
+        
+        if (isLoading) {
+            submitBtn.dataset.originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            submitBtn.disabled = true;
+        } else {
+            submitBtn.innerHTML = submitBtn.dataset.originalText || submitBtn.innerHTML;
+            submitBtn.disabled = false;
+        }
+    }
+    
+    // Initialize logout button (from document.js)
+    initLogoutButton(app) {
+        // Use app's existing flag to track initialization
+        if (app.logoutInitialized) return;
+        
+        document.addEventListener('click', (event) => {
+            const logoutBtn = event.target.closest('#logoutBtn');
+            if (logoutBtn) {
+                event.preventDefault();
+                app.logout(); // Use the app's logout method
+            }
+        });
+        
+        // Set the flag on the app instance
+        app.logoutInitialized = true;
+    }
+
+ 
 }
 
 // Create and export a singleton instance

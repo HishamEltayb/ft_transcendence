@@ -96,20 +96,10 @@ class API {
     }
   }
 
-  async submitRegisterForm(registerData) {
-    
+  async register(registerData) {
     try {
-      if (registerData.password !== registerData.confirmPassword) {
-        return {
-          success: false,
-          error: 'Passwords do not match.'
-        };
-      }
-
-      // API endpoint for registration from the ENDPOINTS constant
       const registerEndpoint = ENDPOINTS.auth.register;
       
-      // Make the POST request
       const response = await fetch(registerEndpoint, {
         method: 'POST',
         headers: {
@@ -120,19 +110,13 @@ class API {
 
       const result = await response.json();
 
-
-      
       if (!response.ok) {
-        return { success: false, error: result.error || 'Registration failed' };
+        const err = result.error || result.email || result.username || result.password || result.confirmPassword || 'Registration failed';
+        return { success: false, error: err };
       }
       
-      
-      // Return success data
-      return { success: true, data:response.data };
+      return { success: true, data: response.data };
     } catch (error) {
-      console.error('Registration error:', error);
-      
-      // Return the error for handling
       return { success: false, error: error.message };
     }
   }
