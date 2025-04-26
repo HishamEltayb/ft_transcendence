@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+from django.contrib.auth.models import Group
+
+# Unregister unwanted models from the admin
+for model in [Group]:
+    try:
+        admin.site.unregister(model)
+    except admin.sites.NotRegistered:
+        pass
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
