@@ -217,14 +217,14 @@ class App {
     }
     
     async checkAuthState() {
+        console.log('Checking auth state');
+        
         try {
             const result = await api.getUserData();
             
             if (result.success && result.userData) {
                 this.state.user = result.userData;
                 login.updateUIAuthState();
-                
-                // Initialize logout button if user is authenticated
                 utils.initLogoutButton(this);
             } else {
                 this.state.user = null;
@@ -235,7 +235,6 @@ class App {
         }
     }
 
-    // Method to handle user logout
     async logout() {
         console.log('App: Logging out');
         
@@ -279,8 +278,6 @@ class App {
             return false;
         }
     }
-    
-  
     
     getState() {
         return this.state;
@@ -326,7 +323,7 @@ class App {
         return this.state.user.rank;
     }
 
-    getIs2FAEnabled() {
+    get2FAState() {
         return this.state.user.is_two_factor_enabled;
     }
 

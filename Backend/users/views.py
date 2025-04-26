@@ -2,16 +2,13 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .authentication import JWTCookieAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, BlacklistMixin
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
-
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
-from .models import User
+from .models import User, RevokedAccessToken
 import requests
 import os
 import secrets
@@ -22,7 +19,7 @@ import qrcode
 import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.shortcuts import get_object_or_404, redirect
-
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -63,6 +60,9 @@ class LoginView(APIView):
         
         # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
+        access_token_str = str(refresh.access_token)
+        refresh_token_str = str(refresh)
+
         
         # Create response with user data
         response = Response({
@@ -74,7 +74,7 @@ class LoginView(APIView):
         # Access token (shorter expiration)
         response.set_cookie(
             key='access_token',
-            value=str(refresh.access_token),
+            value=access_token_str,
             httponly=True,
             secure=True,  # Use True in production with HTTPS
             samesite='Lax',
@@ -84,7 +84,7 @@ class LoginView(APIView):
         # Refresh token (longer expiration)
         response.set_cookie(
             key='refresh_token',
-            value=str(refresh),
+            value=refresh_token_str,
             httponly=True,
             secure=True,  # Use True in production with HTTPS
             samesite='Lax',
@@ -93,9 +93,10 @@ class LoginView(APIView):
         
         return response
 
+
 class Setup2FAView(APIView):
     authentication_classes = [JWTCookieAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
@@ -326,32 +327,32 @@ class FortyTwoCallbackView(APIView):
             
 
 
-class PlayerProfileUpdateView(generics.UpdateAPIView):
-    authentication_classes = [JWTCookieAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
+# class PlayerProfileUpdateView(generics.UpdateAPIView):
+#     authentication_classes = [JWTCookieAuthentication]
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = UserSerializer
     
-    def get_object(self):
-        return self.request.user
+#     def get_object(self):
+#         return self.request.user
 
-    def update(self, request, *args, **kwargs):
-        user = self.get_object()
+#     def update(self, request, *args, **kwargs):
+#         user = self.get_object()
         
-        game_result = request.data.get('game_result')
-        if game_result:
-            user.total_games += 1
-            if game_result.lower() == 'win':
-                user.wins += 1
-                user.rank += 10
-            elif game_result.lower() == 'loss':
-                user.losses += 1
-                # Decrement rank for losing, but not below 0
-                user.rank = max(0, user.rank - 5)
-            user.save()
-            return Response(self.get_serializer(user).data)
+#         game_result = request.data.get('game_result')
+#         if game_result:
+#             user.total_games += 1
+#             if game_result.lower() == 'win':
+#                 user.wins += 1
+#                 user.rank += 10
+#             elif game_result.lower() == 'loss':
+#                 user.losses += 1
+#                 # Decrement rank for losing, but not below 0
+#                 user.rank = max(0, user.rank - 5)
+#             user.save()
+#             return Response(self.get_serializer(user).data)
         
-        # Handle direct stats update (admin or system use)
-        return super().update(request, *args, **kwargs)
+#         # Handle direct stats update (admin or system use)
+#         return super().update(request, *args, **kwargs)
         
 class LeaderboardView(generics.ListAPIView):
     authentication_classes = [JWTCookieAuthentication]
@@ -361,15 +362,43 @@ class LeaderboardView(generics.ListAPIView):
 
 
 class LogoutView(APIView):
-    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self):
-        response = Response({'success': True, 'message': 'Logged out successfully'})
-        
-        response.set_cookie('access_token', '', expires=0)
-        response.set_cookie('refresh_token', '', expires=0)
-        
+
+    def post(self, request):
+        response = Response({'success': True, 'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+        access_token_string = request.COOKIES.get('access_token')
+        refresh_token_string = request.COOKIES.get('refresh_token')
+
+        # 1. Revoke the Access Token by adding the full string to our custom blacklist
+        if access_token_string:
+            try:
+                # No need to decode the token here, just store the raw string
+                RevokedAccessToken.objects.get_or_create(
+                    token=access_token_string,
+                    user=request.user # Use the authenticated user
+                    # Defaults will handle revoked_at
+                )
+            except Exception as e:
+                pass # Still proceed with logout
+
+        # 2. Blacklist the Refresh Token using simplejwt's built-in mechanism (still recommended)
+        if refresh_token_string:
+            try:
+                token = RefreshToken(refresh_token_string)
+                token.blacklist()
+                # print("Refresh token blacklisted successfully.") # Optional debug
+            except TokenError as e:
+                # print(f"Error blacklisting refresh token: {e}.") # Optional debug
+                pass
+            except Exception as e:
+                # print(f"Unexpected error blacklisting refresh token: {e}") # Optional debug
+                pass
+
+        # 3. Delete the cookies
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+
         return response
 
 
@@ -416,6 +445,4 @@ class CookieTokenRefreshView(APIView):
             return response
             
         except (InvalidToken, TokenError) as e:
-            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-
-
+            pass

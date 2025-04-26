@@ -1,5 +1,5 @@
 import utils from './utils.js';
-import { COMPONENTS, PAGES, ENDPOINTS } from './constants.js';
+import { PAGES, ENDPOINTS } from './constants.js';
 
 class API {
   async fetchHtml(url, returnElement = true) {
@@ -17,26 +17,6 @@ class API {
       return returnElement ? tempElement.firstChild : tempElement;
     } catch (error) {
       console.error(`Error fetching HTML from ${url}:`, error);
-      throw error;
-    }
-  }
-
-  async fetchAllComponents() {
-    try {
-      const promises = Object.entries(COMPONENTS).map(([name, url]) => 
-        this.fetchHtml(url).then(element => ({ name, element }))
-      );
-      
-      const results = await Promise.all(promises);
-      
-      const components = {};
-      results.forEach(result => {
-        components[result.name] = result.element;
-      });
-      
-      return components;
-    } catch (error) {
-      console.error(`Error fetching components:`, error);
       throw error;
     }
   }
@@ -63,10 +43,7 @@ class API {
 
   async login(loginData) {
     try {
-      
-      const loginEndpoint = ENDPOINTS.auth.login;
-      
-      const response = await fetch(loginEndpoint, {
+      const response = await fetch(ENDPOINTS.auth.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -76,17 +53,13 @@ class API {
 
       const result = await response.json();
 
-      console.log('Login result:', result);
-      
       if (!response.ok) {
         return { success: false, error: result.error || 'Login failed' };
       }
+
+      if (!result.user)
+        return { success: false, error: 'No user data received from server' };
       
-      if (result.token) {
-        utils.setCookie('access_token', result.token);
-      }
-
-
       localStorage.setItem('user', JSON.stringify(result.user));
       
       return { success: true, data: result.user };
@@ -98,9 +71,7 @@ class API {
 
   async register(registerData) {
     try {
-      const registerEndpoint = ENDPOINTS.auth.register;
-      
-      const response = await fetch(registerEndpoint, {
+      const response = await fetch(ENDPOINTS.auth.registe, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -121,117 +92,257 @@ class API {
     }
   }
 
+  async logout() {
+    try {
+      await fetch(ENDPOINTS.auth.logout, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+      });
+
+      utils.cleanUp();
+
+      return { success: true };
+    } catch (error) {
+      utils.cleanUp();
+
+      return { success: false, error: error.message };
+    }
+  }
+
   async get42AuthUrl() {
     try {
-      const oauth42Endpoint = ENDPOINTS.auth.auth42;
-      
-      // Make API call to get the OAuth authorization URL
-      const response = await fetch(oauth42Endpoint, {
+      const response = await fetch(ENDPOINTS.auth.auth42, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
         },
-        credentials: 'include'
       });
       
       if (!response.ok) {
         console.error('API: 42 auth URL request failed with status:', response.status, response.statusText);
         const errorText = await response.text();
         console.error('API: 42 auth error details:', errorText);
-        throw new Error('Failed to initiate 42 login: ' + errorText);
+        utils.cleanUp();
+        return { success: false };
       }
       
       const data = await response.json();
       
-      // Validate response contains auth_url
       if (!data || !data.auth_url) {
         throw new Error('No authorization URL received from server');
       }
       
-      // Return the OAuth data with success flag
       return { success: true, auth_url: data.auth_url };
     } catch (error) {
       console.error('42 OAuth Error:', error);
-      
-      // Return the error for handling
       return { success: false, error: error.message };
     }
   }
 
-  async getUserData() {
+  async getUserData(retryCount = 0) {
     try {
-      const user = localStorage.getItem('user');
-
-      if (user) {
-        return { success: true, userData: JSON.parse(user) };
-      }
-
-      const userMeEndpoint = ENDPOINTS.user.me;
-      
-      // Get token - Check cookies first, then localStorage for backward compatibility
-      let token = utils.getCookie('access_token');
-      
-      if (!token) {
-        token = localStorage.getItem('access_token');
-      }
-      
-      if (!token) {
-        return { success: true, userData: null };
-      }
-      
-      const response = await fetch(userMeEndpoint, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+      if (retryCount === 0) {
+        const user = localStorage.getItem('user');
+        if (user) {
+          return { success: true, userData: JSON.parse(user) };
         }
+      }
+      
+      const response = await fetch(ENDPOINTS.user.me, {
+        method: 'GET',
+        credentials: 'include'
       });
+
+      
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        
+        if (refreshResult.success) {
+          return await this.getUserData(retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp(); 
+          return { 
+            success: false, 
+            error: 'Authentication expired. Please log in again.',
+            authExpired: true 
+          };
+        }
+      }
       
       if (!response.ok) {
-        throw new Error('Failed to fetch user data');
+        throw new Error(`Failed to fetch user data: ${response.status}`);
       }
       
       const userData = await response.json();
-
       return { success: true, userData };
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error(`Error in getUserData (attempt ${retryCount + 1}):`, error);
+      return { success: false, error: error.message };
+    }
+  }
+ 
+  async refreshToken() {
+    try {
+      const refreshEndpoint = ENDPOINTS.auth.refreshToken;
+   
+      const response = await fetch(refreshEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', 
+      });
+
+      if (!response.ok) {
+        utils.cleanUp();
+        return { success: false, error: 'Token refresh failed' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Token refresh error:', error);
       return { success: false, error: error.message };
     }
   }
 
-  async logout() {
-    console.log('API: Logging out');
-
+  async setup2FA(retryCount = 0) {
     try {
-      const logoutEndpoint = ENDPOINTS.auth.logout;
-      
-      // Get token
-      const token = utils.getCookie('access_token') || localStorage.getItem('access_token');
-      
-      console.log('API: Token:', token);
-      
-      if (!token) {
-        utils.cleanUp();
-        return { success: true };
-      }
-      
-      await fetch(logoutEndpoint, {
+      const response = await fetch(ENDPOINTS.auth.setup2FA, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
       });
-
-      utils.cleanUp();
       
-      return { success: true };
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        
+        if (refreshResult.success) {
+          return await this.setup2FA(retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp(); 
+          throw new Error('Authentication expired. Please log in again.');
+        }
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API.setup2FA: Error response', errorData);
+        throw new Error(errorData.error || 'Failed to setup 2FA');
+      }
+      
+      const responseData = await response.json();
+      
+      return responseData;
     } catch (error) {
-      utils.cleanUp();
+      console.error(`API.setup2FA: Error caught (attempt ${retryCount + 1})`, error);
+      throw error;
+    }
+  }
+  
+  async verify2FA(code, retryCount = 0) {
+    try {
       
-      return { success: false, error: error.message };
+      const response = await fetch(ENDPOINTS.auth.verfiy2FA, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ otp_token: code })
+      });
+      
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        
+        if (refreshResult.success) {
+          return await this.verify2FA(code, retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp(); 
+          return { 
+            success: false, 
+            error: 'Authentication expired. Please log in again.',
+            authExpired: true 
+          };
+        }
+      }
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        return { 
+          success: false, 
+          error: responseData.error || 'Failed to verify 2FA code' 
+        };
+      }
+      
+      return { 
+        success: true, 
+        ...responseData 
+      };
+    } catch (error) {
+      console.error(`2FA verification error (attempt ${retryCount + 1}):`, error);
+      return { 
+        success: false, 
+        error: error.message 
+      };
+    }
+  }
+  
+  async disable2FA(code, retryCount = 0) {
+    try {
+      
+      const response = await fetch(ENDPOINTS.auth.disable2FA, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otp_token: code })
+      });
+      
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        
+        if (refreshResult.success) {
+          return await this.disable2FA(code, retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp(); 
+          return { 
+            success: false, 
+            error: 'Authentication expired. Please log in again.',
+            authExpired: true 
+          };
+        }
+      }
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        return { 
+          success: false, 
+          error: responseData.error || 'Failed to disable 2FA' 
+        };
+      }
+      
+      return { 
+        success: true, 
+        ...responseData 
+      };
+    } catch (error) {
+      console.error(`2FA disabling error (attempt ${retryCount + 1}):`, error);
+      return { 
+        success: false, 
+        error: error.message 
+      };
     }
   }
 }

@@ -48,7 +48,6 @@ class Pages {
     }
     
     showPage(pageName) {
-        // Get the content for the requested page
         const content = this.pages[pageName];
         
         if (!content) {
@@ -61,7 +60,6 @@ class Pages {
                 5000
             );
             
-            // Fall back to notFound or home page
             if (this.pages.notFound) {
                 this.pageSection.innerHTML = this.pages.notFound;
                 this.updateActiveNavLink('notFound');
@@ -122,21 +120,6 @@ class Pages {
             navLink.classList.add('active');
         }
     }
-    
-    // getPageElement(pageName) {
-    //     return this.pages[pageName] ? true : null;
-    // }
-    
-    // pageExists(pageName) {
-    //     return AVAILABLE_PAGES.includes(pageName) && 
-    //            pageName !== 'notFound' &&
-    //            this.getPageElement(pageName);
-    // }
-    
-    // getPageName(pageName) {
-    //     if (!pageName) return 'home';
-    //     return this.pageExists(pageName) ? pageName : 'notFound';
-    // }
 }
 
 const pages = new Pages();

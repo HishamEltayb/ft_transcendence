@@ -43,8 +43,8 @@ class Register {
         this.registerForm = this.getRegisterForm();
         
         if (this.registerForm.form) {
-            // if (this.registerForm.usernameField)
-            //     utils.setupInputField(this.registerForm.usernameField, 'username', components);
+            if (this.registerForm.usernameField)
+                utils.setupInputField(this.registerForm.usernameField, 'username', components);
             
             if (this.registerForm.emailField)
                 utils.setupInputField(this.registerForm.emailField, 'email', components);
@@ -58,7 +58,7 @@ class Register {
             }
             
             if (this.registerForm.submitBtn)
-                this.registerForm.submitBtn.onclick = this.submitRegistrationForm.bind(this);
+                this.registerForm.submitBtn.onclick = this.handleRegisterBtnClick.bind(this);
         }
     }
     
@@ -83,7 +83,7 @@ class Register {
         loginContainer.classList.add('fade');
     }
     
-    async submitRegistrationForm(event) {
+    async handleRegisterBtnClick(event) {
         if (event)
             event.preventDefault();
         
@@ -118,7 +118,7 @@ class Register {
             return;
         }
         
-        utils.setFormLoading(this.registerForm.submitBtn, true);
+        utils.setLoading(this.registerForm.submitBtn, true);
         
         const registerData = {
             username,
@@ -145,38 +145,19 @@ class Register {
                 login.showLoginForm();
                 console.log("4");
                 
-                utils.setFormLoading(this.registerForm.submitBtn, false);
+                utils.setLoading(this.registerForm.submitBtn, false);
             } else {
                 components.showToast('error', 'Registration Failed', result.error || 'Please try again with a different username or email.');
-                utils.setFormLoading(this.registerForm.submitBtn, false);
+                utils.setLoading(this.registerForm.submitBtn, false);
             }
         } catch (error) {
             console.error('Registration submission error:', error);
             components.showToast('error', 'System Error', 'An unexpected error occurred. Please try again later.');
-            utils.setFormLoading(this.registerForm.submitBtn, false);
+            utils.setLoading(this.registerForm.submitBtn, false);
         }
     }
-    
-    // showLoginTab() {
-    //     const loginTab = document.getElementById('loginTab');
-    //     const registerTab = document.getElementById('registerTab');
-    //     const loginContainer = document.getElementById('loginFormContainer');
-    //     const registerContainer = document.getElementById('registerFormContainer');
-        
-    //     if (loginTab && registerTab && loginContainer && registerContainer) {
-    //         loginTab.classList.add('active');
-    //         registerTab.classList.remove('active');
-            
-    //         loginContainer.classList.add('show', 'active');
-    //         loginContainer.classList.remove('fade');
-            
-    //         registerContainer.classList.remove('show', 'active');
-    //         registerContainer.classList.add('fade');
-    //     }
-    // }
 }
 
-// Create an instance when this module is imported
 const register = new Register();
 
 export default register;
