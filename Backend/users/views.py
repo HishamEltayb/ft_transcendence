@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .authentication import JWTCookieAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken, BlacklistMixin
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, BlacklistMixin
 
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -11,7 +11,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
-from .models import User
+from .models import User, RevokedAccessToken
 import requests
 import os
 import secrets
@@ -326,32 +326,32 @@ class FortyTwoCallbackView(APIView):
             
 
 
-class PlayerProfileUpdateView(generics.UpdateAPIView):
-    authentication_classes = [JWTCookieAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
+# class PlayerProfileUpdateView(generics.UpdateAPIView):
+#     authentication_classes = [JWTCookieAuthentication]
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = UserSerializer
     
-    def get_object(self):
-        return self.request.user
+#     def get_object(self):
+#         return self.request.user
 
-    def update(self, request, *args, **kwargs):
-        user = self.get_object()
+#     def update(self, request, *args, **kwargs):
+#         user = self.get_object()
         
-        game_result = request.data.get('game_result')
-        if game_result:
-            user.total_games += 1
-            if game_result.lower() == 'win':
-                user.wins += 1
-                user.rank += 10
-            elif game_result.lower() == 'loss':
-                user.losses += 1
-                # Decrement rank for losing, but not below 0
-                user.rank = max(0, user.rank - 5)
-            user.save()
-            return Response(self.get_serializer(user).data)
+#         game_result = request.data.get('game_result')
+#         if game_result:
+#             user.total_games += 1
+#             if game_result.lower() == 'win':
+#                 user.wins += 1
+#                 user.rank += 10
+#             elif game_result.lower() == 'loss':
+#                 user.losses += 1
+#                 # Decrement rank for losing, but not below 0
+#                 user.rank = max(0, user.rank - 5)
+#             user.save()
+#             return Response(self.get_serializer(user).data)
         
-        # Handle direct stats update (admin or system use)
-        return super().update(request, *args, **kwargs)
+#         # Handle direct stats update (admin or system use)
+#         return super().update(request, *args, **kwargs)
         
 class LeaderboardView(generics.ListAPIView):
     authentication_classes = [JWTCookieAuthentication]
@@ -361,22 +361,52 @@ class LeaderboardView(generics.ListAPIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [permissions.AllowAny]
-    
-    def post(self):
-        response = Response({'success': True, 'message': 'Logged out successfully'})
-        
-        access_token = self.request.COOKIES.get('access_token')
-        refresh_token = self.request.COOKIES.get('refresh_token')
-        
-        if access_token:
-            blacklist(access_token)
-        if refresh_token:
-            blacklist(refresh_token)
-        
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        response = Response({'success': True, 'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+        access_token_string = request.COOKIES.get('access_token')
+        refresh_token_string = request.COOKIES.get('refresh_token')
+
+        # --- DEBUG PRINTS START ---
+        print(f"DEBUG LogoutView: Received access_token cookie: {access_token_string}")
+        print(f"DEBUG LogoutView: Received refresh_token cookie: {refresh_token_string}")
+        # --- DEBUG PRINTS END ---
+
+        # 1. Revoke the Access Token by adding the full string to our custom blacklist
+        if access_token_string:
+            try:
+                # No need to decode the token here, just store the raw string
+                RevokedAccessToken.objects.get_or_create(
+                    token=access_token_string,
+                    user=request.user # Use the authenticated user
+                    # Defaults will handle revoked_at
+                )
+                # print(f"Access token added to revocation list.") # Optional debug
+            except Exception as e:
+                # Catch potential database errors (like if token was already added)
+                # or other unexpected issues.
+                # print(f"Unexpected error revoking access token: {e}") # Optional debug
+                pass # Still proceed with logout
+
+        # 2. Blacklist the Refresh Token using simplejwt's built-in mechanism (still recommended)
+        if refresh_token_string:
+            try:
+                token = RefreshToken(refresh_token_string)
+                token.blacklist()
+                # print("Refresh token blacklisted successfully.") # Optional debug
+            except TokenError as e:
+                # print(f"Error blacklisting refresh token: {e}.") # Optional debug
+                pass
+            except Exception as e:
+                # print(f"Unexpected error blacklisting refresh token: {e}") # Optional debug
+                pass
+
+        # 3. Delete the cookies
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
-        
+
         return response
 
 
@@ -424,5 +454,3 @@ class CookieTokenRefreshView(APIView):
             
         except (InvalidToken, TokenError) as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-
-
