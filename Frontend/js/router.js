@@ -1,14 +1,16 @@
-import docHandler from './document.js';
+// Removed direct import to break circular dependency
+// import docHandler from './document.js';
+import utils from './utils.js';
+import login from './login.js';
 
 class Router {
     constructor() {
         this.routes = {};
         this.initialized = false;
         this.currentPage = null;
-        this.docHandler = docHandler;
     }
 
-    init() {
+    async init() {
         if (this.initialized) return this;
         
         // Listen for browser back/forward navigation
@@ -103,10 +105,9 @@ class Router {
         // Get the current path
         const path = window.location.pathname || '/';
         
-        
         // Special handling for OAuth callback
         if (path.includes('/oauth/callback')) {
-            this.handleOAuthCallback();
+            login.handleOAuthCallback(this);
             return true;
         }
         
@@ -140,65 +141,6 @@ class Router {
         } catch (error) {
             console.error('Error in route handler:', error);
             return false;
-        }
-    }
-
-    /**
-     * Handle OAuth callback from 42 authentication
-     */
-    handleOAuthCallback() {
-        
-        // Get the access token from URL parameters or hash
-        const urlParams = new URLSearchParams(window.location.search);
-        let accessToken = urlParams.get('access_token');
-        
-        // If not in search params, try the hash
-        if (!accessToken && window.location.hash) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            accessToken = hashParams.get('access_token');
-        }
-        
-        if (accessToken) {
-            
-            // Store the token in localStorage
-            utils.setCookie('access_token', accessToken);
-            
-            // Create a simple callback page - this could be made more sophisticated
-            document.getElementById('pageSection').innerHTML = `
-                <div class="auth-container text-center p-5">
-                    <h2 class="text-gold mb-4">Authentication Successful</h2>
-                    <div class="mb-4">
-                        <div class="progress">
-                            <div id="authProgress" class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
-                        </div>
-                    </div>
-                    <p class="text-white">You have been successfully authenticated.</p>
-                    <p class="text-white">Redirecting you to the homepage...</p>
-                </div>
-            `;
-     
-        } else {
-            console.error('Router: No access token found in callback URL');
-            
-            // Show error in page
-            document.getElementById('pageSection').innerHTML = `
-                <div class="auth-container text-center p-5">
-                    <h2 class="text-danger mb-4">Authentication Failed</h2>
-                    <p class="text-white">We couldn't complete the authentication process.</p>
-                    <p class="text-white">Please try again.</p>
-                    <button id="retryAuthBtn" class="btn btn-gold mt-3">Return to Login</button>
-                </div>
-            `;
-            
-            // Add event listener to the retry button
-            setTimeout(() => {
-                const retryBtn = document.getElementById('retryAuthBtn');
-                if (retryBtn) {
-                    retryBtn.addEventListener('click', () => {
-                        this.navigate('/login');
-                    });
-                }
-            }, 100);
         }
     }
 
