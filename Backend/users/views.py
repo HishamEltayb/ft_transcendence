@@ -18,7 +18,6 @@ import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.shortcuts import get_object_or_404, redirect
 
-from django.shortcuts import redirect
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
