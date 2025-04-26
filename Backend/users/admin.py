@@ -9,6 +9,6 @@ class CustomUserAdmin(UserAdmin):
     
     fieldsets = (
         ('User Credentials', {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('email', 'intra_id', 'intra_login', 'profile_image', 'is_two_factor_enabled', 'is_oauth_user', 'state')}),
+        ('Personal info', {'fields': ('email', 'intra_id', 'intra_login', 'profile_image', 'is_two_factor_enabled', 'is_oauth_user')}),
         ('game info', {'fields': ('wins', 'losses', 'total_games', 'rank')})
     )
