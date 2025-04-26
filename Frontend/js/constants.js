@@ -1,15 +1,17 @@
-export const AVAILABLE_PAGES = ['home', 'game', 'login', 'notFound'];
+export const AVAILABLE_PAGES = ['home', 'game', 'login', 'notFound', 'profile'];
 
 export const PAGES = {
-    homePage: '/pages/home.html',
-    gamePage: '/pages/game.html',
-    loginPage: '/pages/login.html',
-    notFoundPage: '/pages/notFound.html'
+    home: '/pages/home.html',
+    login: '/pages/login.html',
+    game: '/pages/game.html',
+    notFound: '/pages/notFound.html',
+    profile: '/pages/profile.html'
 };
 
 export const COMPONENTS = {
     headerComponent: '/components/header.html',
-    footerComponent: '/components/footer.html'
+    footerComponent: '/components/footer.html',
+    twoFAComponent: '/components/twoFA.html'
 };
 
 export const ENDPOINTS = {

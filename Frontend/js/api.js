@@ -63,7 +63,6 @@ class API {
 
   async login(loginData) {
     try {
-      console.log('API: Submitting login form');
       
       const loginEndpoint = ENDPOINTS.auth.login;
       
@@ -77,15 +76,16 @@ class API {
 
       const result = await response.json();
 
+      console.log('Login result:', result);
+      
       if (!response.ok) {
         return { success: false, error: result.error || 'Login failed' };
       }
       
       if (result.token) {
-        utils.setCookie('authToken', result.token);
+        utils.setCookie('access_token', result.token);
       }
 
-      console.log('API: Login result:', result.user);
 
       localStorage.setItem('user', JSON.stringify(result.user));
       
@@ -97,7 +97,6 @@ class API {
   }
 
   async submitRegisterForm(registerData) {
-    console.log('API: Submitting registration form');
     
     try {
       if (registerData.password !== registerData.confirmPassword) {
@@ -122,7 +121,6 @@ class API {
       const result = await response.json();
 
 
-      console.log('API: Registration result:', result);
       
       if (!response.ok) {
         return { success: false, error: result.error || 'Registration failed' };
@@ -142,7 +140,6 @@ class API {
   async get42AuthUrl() {
     try {
       const oauth42Endpoint = ENDPOINTS.auth.auth42;
-      console.log('API: Requesting 42 auth URL from endpoint:', oauth42Endpoint);
       
       // Make API call to get the OAuth authorization URL
       const response = await fetch(oauth42Endpoint, {
@@ -161,7 +158,6 @@ class API {
       }
       
       const data = await response.json();
-      console.log('API: Received 42 auth URL response:', data);
       
       // Validate response contains auth_url
       if (!data || !data.auth_url) {
@@ -180,7 +176,6 @@ class API {
 
   async getUserData() {
     try {
-      console.log('API: Fetching fresh user data from API');
       const user = localStorage.getItem('user');
 
       if (user) {
@@ -190,12 +185,10 @@ class API {
       const userMeEndpoint = ENDPOINTS.user.me;
       
       // Get token - Check cookies first, then localStorage for backward compatibility
-      let token = utils.getCookie('authToken');
-      console.log('API: Auth token from cookie:', token ? 'Present' : 'Missing');
+      let token = utils.getCookie('access_token');
       
       if (!token) {
-        token = localStorage.getItem('authToken');
-        console.log('API: Auth token from localStorage:', token ? 'Present' : 'Missing');
+        token = localStorage.getItem('access_token');
       }
       
       if (!token) {
@@ -216,7 +209,6 @@ class API {
       }
       
       const userData = await response.json();
-      console.log('API: Successfully fetched user data');
 
       return { success: true, userData };
     } catch (error) {
@@ -226,15 +218,17 @@ class API {
   }
 
   async logout() {
+    console.log('API: Logging out');
+
     try {
-      console.log('API: Logging out user');
       const logoutEndpoint = ENDPOINTS.auth.logout;
       
       // Get token
-      const token = utils.getCookie('authToken') || localStorage.getItem('authToken');
+      const token = utils.getCookie('access_token') || localStorage.getItem('access_token');
+      
+      console.log('API: Token:', token);
       
       if (!token) {
-        console.log('API: No token found, user already logged out');
         utils.cleanUp();
         return { success: true };
       }
@@ -246,6 +240,8 @@ class API {
           'Content-Type': 'application/json'
         }
       });
+
+      utils.cleanUp();
       
       return { success: true };
     } catch (error) {
