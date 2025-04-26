@@ -4,7 +4,6 @@
     margin: 0 auto;
     padding: 20px;
     width: 100%;
-    margin-top: 180px;
 }
 
 /* Fix for ensuring content fits on small screens */
@@ -60,14 +59,6 @@ body.profile-page {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Username styling */
-#profileUsername {
-    color: var(--gold) !important;
-    font-weight: 600;
-    font-size: 1.5rem;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
 /* Avatar URL styling */
 #avatarUrl {
     color: var(--gold) !important;
@@ -80,13 +71,39 @@ body.profile-page {
     padding-top: 15px; /* Reduced padding since profile-page-wrapper has more padding */
 }
 
-/* 2FA Toggle Responsive Styles */
+/* Read-only form controls - specifically for text inputs */
+input[type="text"].form-control[readonly],
+input[type="email"].form-control[readonly] {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(212, 175, 55, 0.2);
+    color: var(--white);
+    cursor: default;
+    pointer-events: none;
+}
+
+input[type="text"].form-control[readonly]:focus,
+input[type="email"].form-control[readonly]:focus {
+    box-shadow: none;
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+/* 2FA Toggle Styles */
 .form-check-input#setting2fa {
     width: 3em;
     height: 1.5em;
-    margin-right: 10px;
     cursor: pointer;
-    flex-shrink: 0;
+    margin: 0;
+    opacity: 1;
+}
+
+.form-check-input#setting2fa:checked {
+    background-color: var(--gold);
+    border-color: var(--gold);
+}
+
+.form-check-input#setting2fa:not(:checked) {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(212, 175, 55, 0.3);
 }
 
 .form-check-label {
@@ -104,7 +121,19 @@ body.profile-page {
 .form-check.form-switch {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 576px) {
+    .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-check-label {
+        text-align: center;
+    }
 }
 
 .text-light.small.mt-2.mb-0 {
@@ -169,18 +198,10 @@ body.profile-page {
     transition: opacity 0.5s ease;
 }
 
-/* Settings button */
-#editProfileBtn, #saveSettingsBtn {
-    background-color: var(--gold);
-    color: var(--black);
-    border: none;
-    font-weight: 600;
-}
-
 /* CONSOLIDATED MEDIA QUERIES */
 @media (min-width: 768px) and (max-width: 991px) {
     .profile-page-wrapper {
-        margin-top: 420px;
+        margin-top: 350px;
     }
     
     .profile-container {
@@ -191,7 +212,7 @@ body.profile-page {
 /* Small Screens (576px to 767px) */
 @media (min-width: 576px) and (max-width: 767px) {
     .profile-page-wrapper {
-        margin-top: 360px;
+        margin-top: 550px;
     }
     
     .profile-container {
@@ -202,7 +223,7 @@ body.profile-page {
 /* Extra Small Screens (375px to 575px) */
 @media (min-width: 376px) and (max-width: 575px) {
     .profile-page-wrapper {
-        margin-top: 500px;
+        margin-top: 800px;
     }
     
     .profile-container {
@@ -213,7 +234,7 @@ body.profile-page {
 /* Very Small Screens (up to 375px) */
 @media (max-width: 375px) {
     .profile-page-wrapper {
-        margin-top: 500px;
+        margin-top: 950px;
     }
     
     .profile-container {

@@ -60,25 +60,19 @@ class DocumentHandler {
     }
 
     getProfileForm() {
-        const form = {
-            form: document.getElementById('settingsForm'),
+        return {
+            profileUsername: document.getElementById('profileUsername'),
+            profileIntraLogin: document.getElementById('profileIntraLogin'),
+            profileAvatar: document.getElementById('profileAvatar'),
             displayNameField: document.getElementById('settingDisplayName'),
             emailField: document.getElementById('settingEmail'),
-            passwordField: document.getElementById('settingPassword'),
-            confirmPasswordField: document.getElementById('settingConfirmPassword'),
             twoFASwitch: document.getElementById('setting2fa'),
-            saveBtn: document.getElementById('saveSettingsBtn'),
-            profileUsername: document.getElementById('profileUsername'),
-            profileAvatar: document.getElementById('profileAvatar'),
-            profileIntraLogin: document.getElementById('profileIntraLogin'),
             statsTotalGames: document.getElementById('statsTotalGames'),
             statsWins: document.getElementById('statsWins'),
             statsLosses: document.getElementById('statsLosses'),
             statsWinRate: document.getElementById('statsWinRate'),
             statsRank: document.getElementById('statsRank')
         };
-
-        return form;
     }
 
     // Method to setup the login/register tabs
