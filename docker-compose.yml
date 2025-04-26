@@ -16,6 +16,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
 
   postgres:
     build: ./Infrastructure/postgres
@@ -34,6 +35,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   nginx:
     build: ./Infrastructure/nginx
@@ -48,6 +50,7 @@ services:
       - frontend
     networks:
       - transcendence
+    restart: unless-stopped
 
   frontend:
     build: ./Frontend
@@ -64,6 +67,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
 
 
