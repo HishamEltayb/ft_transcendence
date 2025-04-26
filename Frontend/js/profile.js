@@ -7,11 +7,19 @@ import { VALIDATION_INPUTS } from './constants.js';
 class Profile {
     constructor() {
         this.profileForm = {};
+        this.initialized = false;
+    }
+    
+    init() {
+        if (this.initialized) return;
         
         document.addEventListener('pageShown', (event) => {
             if (event.detail.page === 'profile')
                 this.initProfilePage();
         });
+        
+        this.initialized = true;
+        console.log('Profile module initialized');
     }
     
     getProfileForm() {
@@ -214,9 +222,8 @@ class Profile {
         try {
             const response = await api.setup2FA();
             
-            if (!response || !response.qr_code || !response.secret_key) {
-                throw new Error('Invalid 2FA setup response');
-            }
+            if (!response || !response.qr_code || !response.secret_key) 
+                components.showToast('error', '2FA Setup Error', response.error || 'Failed to set up 2FA');
             
             const qrImg = document.createElement('img');
             qrImg.src = response.qr_code;
@@ -228,8 +235,6 @@ class Profile {
             
             secretKeyElement.textContent = response.secret_key;
         } catch (error) {
-            console.error('2FA setup error:', error);
-            
             qrCodeContainer.innerHTML = '<div class="text-danger">Failed to load QR code</div>';
             secretKeyElement.textContent = 'Error loading secret key';
             
@@ -283,7 +288,7 @@ class Profile {
                 }
             }
         } catch (error) {
-            console.error('2FA verification error:', error);
+            components.showToast('error', '2FA Verification Error', error.message || 'Failed to verify 2FA');
             
             utils.setFormLoading(submitButton, false);
             
@@ -337,7 +342,7 @@ class Profile {
                 }
             }
         } catch (error) {
-            console.error('Disable 2FA error:', error);
+            components.showToast('error', '2FA Disable Error', error.message || 'Failed to disable 2FA');
             
             utils.setFormLoading(submitButton, false);
             

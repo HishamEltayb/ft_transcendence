@@ -27,16 +27,7 @@ class Utils {
         return this.getById('pageSection');
     }
     
-    getLoginRegisterTabs() {
-        return {
-            loginTab: this.getById('loginTab'),
-            registerTab: this.getById('registerTab')
-        };
-    }
-    
     getUrlParameter(name) {
-        console.log('Getting URL parameter:', name);
-        
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
@@ -55,9 +46,7 @@ class Utils {
             progressBar.style.width = `${progress}%`;
             progressBar.setAttribute('aria-valuenow', progress);
             
-            if (progress >= 100) {
-                clearInterval(progressInterval);
-            }
+            if (progress >= 100) clearInterval(progressInterval);
         }, 100);
         
         return progressInterval;
@@ -76,10 +65,7 @@ class Utils {
         const parts = value.split(`; ${name}=`);
         const cookieValue = parts.length === 2 ? parts.pop().split(';').shift() : null;
         
-        // Update the auth token if that's what was requested
-        if (name === 'access_token') {
-            this.access_token = cookieValue;
-        }
+        if (name === 'access_token') this.access_token = cookieValue;
         
         return cookieValue;
     }
@@ -97,14 +83,14 @@ class Utils {
         localStorage.removeItem('refresh_token');
         
         localStorage.removeItem('user');
+        localStorage.removeItem('isAuthenticated');
         
         this.access_token = null;
     }
     
     validatePasswordMatch(passwordField, confirmPasswordField, statusElement) {
-        if (!passwordField || !confirmPasswordField || !statusElement) {
+        if (!passwordField || !confirmPasswordField || !statusElement)
             return;
-        }
         
         const password = passwordField.value;
         const confirmPassword = confirmPasswordField.value;
@@ -157,8 +143,8 @@ class Utils {
             input.value = value.slice(0, validation.maxLength);
             
             if (componentsRef) {
-                componentsRef.showToast('warning', 'Input Limit Reached', 
-                    `${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} cannot exceed ${validation.maxLength} characters.`);
+                const toastMessage = `${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} cannot exceed ${validation.maxLength} characters.`;
+                componentsRef.showToast('warning', 'Input Limit Reached', toastMessage);
             }
             return;
         }
@@ -211,9 +197,8 @@ class Utils {
     }
 
     validatePasswordMatchFields(passwordField, confirmPasswordField, statusElement) {
-        if (!passwordField || !confirmPasswordField || !statusElement) {
+        if (!passwordField || !confirmPasswordField || !statusElement) 
             return;
-        }
         
         this.validatePasswordMatch(
             passwordField,

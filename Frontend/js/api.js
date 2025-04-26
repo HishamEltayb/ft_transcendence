@@ -71,7 +71,7 @@ class API {
 
   async register(registerData) {
     try {
-      const response = await fetch(ENDPOINTS.auth.registe, {
+      const response = await fetch(ENDPOINTS.auth.register, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -120,7 +120,7 @@ class API {
           'Accept': 'application/json'
         },
       });
-      
+
       if (!response.ok) {
         console.error('API: 42 auth URL request failed with status:', response.status, response.statusText);
         const errorText = await response.text();
@@ -146,8 +146,9 @@ class API {
     try {
       if (retryCount === 0) {
         const user = localStorage.getItem('user');
+        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
         if (user) {
-          return { success: true, userData: JSON.parse(user) };
+          return { success: true, userData: JSON.parse(user), isAuthenticated };
         }
       }
       
@@ -156,7 +157,6 @@ class API {
         credentials: 'include'
       });
 
-      
       if (response.status === 401 && retryCount < 1) {
         const refreshResult = await this.refreshToken();
         
@@ -178,7 +178,12 @@ class API {
       }
       
       const userData = await response.json();
-      return { success: true, userData };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+      
+      return { success: true, userData, isAuthenticated };
     } catch (error) {
       console.error(`Error in getUserData (attempt ${retryCount + 1}):`, error);
       return { success: false, error: error.message };
@@ -249,7 +254,7 @@ class API {
   async verify2FA(code, retryCount = 0) {
     try {
       
-      const response = await fetch(ENDPOINTS.auth.verfiy2FA, {
+      const response = await fetch(ENDPOINTS.auth.verify2FA, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
