@@ -58,7 +58,7 @@ class Register {
             }
             
             if (this.registerForm.submitBtn)
-                this.registerForm.submitBtn.onclick = this.submitRegistrationForm.bind(this);
+                this.registerForm.submitBtn.onclick = this.handleRegisterBtnClick.bind(this);
         }
     }
     
@@ -83,7 +83,7 @@ class Register {
         loginContainer.classList.add('fade');
     }
     
-    async submitRegistrationForm(event) {
+    async handleRegisterBtnClick(event) {
         if (event)
             event.preventDefault();
         
