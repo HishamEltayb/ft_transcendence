@@ -1,7 +1,7 @@
 import api from './api.js';
-import components from './components.js';
 import app from './app.js';
 import utils from './utils.js';
+import components from './components.js';
 import { VALIDATION_INPUTS } from './constants.js';
 
 class Profile {

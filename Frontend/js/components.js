@@ -25,13 +25,11 @@ class Components {
 
     showToast(type, title, message, duration = 5000) {
         if (!this.toastComponent || !this.toastTitle || !this.toastMessage || !this.toastIcon) {
-            // Try to find toast elements if not already cached
             this.toastComponent = this.toastComponent || document.getElementById('toastComponent');
             this.toastTitle = this.toastTitle || document.getElementById('toastTitle');
             this.toastMessage = this.toastMessage || document.getElementById('toastMsg');
             this.toastIcon = this.toastIcon || document.querySelector('.toast-icon');
             
-            // If still not found, log error and return
             if (!this.toastComponent || !this.toastTitle || !this.toastMessage || !this.toastIcon) {
                 console.error('Toast components not found');
                 return;
