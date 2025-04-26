@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .authentication import JWTCookieAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
+
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
 from .models import User
@@ -17,6 +21,8 @@ import base64
 import qrcode
 import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django.shortcuts import get_object_or_404, redirect
+
 from django.shortcuts import redirect
 
 class RegisterView(generics.CreateAPIView):
@@ -359,14 +365,14 @@ class LogoutView(APIView):
     authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
-    def post(self, request):
+    def post(self):
         response = Response({'success': True, 'message': 'Logged out successfully'})
         
-        # Clear JWT cookies
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
+        response.set_cookie('access_token', '', expires=0)
+        response.set_cookie('refresh_token', '', expires=0)
         
         return response
+
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -412,4 +418,5 @@ class CookieTokenRefreshView(APIView):
             
         except (InvalidToken, TokenError) as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
 
