@@ -23,6 +23,7 @@ from django.conf import settings
 urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
+    path('api/tournaments/', include('tournaments.urls')),
     # path('api/two_factor/', include('two_factor.urls', 'two_factor'))
 ]
 

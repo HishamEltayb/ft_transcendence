@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'users',
     'django_otp',
     'django_otp.plugins.otp_totp',
+    'tournaments',
     # 'two_factor'
 ]
 
@@ -120,7 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -153,8 +153,6 @@ CORS_ALLOW_CREDENTIALS = True
 APPEND_SLASH = False
 
 CSRF_TRUSTED_ORIGINS = ['https://localhost', 'http://localhost']
-
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
