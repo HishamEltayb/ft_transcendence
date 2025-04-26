@@ -4,16 +4,15 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     profile_image = models.CharField(max_length=255, blank=True, null=True)
-    username = models.CharField(max_length=150, unique=True)
-
+    
     # 42 OAuth related fields
+    intra_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    intra_login = models.CharField(max_length=100, blank=True, null=True)
     is_oauth_user = models.BooleanField(default=False)
     state = models.CharField(max_length=10, choices=[('OF', 'Offline'), ('ON', 'Online'), ('ID', 'In-Game')], default='OF')
     
     # 2FA fields
     is_two_factor_enabled = models.BooleanField(default=False)
-
-    #game stats
     total_games = models.IntegerField(default=0)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
