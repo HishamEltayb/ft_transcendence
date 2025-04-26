@@ -2,7 +2,7 @@ import api from './api.js';
 import components from './components.js';
 import app from './app.js';
 import utils from './utils.js';
-import docHandler from './document.js';
+import { VALIDATION_INPUTS } from './constants.js';
 
 class Profile {
     constructor() {
@@ -17,16 +17,41 @@ class Profile {
         });
     }
     
+    // Get profile form elements (moved from utils.js)
+    getProfileForm() {
+        return {
+            profileUsername: document.getElementById('profileUsername'),
+            profileAvatar: document.getElementById('profileAvatar'),
+            displayNameField: document.getElementById('settingDisplayName'),
+            emailField: document.getElementById('settingEmail'),
+            twoFASwitch: document.getElementById('setting2fa'),
+            statsTotalGames: document.getElementById('statsTotalGames'),
+            statsWins: document.getElementById('statsWins'),
+            statsLosses: document.getElementById('statsLosses'),
+            statsWinRate: document.getElementById('statsWinRate'),
+            statsRank: document.getElementById('statsRank')
+        };
+    }
+    
     // Initialize the profile page
     initProfilePage() {
-        // Get profile form elements
-        this.profileForm = docHandler.getProfileForm();
+        // Get profile form elements using local method instead of utils
+        this.profileForm = this.getProfileForm();
         
         // Populate profile form with user data
         this.populateProfileData();
         
         // Initialize 2FA
         this.init2FA();
+        
+        // Setup input fields with validation if present
+        if (this.profileForm.displayNameField) {
+            utils.setupInputField(this.profileForm.displayNameField, 'username', VALIDATION_INPUTS, components);
+        }
+        
+        if (this.profileForm.emailField) {
+            utils.setupInputField(this.profileForm.emailField, 'email', VALIDATION_INPUTS, components);
+        }
     }
     
     // Populate the profile form with user data
@@ -220,7 +245,6 @@ class Profile {
         console.log('Sending 2FA setup request to API');
         
         // Use the API module instead of direct fetch
-        
         fetch(`/api/users/2fa/setup/`, {
             method: 'POST',
             credentials: 'include',
@@ -262,6 +286,7 @@ class Profile {
     verify2FACode() {
         const codeInput = document.getElementById('twoFACode');
         const errorElement = document.getElementById('twofa-error');
+        const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
         
         if (!codeInput) return;
         
@@ -276,16 +301,8 @@ class Profile {
             return;
         }
         
-        // Show loading state
-        const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
-        if (submitButton) {
-            const spinner = submitButton.querySelector('[data-spinner]');
-            const buttonText = submitButton.querySelector('[data-button-text]');
-            
-            if (spinner) spinner.classList.remove('d-none');
-            if (buttonText) buttonText.textContent = 'Verifying...';
-            submitButton.disabled = true;
-        }
+        // Show loading state using utils function
+        utils.setFormLoading(submitButton, true);
         
         // Get token
         const accessToken = utils.getCookie('access_token');
@@ -298,15 +315,8 @@ class Profile {
         .then(data => {
             console.log('2FA verify response:', data);
             
-            // Reset button
-            if (submitButton) {
-                const spinner = submitButton.querySelector('[data-spinner]');
-                const buttonText = submitButton.querySelector('[data-button-text]');
-                
-                if (spinner) spinner.classList.add('d-none');
-                if (buttonText) buttonText.textContent = 'Verify';
-                submitButton.disabled = false;
-            }
+            // Reset button state using utils function
+            utils.setFormLoading(submitButton, false);
             
             if (data.success) {
                 // Update user data
@@ -335,15 +345,8 @@ class Profile {
         .catch(error => {
             console.error('2FA verification error:', error);
             
-            // Reset button
-            if (submitButton) {
-                const spinner = submitButton.querySelector('[data-spinner]');
-                const buttonText = submitButton.querySelector('[data-button-text]');
-                
-                if (spinner) spinner.classList.add('d-none');
-                if (buttonText) buttonText.textContent = 'Verify';
-                submitButton.disabled = false;
-            }
+            // Reset button state using utils function
+            utils.setFormLoading(submitButton, false);
             
             // Show error
             if (errorElement) {
@@ -357,6 +360,7 @@ class Profile {
     disable2FA() {
         const codeInput = document.getElementById('twoFACode');
         const errorElement = document.getElementById('twofa-error');
+        const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
         
         if (!codeInput) return;
         
@@ -371,16 +375,8 @@ class Profile {
             return;
         }
         
-        // Show loading state
-        const submitButton = document.querySelector('#twoFAForm button[type="submit"]');
-        if (submitButton) {
-            const spinner = submitButton.querySelector('[data-spinner]');
-            const buttonText = submitButton.querySelector('[data-button-text]');
-            
-            if (spinner) spinner.classList.remove('d-none');
-            if (buttonText) buttonText.textContent = 'Verifying...';
-            submitButton.disabled = true;
-        }
+        // Show loading state using utils function
+        utils.setFormLoading(submitButton, true);
         
         // Get token
         const accessToken = utils.getCookie('access_token');
@@ -393,15 +389,8 @@ class Profile {
         .then(data => {
             console.log('2FA disable response:', data);
             
-            // Reset button
-            if (submitButton) {
-                const spinner = submitButton.querySelector('[data-spinner]');
-                const buttonText = submitButton.querySelector('[data-button-text]');
-                
-                if (spinner) spinner.classList.add('d-none');
-                if (buttonText) buttonText.textContent = 'Verify';
-                submitButton.disabled = false;
-            }
+            // Reset button state using utils function
+            utils.setFormLoading(submitButton, false);
             
             if (data.success) {
                 // Update user data
@@ -430,15 +419,8 @@ class Profile {
         .catch(error => {
             console.error('Disable 2FA error:', error);
             
-            // Reset button
-            if (submitButton) {
-                const spinner = submitButton.querySelector('[data-spinner]');
-                const buttonText = submitButton.querySelector('[data-button-text]');
-                
-                if (spinner) spinner.classList.add('d-none');
-                if (buttonText) buttonText.textContent = 'Verify';
-                submitButton.disabled = false;
-            }
+            // Reset button state using utils function
+            utils.setFormLoading(submitButton, false);
             
             // Show error
             if (errorElement) {

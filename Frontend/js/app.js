@@ -3,9 +3,10 @@ import components from './components.js';
 import pages from './pages.js';
 import router from './router.js';
 import api from './api.js';
-import docHandler from './document.js';
+import utils from './utils.js';
+import login from './login.js';
+import register from './register.js';
 import gameLoader from './gameLoader.js'; 
-import forms from './forms.js';
 import profile from './profile.js';
 
 class App {
@@ -23,9 +24,7 @@ class App {
     }
     
     async init() {
-        
-        // Get the main application container using docHandler
-        this.appContainer = docHandler.getAppContainer();
+        this.appContainer = document.getElementById('App');
         
         if (!this.appContainer) {
             console.error("App: Container not found!");
@@ -38,7 +37,6 @@ class App {
             
             // Initialize components
             components.init(this.appContainer);
-            await components.loadAllComponents();
             
             // Show loading spinner
             components.showSpinner();
@@ -47,14 +45,15 @@ class App {
             pages.init(this.appContainer);
             await pages.loadAllPages();
             
-            // Append footer
-            components.appendFooter();
+            // Initialize authentication-related modules
+            login.init();
+            register.init();
             
             // Register routes
             this.registerRoutes();
             
-            // Initialize router
-            router.init();
+            // Initialize router - now async
+            await router.init();
             
             this.initialized = true;
             
@@ -63,8 +62,8 @@ class App {
             await this.checkAuthState();
             
             // Initialize logout button listener AFTER authentication check
-            // Pass the entire app instance to the docHandler
-            docHandler.initLogoutButton(this);
+            // Use utils instead of docHandler
+            utils.initLogoutButton(this);
             
             components.hideSpinner();
             
@@ -87,19 +86,25 @@ class App {
         }
     }
     
+    resetAppContainer() {
+        while (this.appContainer.firstChild) {
+            this.appContainer.removeChild(this.appContainer.firstChild);
+        }
+    }
+    
     registerRoutes() {
         router.registerRoutes({
             // Home page route
             '/': () => {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
-                docHandler.updateUIAuthState(this);
+                login.updateUIAuthState();
             },
             
             '/home': () => {
                 this.state.currentPage = 'home';
                 pages.showPage('home');
-                docHandler.updateUIAuthState(this);
+                login.updateUIAuthState();
             },
             
             '/login': async () => {
@@ -124,7 +129,7 @@ class App {
                     if (result.success && result.userData) {
                         // User is authenticated but state was empty (after refresh)
                         this.state.user = result.userData;
-                        docHandler.updateUIAuthState(this);
+                        login.updateUIAuthState();
                         console.log('User authenticated after refresh, redirecting to profile');
                         components.showToast('info', 'Session Restored', 'Your session has been restored.');
                         router.navigate('/profile');
@@ -133,14 +138,24 @@ class App {
                         // User is truly not authenticated, show login page
                         this.state.currentPage = 'login';
                         pages.showPage('login');
-                        docHandler.updateUIAuthState(this);
+                        
+                        // Explicitly initialize login and register forms after page is shown
+                        login.renderForms();
+                        register.renderForms();
+                        
+                        login.updateUIAuthState();
                     }
                 } catch (error) {
                     console.error('Error checking auth for login page:', error);
                     // On error, default to showing login page
                     this.state.currentPage = 'login';
                     pages.showPage('login');
-                    docHandler.updateUIAuthState(this);
+                    
+                    // Explicitly initialize login and register forms after page is shown
+                    login.renderForms();
+                    register.renderForms();
+                    
+                    login.updateUIAuthState();
                 } finally {
                     components.hideSpinner();
                 }
@@ -149,7 +164,7 @@ class App {
             '/game': () => {
                 this.state.currentPage = 'game';
                 pages.showPage('game');
-                docHandler.updateUIAuthState(this);
+                login.updateUIAuthState();
             },
             
             '/profile': async () => {
@@ -164,7 +179,7 @@ class App {
                         // User is already authenticated, show profile directly
                         console.log('User already authenticated, showing profile');
                         pages.showPage('profile');
-                        docHandler.updateUIAuthState(this);
+                        login.updateUIAuthState();
                         components.hideSpinner();
                         return;
                     }
@@ -175,7 +190,7 @@ class App {
                     if (result.success && result.userData) {
                         // User is authenticated, update state and show profile
                         this.state.user = result.userData;
-                        docHandler.updateUIAuthState(this);
+                        login.updateUIAuthState();
                         pages.showPage('profile');
                     } else {
                         // User is not authenticated, redirect to login
@@ -196,22 +211,21 @@ class App {
                 // console.error(`404 Not Found: ${path}`);
                 this.state.currentPage = 'notFound';
                 pages.showPage('notFound');
-                docHandler.updateUIAuthState(this);
+                login.updateUIAuthState();
             }
         });
     }
     
-   
     async checkAuthState() {
         try {
             const result = await api.getUserData();
             
             if (result.success && result.userData) {
                 this.state.user = result.userData;
-                docHandler.updateUIAuthState(this);
+                login.updateUIAuthState();
                 
                 // Initialize logout button if user is authenticated
-                docHandler.initLogoutButton(this);
+                utils.initLogoutButton(this);
             } else {
                 this.state.user = null;
             }
@@ -235,7 +249,7 @@ class App {
             this.state.user = null;
             
             // Update UI
-            docHandler.updateUIAuthState(this);
+            login.updateUIAuthState();
             
             components.hideSpinner();
             
@@ -253,7 +267,7 @@ class App {
             
             // Even if error occurs, clear tokens and state
             this.state.user = null;
-            docHandler.updateUIAuthState(this);
+            login.updateUIAuthState();
             
             components.hideSpinner();
             components.showToast('warning', 'Logout Status', 'You have been logged out, but there was an issue with the server.');
@@ -266,11 +280,7 @@ class App {
         }
     }
     
-    resetAppContainer() {
-        while (this.appContainer.firstChild) {
-            this.appContainer.removeChild(this.appContainer.firstChild);
-        }
-    }
+  
     
     getState() {
         return this.state;

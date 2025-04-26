@@ -87,6 +87,20 @@ input[type="email"].form-control[readonly]:focus {
     border-color: rgba(212, 175, 55, 0.2);
 }
 
+.border-gold {
+    border-color: var(--gold) !important;
+}
+
+/* Form control with gold border */
+.form-control.border-gold {
+    border: 1px solid var(--gold);
+}
+
+.form-control.border-gold:focus {
+    border-color: var(--gold-light);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+}
+
 /* Fix for 2FA container on all screen sizes */
 .p-3.border.rounded.bg-dark.border-gold {
     padding: 1rem !important;

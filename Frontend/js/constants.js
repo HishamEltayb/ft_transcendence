@@ -1,4 +1,4 @@
-export const AVAILABLE_PAGES = ['home', 'game', 'login', 'notFound', 'profile'];
+export const AVAILABLE_PAGES = ['home', 'game', 'login', 'profile', 'notFound'];
 
 export const PAGES = {
     home: '/pages/home.html',
@@ -9,10 +9,11 @@ export const PAGES = {
 };
 
 export const COMPONENTS = {
-    headerComponent: '/components/header.html',
-    footerComponent: '/components/footer.html',
+    // Header and footer are now in index.html
     twoFAComponent: '/components/twoFA.html'
 };
+
+export const TOAST_TYPES = ['error', 'warning', 'success', 'info'];
 
 export const ENDPOINTS = {
     // Authentication endpoints

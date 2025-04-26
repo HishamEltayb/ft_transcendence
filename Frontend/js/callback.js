@@ -16,11 +16,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         // Get tokens from URL
         const accessToken = utils.getUrlParameter('access_token');
+        const refreshToken = utils.getUrlParameter('refresh_token');
         
         if (accessToken) {
             
             // Save token to cookie with default 40-minute expiration
             utils.setCookie('access_token', accessToken);
+            utils.setCookie('refresh_token', refreshToken);
             
             // Update status message
             statusMsg.textContent = 'Login successful! Redirecting...';
