@@ -14,15 +14,20 @@ class JWTCookieAuthentication(JWTAuthentication):
         # First, try to get the token from the cookie
         raw_token = request.COOKIES.get('access_token')
         
+        # If no token in cookies, try to get from Authorization header
         if raw_token is None:
-            # If no token in cookies, fall back to the standard header authentication
-            return super().authenticate(request)
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            if auth_header.startswith('Bearer '):
+                raw_token = auth_header.split(' ', 1)[1].strip()
+            else:
+                return super().authenticate(request)
+
         
+        # Print all revoked tokens for comparison
+        revoked_tokens = list(RevokedAccessToken.objects.values_list('token', flat=True))
+
         # --- Check Revocation List FIRST ---
-        # Check if the exact raw token string exists in our custom revocation list.
-        # Do this *before* validating to potentially save processing time.
         if RevokedAccessToken.objects.filter(token=raw_token).exists():
-            # Token string found in the revocation list - authentication fails
             return None
         # --- End Revocation Check ---
 
@@ -30,7 +35,6 @@ class JWTCookieAuthentication(JWTAuthentication):
         try:
             validated_token = self.get_validated_token(raw_token)
         except InvalidToken:
-            # If standard validation fails, authentication fails
             return None 
 
         # Token is valid (signature, expiry) AND not found in our revocation list
