@@ -271,7 +271,6 @@ function initializePositions() {
   
   // Position paddles at the correct heights
   if (isMultiplayerMode) {
-    console.log('Initializing positions for multiplayer mode');
     // Position paddles in their respective quarters
     paddle1Y = gameHeight * 0.25 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight * 0.25 - paddle2.clientHeight / 2;
@@ -294,7 +293,6 @@ function initializePositions() {
       rightSide: 'paddle4'  // Paddle4 is initially "last hit" so paddle2 is active
     };
   } else {
-    console.log('Initializing positions for standard mode');
     // Standard 2-player positioning
     paddle1Y = gameHeight / 2 - paddle1.clientHeight / 2;
     paddle2Y = gameHeight / 2 - paddle2.clientHeight / 2;
@@ -440,7 +438,6 @@ window.addEventListener('load', () => {
   // Initialize video state - ensure it's paused if not visible
   const videoBackground = document.querySelector('.gameArea .video-background');
   if (videoBackground) {
-    console.log('Video background found, setting initial state');
     
     // Make sure z-index is low by default
     videoBackground.style.zIndex = '-1000';
@@ -452,11 +449,9 @@ window.addEventListener('load', () => {
       
       // Add event listeners to monitor video state
       videoElement.addEventListener('play', () => {
-        console.log('Video started playing');
       });
       
       videoElement.addEventListener('pause', () => {
-        console.log('Video paused');
       });
     }
   } else {
@@ -504,7 +499,6 @@ window.addEventListener('load', () => {
   window.addEventListener('keydown', function(e) {
     // Only trigger if start text is visible and game isn't running
     if (startText.style.display === 'block' && !gameRunning && !gameOver) {
-      console.log("Global key handler - starting game!");
       startGame();
     }
   });
@@ -522,19 +516,16 @@ window.addEventListener('load', () => {
 function handleKeyDown(e) {
   // Check if game should be started with any key
   if (startText.style.display === 'block' && !gameRunning && !gameOver) {
-    console.log("Handling key press to start game:", e.key);
     startGame();
     return;
   }
   
   // Regular in-game controls
   keysPressed[e.key] = true;
-  console.log('Key pressed:', e.key, 'keysPressed state:', keysPressed);
 }
 
 function handleKeyUp(e) {
   keysPressed[e.key] = false;
-  console.log('Key released:', e.key);
 }
 
 /********************************************************************************************************
@@ -557,7 +548,6 @@ function hideAllScreens() {
 function setNavButtonsEnabled(enabled) {
   // Navigation buttons removed from the UI
   // This function is kept as a no-op for backward compatibility
-  console.log('Navigation disabled state set to:', !enabled);
 }
 
 /********************************************************************************************************
@@ -662,7 +652,6 @@ restartButton.addEventListener('click', () => {
  ********************************************************************************************************/
 // Apply current settings
 function applySettings() {
-  console.log('applySettings() called, isAIMode:', isAIMode);
   pointsToWin = parseInt(winScoreSelect.value);
   initialBallSpeed = parseInt(ballSpeedSelect.value);
   ballSpeedX = Math.sign(ballSpeedX) * initialBallSpeed; // Preserve direction
@@ -715,7 +704,6 @@ function applySettings() {
   
   if (backgroundSelect) {
     currentBackground = backgroundSelect.value;
-    console.log('Background changed to:', currentBackground);
     // Toggle video background based on setting
     toggleVideoBackground();
   }
@@ -895,7 +883,6 @@ function resetGame() {
   
   // In multiplayer mode, set proper initial paddle states
   if (isMultiplayerMode) {
-    console.log('Setting up multiplayer in resetGame');
     // Initialize the lastPaddleHit tracker
     lastPaddleHit = {
       leftSide: 'paddle3',  // Paddle3 is initially "last hit" so paddle1 is active
@@ -925,7 +912,6 @@ function resetGame() {
   lastTime = null;
   
   // Log the current state
-  console.log('Game reset. isMultiplayerMode:', isMultiplayerMode, 'lastPaddleHit:', lastPaddleHit);
 }
 
 // Start the game: hide all screens, show ball, disable nav buttons, and resume game loop
@@ -946,12 +932,10 @@ function startGame() {
   gameOver = false;
   setNavButtonsEnabled(false);
   
-  console.log("Game started! Ball visible, game running set to true");
   
   // Always reset lastTime to ensure a fresh game loop start
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
-  console.log("Game loop started with requestAnimationFrame");
 }
 
 // Function to display the win screen
@@ -1514,7 +1498,6 @@ function adjustBallDirection(paddleY, paddleHeight, isLeftPaddle, paddleId = nul
 
   // If in multiplayer mode, handle tag-team mechanics
   if (isMultiplayerMode && paddleId) {
-    console.log(`${paddleId} hit the ball`);
     
     // Update the last paddle hit for the appropriate side
     if (paddleId === 'paddle1' || paddleId === 'paddle3') {
@@ -1680,7 +1663,6 @@ window.ensureElementsInBounds = ensureElementsInBounds;
 // Add a function to synchronize isAIMode between window and local scope
 function syncAIMode() {
   isAIMode = window.isAIMode;
-  console.log('Synchronized isAIMode:', isAIMode);
 }
 
 // Set up a periodic check to ensure isAIMode stays in sync
@@ -1699,7 +1681,6 @@ function pauseGame() {
 
 // Function to toggle video background based on settings and pause/play accordingly
 function toggleVideoBackground() {
-  console.log('toggleVideoBackground called, currentBackground:', currentBackground);
   // Make sure we're targeting the video inside the game area
   const gameAreaVideoBackground = document.querySelector('.gameArea .video-background');
   
@@ -1707,7 +1688,6 @@ function toggleVideoBackground() {
     const videoElement = gameAreaVideoBackground.querySelector('video');
     
     if (currentBackground === 'video') {
-      console.log('Setting video background to visible (z-index: 1)');
       // Set z-index to make video visible
       gameAreaVideoBackground.style.zIndex = '1';
       
@@ -1718,7 +1698,6 @@ function toggleVideoBackground() {
         });
       }
     } else {
-      console.log('Setting video background to hidden (z-index: -1000)');
       // Set z-index to hide video behind everything
       gameAreaVideoBackground.style.zIndex = '-1000';
       
@@ -1741,7 +1720,6 @@ window.updatePaddleSizes = updatePaddleSizes;
 
 // Function to update paddle visibility based on game mode
 function updatePaddleVisibility() {
-    console.log('Updating paddle visibility, isMultiplayerMode:', isMultiplayerMode);
     
     // Always remove the disabled class from all paddles first
     paddle1.classList.remove('paddle-disabled');
@@ -1782,7 +1760,6 @@ function updatePaddleVisibility() {
             paddle4.classList.add('paddle-disabled');
         }
         
-        console.log('Multiplayer paddle visibility updated, lastPaddleHit:', lastPaddleHit);
     }
 }
 
@@ -1791,7 +1768,6 @@ window.updatePaddleVisibility = updatePaddleVisibility;
 
 // Add this new function to explicitly set the game mode
 function setGameMode(mode) {
-  console.log('Setting game mode to:', mode);
   
   // Reset paddle classes first - important to clear any previous state
   paddle1.classList.remove('paddle-disabled');
@@ -1818,7 +1794,6 @@ function setGameMode(mode) {
     paddle3.classList.add('paddle-disabled');
     paddle4.classList.add('paddle-disabled');
     
-    console.log('Multiplayer mode initialized with lastPaddleHit:', lastPaddleHit);
   } 
   else if (mode === 'ai') {
     window.isAIMode = true;

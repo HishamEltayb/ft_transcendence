@@ -1,9 +1,14 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from .authentication import JWTCookieAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.views import TokenRefreshView
+
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
 from .models import User
@@ -89,8 +94,8 @@ class LoginView(APIView):
         return response
 
 class Setup2FAView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTCookieAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
@@ -124,7 +129,7 @@ class Setup2FAView(APIView):
         })
 
 class Verify2FAView(APIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
@@ -159,7 +164,7 @@ class Verify2FAView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 class Disable2FAView(APIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
@@ -196,7 +201,7 @@ class Disable2FAView(APIView):
         
 
 class UserDetailView(generics.RetrieveAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     queryset = User.objects.all()
@@ -322,7 +327,7 @@ class FortyTwoCallbackView(APIView):
 
 
 class PlayerProfileUpdateView(generics.UpdateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
     
@@ -349,14 +354,14 @@ class PlayerProfileUpdateView(generics.UpdateAPIView):
         return super().update(request, *args, **kwargs)
         
 class LeaderboardView(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
 
 
 class LogoutView(APIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTCookieAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self):
@@ -366,3 +371,51 @@ class LogoutView(APIView):
         response.set_cookie('refresh_token', '', expires=0)
         
         return response
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        # Get the refresh token from the cookie
+        refresh_token = request.COOKIES.get('refresh_token')
+        
+        if not refresh_token:
+            return Response({"error": "No refresh token found in cookies"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            # Get a new token
+            refresh = RefreshToken(refresh_token)
+            
+            # Create response with new tokens
+            response = Response({
+                'success': True,
+                'message': 'Token refreshed successfully'
+            })
+            
+            # Set new JWT cookies
+            response.set_cookie(
+                key='access_token',
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=True,  # Use True in production with HTTPS
+                samesite='Lax',
+                max_age=60 * 30  # 30 minutes in seconds
+            )
+            
+            # Set the same refresh token back (or a new one if rotation is enabled)
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=True,  # Use True in production with HTTPS
+                samesite='Lax',
+                max_age=60 * 60 * 24  # 1 day in seconds
+            )
+            
+            return response
+            
+        except (InvalidToken, TokenError) as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+

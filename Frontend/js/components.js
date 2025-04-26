@@ -8,14 +8,16 @@ class Components {
         this.headerComponent = null;
         this.footerComponent = null;
         this.toastComponent = null;
-        this.twoFAModalComponent = null;
         this.toastTitle = null;
         this.toastMessage = null;
         this.toastIcon = null;
         this.toastTimeout = null;
+        
+        console.log('Components class initialized');
     }
     
     init(appContainer) {
+        console.log('Components init called with container:', appContainer);
         this.appContainer = appContainer;
         
         this.spinnerComponent = document.getElementById('spinnerContainer');
@@ -25,23 +27,29 @@ class Components {
         this.toastIcon = document.querySelector('.toast-icon');
         
         this.hideSpinner();
+        console.log('Components initialization complete');
     }
 
     async loadAllComponents() {
         try {
+            console.log('Loading all components...');
+            this.showSpinner();
             const componentsHtml = await api.fetchAllComponents();
             
             if (!componentsHtml) {
                 throw new Error('No components returned from API');
             }
             
-            // Store the components and append the header to the DOM
-            this.components = componentsHtml;
+            console.log('Components fetched:', Object.keys(componentsHtml));
+            
+            // Directly assign components instead of storing in a container
+            this.headerComponent = componentsHtml.headerComponent;
+            this.footerComponent = componentsHtml.footerComponent;
+            
             
             // Header is special and should be inserted at the top of the page
-            if (this.components.headerComponent) {
-                const header = this.components.headerComponent;
-                document.body.insertBefore(header, document.body.firstChild);
+            if (this.headerComponent) {
+                document.body.insertBefore(this.headerComponent, document.body.firstChild);
                 
                 // Retrieve and store navbar references after insertion
                 this.navbar = document.getElementById('mainNavbar');
@@ -49,27 +57,27 @@ class Components {
                 this.navbarToggler = document.querySelector('.navbar-toggler');
                 this.navbarCollapse = document.querySelector('.navbar-collapse');
                 
-                console.log('Components: Header component inserted into DOM');
             } else {
                 console.error('Components: Header component not loaded');
             }
             
-            console.log('Components: All components loaded successfully');
-            return this.components;
+            this.hideSpinner();
+            console.log('Components loading complete');
+            return componentsHtml;
         } catch (error) {
+            this.hideSpinner();
             console.error('Components: Error loading components:', error);
             throw error;
         }
     }
 
     appendFooter() {
-        if (this.components && this.components.footerComponent) {
+        if (this.footerComponent) {
             const existingFooter = document.querySelector('footer');
             if (existingFooter) 
                 existingFooter.remove();
             
-            this.appContainer.appendChild(this.components.footerComponent);
-            
+            this.appContainer.appendChild(this.footerComponent);
         } else {
             console.error("Footer component not available to append");
         }
@@ -77,8 +85,17 @@ class Components {
     
     showToast(type, title, message, duration = 5000) {
         if (!this.toastComponent || !this.toastTitle || !this.toastMessage || !this.toastIcon) {
-            console.error('Toast components not found');
-            return;
+            // Try to find toast elements if not already cached
+            this.toastComponent = this.toastComponent || document.getElementById('toastComponent');
+            this.toastTitle = this.toastTitle || document.getElementById('toastTitle');
+            this.toastMessage = this.toastMessage || document.getElementById('toastMsg');
+            this.toastIcon = this.toastIcon || document.querySelector('.toast-icon');
+            
+            // If still not found, log error and return
+            if (!this.toastComponent || !this.toastTitle || !this.toastMessage || !this.toastIcon) {
+                console.error('Toast components not found');
+                return;
+            }
         }
         
         // Clear any existing timeout
@@ -133,6 +150,10 @@ class Components {
     }
     
     hideToast() {
+        if (!this.toastComponent) {
+            this.toastComponent = document.getElementById('toastComponent');
+        }
+        
         if (this.toastComponent) {
             this.toastComponent.classList.add('hide');
             
@@ -145,18 +166,26 @@ class Components {
     }
     
     showSpinner() {
-        if (this.spinnerComponent)
+        if (!this.spinnerComponent) {
+            this.spinnerComponent = document.getElementById('spinnerContainer');
+        }
+        
+        if (this.spinnerComponent) {
             this.spinnerComponent.classList.remove('d-none');
+        }
     }
     
     hideSpinner() {
-        if (this.spinnerComponent)
+        if (!this.spinnerComponent) {
+            this.spinnerComponent = document.getElementById('spinnerContainer');
+        }
+        
+        if (this.spinnerComponent) {
             this.spinnerComponent.classList.add('d-none');
+        }
     }
 }
 
 const components = new Components();
 
-// // Expose components globally
-// window.components = components;
 export default components; 

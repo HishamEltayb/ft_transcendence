@@ -177,7 +177,6 @@
     <script>
         // Make sure the page is fully loaded before dispatching the event
         setTimeout(() => {
-            console.log('Game page fully loaded, dispatching gamePageLoaded event');
             document.dispatchEvent(new CustomEvent('gamePageLoaded'));
         }, 100);
     </script>
