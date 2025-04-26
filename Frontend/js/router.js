@@ -1,6 +1,3 @@
-// Removed direct import to break circular dependency
-// import docHandler from './document.js';
-import utils from './utils.js';
 import login from './login.js';
 
 class Router {
@@ -37,6 +34,7 @@ class Router {
                 }
                 
                 this.navigate(targetPath);
+
                 return;
             }
             
@@ -54,6 +52,7 @@ class Router {
                 const path = new URL(link.href).pathname;
                 
                 this.navigate(path);
+
                 return;
             }
 
@@ -90,11 +89,11 @@ class Router {
         
         let handler = this.routes[path];
         
-        if (!handler && this.routes['*']) {
+        if (!handler && this.routes['*'])
             handler = this.routes['*'];
-        } else if (!handler && this.routes['/']) {
+        else if (!handler && this.routes['/'])
             handler = this.routes['/'];
-        }
+        
         
         if (!handler) {
             console.error(`No route handler found for path: ${path}`);

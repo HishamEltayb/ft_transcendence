@@ -35,32 +35,12 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username', '').lower()
         password = request.data.get('password', '')
-        otp_token = request.data.get('otp_token', None)
 
         user = authenticate(username=username, password=password)
 
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Check if 2FA is enabled for this user
-        if user.is_two_factor_enabled:
-            # If no OTP token was provided, tell the client to request one
-            if not otp_token:
-                return Response({
-                    'require_2fa': True,
-                    'user_id': user.id,
-                    'message': 'Please provide an OTP token'}, 
-                    status=status.HTTP_200_OK)
-            
-            # Verify the provided OTP token
-            devices = TOTPDevice.objects.filter(user=user)
-            if not devices.exists():
-                return Response({'error': 'No 2FA device found for this user'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            device = devices.first()
-            if not device.verify_token(otp_token):
-                return Response({'error': 'Invalid OTP token'}, status=status.HTTP_401_UNAUTHORIZED)
-        
         # At this point, the user is authenticated (and passed 2FA if enabled)
         refresh = RefreshToken.for_user(user)
         

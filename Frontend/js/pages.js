@@ -51,14 +51,13 @@ class Pages {
         const content = this.pages[pageName];
         
         if (!content) {
-            console.error(`Error: Content for page ${pageName} not found!`);
-            
             components.showToast(
                 'error',
                 'Page Not Found',
                 `The requested page "${pageName}" could not be found.`,
                 5000
             );
+
             
             if (this.pages.notFound) {
                 this.pageSection.innerHTML = this.pages.notFound;

@@ -118,7 +118,7 @@ class Register {
             return;
         }
         
-        utils.setLoading(this.registerForm.submitBtn, true);
+        utils.setFormLoading(this.registerForm.submitBtn, true);
         
         const registerData = {
             username,
@@ -130,30 +130,24 @@ class Register {
         try {
             const result = await api.register(registerData);
             
-            console.log("1");
-            
             if (result.success) {
                 components.showToast('success', 'Registration Successful', 'Your account has been created. Please log in.');
-                
-                console.log("2");
                 
                 this.registerForm.form.reset();
                 this.registerForm.passwordMatchStatus.textContent = '';
                 this.registerForm.passwordMatchStatus.className = 'form-text mt-1';
                 
-                console.log("3");
                 login.showLoginForm();
-                console.log("4");
                 
-                utils.setLoading(this.registerForm.submitBtn, false);
+                utils.setFormLoading(this.registerForm.submitBtn, false);
             } else {
                 components.showToast('error', 'Registration Failed', result.error || 'Please try again with a different username or email.');
-                utils.setLoading(this.registerForm.submitBtn, false);
+                utils.setFormLoading(this.registerForm.submitBtn, false);
             }
         } catch (error) {
             console.error('Registration submission error:', error);
             components.showToast('error', 'System Error', 'An unexpected error occurred. Please try again later.');
-            utils.setLoading(this.registerForm.submitBtn, false);
+            utils.setFormLoading(this.registerForm.submitBtn, false);
         }
     }
 }

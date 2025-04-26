@@ -220,43 +220,53 @@ input[type="email"].form-control[readonly]:focus {
     width: 90%;
     max-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
 }
 
 .two-fa-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 15px 20px;
+    padding: 12px 15px;
     border-bottom: 1px solid #343a40;
+    position: relative;
 }
 
 .two-fa-title {
     color: #DAA520;
     margin: 0;
     font-weight: bold;
+    text-align: center;
 }
 
 .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     background: none;
     border: none;
-    color: #6c757d;
-    font-size: 1.5rem;
+    color: #aaa;
+    font-size: 1.2rem;
     cursor: pointer;
-    padding: 0;
+    padding: 5px;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .close-button:hover {
     color: #DAA520;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .two-fa-body {
-    padding: 20px;
+    padding: 15px;
 }
 
-.two-fa-text {
-    margin-bottom: 20px;
-    color: #f8f9fa;
-}
 
 .form-button-container {
     display: flex;
