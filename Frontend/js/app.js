@@ -217,6 +217,8 @@ class App {
     }
     
     async checkAuthState() {
+        console.log('Checking auth state');
+        
         try {
             const result = await api.getUserData();
             
@@ -321,7 +323,7 @@ class App {
         return this.state.user.rank;
     }
 
-    getIs2FAEnabled() {
+    get2FAState() {
         return this.state.user.is_two_factor_enabled;
     }
 

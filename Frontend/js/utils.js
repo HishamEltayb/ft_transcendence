@@ -85,12 +85,12 @@ class Utils {
     }
     
     deleteCookie(name) {
-        document.cookie = name + '=; expires=Wed, 01 Jan 2025 00:00:00 GMT; path=/; Secure; SameSite=Strict';
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; Secure; SameSite=Strict';
     }
-    
 
     cleanUp() {
         this.deleteCookie('access_token');
+        this.deleteCookie('refresh_token');
         
         localStorage.removeItem('access_token');
         localStorage.removeItem('access_token');

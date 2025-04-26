@@ -17,9 +17,9 @@ export const ENDPOINTS = {
         login: '/api/users/login/',
         register: '/api/users/register/',
         logout: '/api/users/logout/',
-        twoFASetup: '/api/users/2fa/setup/',
-        twoFAEnable: '/api/users/2fa/enable/',
-        twoFADisable: '/api/users/2fa/disable/',
+        setup2FA: '/api/users/2fa/setup/',
+        verfiy2FA: '/api/users/2fa/verify/',
+        disable2FA: '/api/users/2fa/disable/',
         refreshToken: '/api/users/token/refresh/',
 
         // verifyEmail: '/api/users/verify-email/',
