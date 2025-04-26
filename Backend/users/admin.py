@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, RevokedAccessToken
 from django.contrib.auth.models import Group
 
 # Unregister unwanted models from the admin
@@ -20,3 +20,9 @@ class CustomUserAdmin(UserAdmin):
         ('Personal info', {'fields': ('email', 'intra_id', 'intra_login', 'profile_image', 'is_two_factor_enabled', 'is_oauth_user')}),
         ('game info', {'fields': ('wins', 'losses', 'total_games', 'rank')})
     )
+
+@admin.register(RevokedAccessToken)
+class RevokedAccessTokenAdmin(admin.ModelAdmin):
+    list_display = ('token', 'user', 'revoked_at')
+    search_fields = ('token', 'user__username')
+    list_filter = ('revoked_at',)

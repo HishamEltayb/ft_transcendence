@@ -8,7 +8,7 @@ services:
     expose:
       - "8000"
     volumes:
-      - backend:/app
+      - ./Backend:/app
     env_file:
       - .env
     networks:
@@ -90,14 +90,14 @@ services:
 
 
 volumes:
-  backend:
-    name: backend
+  # backend:
+  #   name: backend
   postgres:
     name: postgres
   ssl: 
     name: ssl
-  elasticsearch:
-    name: elasticsearch
+  # elasticsearch:
+  #   name: elasticsearch
 
 
 
