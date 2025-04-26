@@ -2,6 +2,6 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN npm install -g live-server
+RUN npm install -g http-server
 
-CMD ["live-server", "--port=3000", "--entry-file=index.html"]
+CMD ["http-server", ".", "-p", "3000", "-a", "0.0.0.0", "-c-1", "--spa"]
