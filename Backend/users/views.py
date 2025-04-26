@@ -6,9 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, Blacklist
 
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
-
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, RegisterSerializer
 from .models import User, RevokedAccessToken

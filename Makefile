@@ -43,3 +43,9 @@ attach-nginx:
 re: clean all-log
 
 .PHONY: all down clean fclean logs re all-log attach-backend attach-frontend attach-database attach-nginx up build
+
+
+backend-test:
+	docker compose exec backend python3 manage.py test users.tests_register --verbosity=2
+	docker compose exec backend python3 manage.py test users.tests_login.LoginViewTests --verbosity=2
+	docker compose exec backend python3 manage.py test users.tests_2fa --verbosity=2
