@@ -1,5 +1,5 @@
 all-log:
-	docker compose up -d --build
+	docker compose up --build
 
 all: up build
 
