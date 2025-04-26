@@ -14,16 +14,16 @@ jobs:
 
       - name: Build and start backend and postgres
         run: |
-          docker-compose up -d backend postgres
+          docker compose up -d backend postgres
 
       - name: Wait for backend to be healthy
         run: |
-          docker-compose exec backend bash -c "until pg_isready -h postgres -U $POSTGRES_USER; do sleep 1; done"
+          docker compose exec backend bash -c "until pg_isready -h postgres -U $POSTGRES_USER; do sleep 1; done"
 
       - name: Run Django users app tests in backend container
         run: |
-          docker-compose exec backend python manage.py test users
+          docker compose exec backend python manage.py test users
 
       - name: Show backend logs on failure
         if: failure()
-        run: docker-compose logs backend
+        run: docker compose logs backend
