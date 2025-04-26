@@ -6,7 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'rank']
-        read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user']
+        read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
