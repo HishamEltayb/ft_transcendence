@@ -61,6 +61,7 @@ class API {
         return { success: false, error: 'No user data received from server' };
       
       localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('isAuthenticated', false);
       
       return { success: true, data: result.user };
     } catch (error) {
@@ -144,9 +145,10 @@ class API {
 
   async getUserData(retryCount = 0) {
     try {
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
       if (retryCount === 0) {
         const user = localStorage.getItem('user');
-        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
         if (user) {
           return { success: true, userData: JSON.parse(user), isAuthenticated };
         }
@@ -181,7 +183,6 @@ class API {
 
       localStorage.setItem('user', JSON.stringify(userData));
 
-      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       
       return { success: true, userData, isAuthenticated };
     } catch (error) {

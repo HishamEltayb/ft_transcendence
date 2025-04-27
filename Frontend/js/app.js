@@ -82,16 +82,33 @@ class App {
     registerRoutes() {
         router.registerRoutes({
             '/': () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
                 pages.showPage('home');
                 login.updateUIAuthState();
+               
             },
             
             '/home': () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
                 pages.showPage('home');
                 login.updateUIAuthState();
             },
             
             '/login': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+
                 components.showSpinner();
                 
                 try {
@@ -131,6 +148,12 @@ class App {
             },
             
             '/game': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+
                 components.showSpinner();
                 
                 try {
@@ -160,6 +183,12 @@ class App {
             },
             
             '/profile': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+                
                 components.showSpinner();
                 
                 try {
