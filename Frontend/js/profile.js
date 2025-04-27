@@ -19,7 +19,8 @@ class Profile {
         });
         
         this.initialized = true;
-        console.log('Profile module initialized');
+        // console.log('Profile module initialized');
+        
     }
     
     getProfileForm() {
