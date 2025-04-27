@@ -197,19 +197,27 @@
 
 /* New paddles for multiplayer mode */
 .paddle3 {
-    background-color: #1eff00; /* Orange-gold for paddle3 */
-    left: 0%; /* Position paddle on the left */
-    /* Remove top positioning to avoid conflict with JS */
+    background-color: #1eff00; /* Green color for better visibility */
+    position: absolute;
+    top: 75%; /* Position near the bottom quarter of the game area */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Center the paddle perfectly */
     box-shadow: 0 0 8px #1eff00;
-    display: none; /* Hidden by default */
 }
 
 .paddle4 {
-    background-color: #1eff00; /* Light blue for paddle4 */
-    right: 0%; /* Position paddle on the right */
-    /* Remove top positioning to avoid conflict with JS */
+    background-color: #1eff00; /* Green color for better visibility */
+    position: absolute;
+    top: 25%; /* Position near the top quarter of the game area */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Center the paddle perfectly */
     box-shadow: 0 0 8px #1eff00;
-    display: none; /* Hidden by default */
+}
+
+/* Special override for multiplayer mode */
+.isMultiplayerMode .paddle3,
+.isMultiplayerMode .paddle4 {
+    display: block !important; /* Force display in multiplayer mode */
 }
 
 /* Add a class for disabled paddles */

@@ -82,6 +82,9 @@ class App {
     registerRoutes() {
         router.registerRoutes({
             '/': () => {
+                console.log('Home route');
+                console.log(this.get2FAState());
+                console.log(this.getIsAuthenticated());
                 if (this.get2FAState() && !this.getIsAuthenticated()) {
                     pages.showPage('twoFA');
                     login.updateUIAuthState();
@@ -363,7 +366,7 @@ class App {
     }
 
     get2FAState() {
-        return this.state.user.is_two_factor_enabled;
+        return this.state.user?.is_two_factor_enabled ? true : false;
     }
     
     getIsAuthenticated() {
