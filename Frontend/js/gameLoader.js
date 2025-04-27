@@ -16,6 +16,44 @@ class GameLoader {
                 this.loadGame();
             }
         });
+
+        // Global ESC key handler for exiting the game
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Only handle if we're on the game page
+                if (window.location.pathname.includes('/game')) {
+                    this.stopGame();
+                }
+            }
+        });
+    }
+    
+    // Method to completely stop the game and return to selection
+    stopGame() {
+        // Stop the game loop by setting gameRunning to false
+        if (typeof window.gameRunning !== 'undefined') {
+            window.gameRunning = false;
+        }
+
+        // Reset all game state
+        if (typeof window.resetGame === 'function') {
+            window.resetGame();
+        }
+
+        // Hide cancel button
+        const cancelButton = document.getElementById('cancelGameButton');
+        if (cancelButton) {
+            cancelButton.style.display = 'none';
+        }
+
+        // Hide any game screens and show game selection
+        this.hideAllScreens();
+        const gameSelection = document.querySelector('.gameSelection');
+        if (gameSelection) {
+            gameSelection.style.display = 'block';
+        }
+
+        console.log('Game stopped and reset');
     }
     
     loadGame() {
@@ -70,6 +108,11 @@ class GameLoader {
     
     // Handle keyboard input for paddle movement
     handleKeyDown(e) {
+        // Skip ESC key as it's handled by the global handler
+        if (e.key === 'Escape') {
+            return;
+        }
+        
         // Update global keysPressed object
         window.keysPressed = window.keysPressed || {};
         window.keysPressed[e.key] = true;
@@ -147,6 +190,8 @@ class GameLoader {
         // Execute button setup immediately
         // PVP Button
         setupButton('pvpButton', () => {
+            // Completely stop any existing game first
+            this.stopGame();
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -164,6 +209,8 @@ class GameLoader {
         });
         // PVE (AI) Button
         setupButton('pveButton', () => {
+            // Completely stop any existing game first
+            this.stopGame();
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -181,6 +228,8 @@ class GameLoader {
         });
         // Multiplayer Button
         setupButton('multiplayerButton', () => {
+            // Completely stop any existing game first
+            this.stopGame();
             
             // Use the setGameMode function if available, otherwise fallback
             if (typeof window.setGameMode === 'function') {
@@ -368,4 +417,4 @@ class GameLoader {
 // Initialize the loader
 const gameLoader = new GameLoader();
 
-export default gameLoader;
+export default gameLoader; 

@@ -1,13 +1,13 @@
-import components from './components.js';
-import pages from './pages.js';
-import router from './router.js';
 import api from './api.js';
 import utils from './utils.js';
 import login from './login.js';
-import register from './register.js';
-import gameLoader from './gameLoader.js'; 
-import profile from './profile.js';
 import twoFA from './twoFA.js';
+import pages from './pages.js';
+import router from './router.js';
+import profile from './profile.js';
+import register from './register.js';
+import components from './components.js';
+import gameLoader from './gameLoader.js'; 
 
 class App {
     constructor() {
