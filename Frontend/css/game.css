@@ -1,26 +1,61 @@
 .game-page-wrapper {
-    width: 100%; /* Changed from 90% to use full width */
+    width: 100%;
     margin: 0 auto;
     color: var(--white);
     display: flex;
     justify-content: center;
+    background: url('../public/assets/images/background.jpg') center/cover no-repeat fixed;
+    min-height: 100vh;
 }
 
 .game-container {
-    border: 2px solid var(--gold-dark);
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 1.5rem 2rem; /* Reduced vertical padding */
-    margin: 0 auto;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 2rem;
+    margin: 2rem auto;
     width: 100%;
-    max-width: 1200px; /* Added max-width for very large screens */
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    max-width: 1200px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: relative; /* This is important for absolute positioning of child elements */
-    min-height: 750px; /* Increased min-height for larger game area */
+    position: relative;
+    min-height: 750px;
+}
+
+.text-gold {
+    color: var(--gold);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Additional styling for game background */
+body {
+    background-color: #000;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Update score position to match image */
+@media (max-width: 768px) {
+    .score {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+    
+    .game-container {
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+    
+    .text-gold {
+        font-size: 2rem;
+    }
 }
 
 /* Navigation Bar */
@@ -34,48 +69,24 @@
 }
 
 .navButton {
-    padding: 8px 40px; /* Even more width */
+    padding: 8px 40px;
     background-color: rgba(0, 0, 0, 0.8);
     color: var(--gold);
     border: 2px solid var(--gold);
     border-radius: 5px;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
     text-transform: uppercase;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    min-width: 180px; /* Increased minimum width for landscape orientation */
-    white-space: nowrap; /* Prevent text wrapping */
-    text-align: center; /* Center the text */
-    flex: 1; /* Allow buttons to grow */
-    max-width: 250px; /* But not too much */
-    position: relative; /* For pseudo-element positioning */
-    overflow: hidden; /* For hover effect */
+    min-width: 180px;
+    white-space: nowrap;
+    text-align: center;
+    flex: 1;
+    max-width: 250px;
 }
 
-/* Redesigned hover effect */
 .navButton:hover {
-    color: var(--gold-light);
-    border-color: var(--gold-light);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-    transform: translateY(-2px);
-    background-color: rgba(20, 20, 20, 0.9); /* Slightly lighter but still dark */
-}
-
-/* Add subtle glow line at bottom on hover */
-.navButton::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: var(--gold-light);
-    transition: width 0.3s ease;
-}
-
-.navButton:hover::after {
-    width: 100%;
+    background-color: rgba(30, 30, 30, 0.9);
 }
 
 .navButton.disabled,
@@ -94,17 +105,8 @@
 }
 
 .navButton.active {
-    background-color: rgba(40, 40, 40, 0.9); /* Darker than hover but not solid gold */
-    color: var(--gold-light);
-    border-color: var(--gold);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-}
-
-/* Add glow line for active button */
-.navButton.active::after {
-    width: 100%;
-    height: 3px; /* Slightly thicker for active */
-    background-color: var(--gold);
+    background-color: rgba(40, 40, 40, 0.9);
+    color: var(--gold);
 }
 
 /* Game Container & Area - Adjusted for perfect centering */
@@ -127,10 +129,9 @@
     aspect-ratio: 16/9; 
     min-width: 320px;
     min-height: 180px;
-    background-color: rgba(0, 0, 0, 1); /* Fully opaque black background by default */
+    background-color: rgba(0, 0, 0, 0.8);
     border: var(--gold) 2px solid;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
     margin: 0 auto;
     display: flex;
@@ -167,57 +168,46 @@
     z-index: 2; /* Above video */
 }
 
-
+/* Net styling in gold color */
 .net {
-    z-index: 4; /* Above overlay but below paddles/ball */
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 2px;
+    background: var(--gold);
+    opacity: 0.5;
+    z-index: 4;
 }
 
-/* Paddles and Ball */
+/* Paddles in gold color */
 .paddle {
-    height: 15%; /* Responsive height */
-    width: 1%; /* Slightly wider paddles for better visibility */
+    height: 15%;
+    width: 1.5%;
     position: absolute;
-    border-radius: 4px;
-    z-index: 5; /* Above video and overlay */
+    background-color: var(--gold);
+    border-radius: 3px;
+    z-index: 5;
 }
 
 .paddle1 {
-    background-color: var(--gold);
-    left: 0%; /* Position paddle on the left */
-    /* Remove top positioning to avoid conflict with JS */
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    left: 1%;
 }
 
 .paddle2 {
-    background-color: var(--gold);
-    right: 0%; /* Position paddle on the right */
-    /* Remove top positioning to avoid conflict with JS */
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    right: 1%;
 }
 
 /* New paddles for multiplayer mode */
 .paddle3 {
-    background-color: #1eff00; /* Green color for better visibility */
-    position: absolute;
-    top: 75%; /* Position near the bottom quarter of the game area */
-    left: 50%; /* Center horizontally */
-    transform: translate(-50%, -50%); /* Center the paddle perfectly */
-    box-shadow: 0 0 8px #1eff00;
+    background-color: #1eff00;
+    left: 1%;
 }
 
 .paddle4 {
-    background-color: #1eff00; /* Green color for better visibility */
-    position: absolute;
-    top: 25%; /* Position near the top quarter of the game area */
-    left: 50%; /* Center horizontally */
-    transform: translate(-50%, -50%); /* Center the paddle perfectly */
-    box-shadow: 0 0 8px #1eff00;
-}
-
-/* Special override for multiplayer mode */
-.isMultiplayerMode .paddle3,
-.isMultiplayerMode .paddle4 {
-    display: block !important; /* Force display in multiplayer mode */
+    background-color: #1eff00;
+    right: 1%;
 }
 
 /* Add a class for disabled paddles */
@@ -245,54 +235,58 @@
     display: none; /* Hidden by default, shown in multiplayer mode */
 }
 
+/* Ball styling */
 .ball {
     position: absolute;
-    height: 2%; /* Increased size */
-    width: 2%; /* Increased size */
-    min-width: 8px; /* Larger minimum size */
-    min-height: 8px; /* Larger minimum size */
+    height: 2%;
+    width: 2%;
+    min-width: 8px;
+    min-height: 8px;
     background: var(--white);
-    border-radius: 50%; /* Make it perfectly circular */
-    left: 50%; /* Center horizontally */
-    top: 50%; /* Center vertically */
-    /*transform: translate(-50%, -50%); /* Re-enable true centering */
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 5;
 }
 
-/* Player information - make responsive */
+/* Player information styling to match the image */
 .player1Info, .player2Info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px; /* Reduced gap */
-    width: 20%; /* Changed from fixed 150px to percentage */
-    min-width: 80px; /* Ensure minimum width */
+    gap: 10px;
+    width: 20%;
+    min-width: 80px;
 }
 
 .playerName {
-    font-size: 13px; /* Slightly smaller font */
+    font-size: 14px;
     color: var(--gold);
-    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
-    background: rgba(0, 0, 0, 0.6);
-    padding: 6px 10px; /* Reduced padding */
-    border-radius: 6px;
-    border: 1px solid var(--gold);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 2px solid var(--gold);
     text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    width: 100%;
+    text-align: center;
 }
 
 .score {
-    color: var(--white);
+    color: var(--gold);
     display: flex;
-    width: 50px; /* Reduced from 60px */
-    height: 50px; /* Reduced from 60px */
     justify-content: center;
     align-items: center;
-    font-size: 24px; /* Reduced from 28px */
-    background: rgba(0, 0, 0, 0.6);
+    font-size: 32px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.8);
     border: 2px solid var(--gold);
-    border-radius: 8px; /* Slightly smaller rounded corners */
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    width: 64px;
+    height: 64px;
+    aspect-ratio: 1/1; /* Ensure it's perfectly square */
 }
 
 /* Screen Styles (Menu, Settings, How to Play, Win) */
@@ -300,7 +294,7 @@
     position: absolute;
     margin: 0;
     top: 50%;
-    z-index: 100; /* Much higher z-index to ensure it appears above everything */
+    z-index: 100;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -309,11 +303,11 @@
     padding: 20px;
     font-size: 16px;
     line-height: 2;
-    display: none; /* Hide all screens by default */
+    display: none;
     border: 2px solid var(--gold);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    box-shadow: none;
     max-height: 80vh;
-    max-width: 90vw; /* Added to prevent overflowing on small screens */
+    max-width: 90vw;
     overflow-y: auto;
 }
 
@@ -328,47 +322,30 @@
     width: 100%;
 }
 
-/* Mode selection button - matching new nav style */
+/* Mode selection button - simpler style to match game buttons */
 .modeButton {
     display: inline-block;
     margin: 3px;
-    padding: 5px 12px; /* Smaller padding */
+    padding: 5px 12px;
     background-color: rgba(0, 0, 0, 0.8);
     color: var(--gold);
     border: 2px solid var(--gold);
     border-radius: 4px;
-    font-size: 12px; /* Smaller font */
+    font-size: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
     text-transform: uppercase;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    min-width: 80px; /* Reduced min-width */
+    min-width: 80px;
     max-width: 200px;
-    position: relative;
-    overflow: hidden;
+    transition: background-color 0.2s ease;
 }
 
 .modeButton:hover {
-    color: var(--gold-light);
-    border-color: var(--gold-light);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-    transform: translateY(-2px);
-    background-color: rgba(20, 20, 20, 0.9);
+    background-color: rgba(30, 30, 30, 0.9);
 }
 
+/* Remove fancy pseudo-elements */
 .modeButton::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: var(--gold-light);
-    transition: width 0.3s ease;
-}
-
-.modeButton:hover::after {
-    width: 100%;
+    display: none;
 }
 
 /* Settings styles - updated for two-column layout */
@@ -444,7 +421,7 @@
     background: rgba(0, 0, 0, 0.9);
     color: var(--gold);
     border: 2px solid var(--gold);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    box-shadow: none;
 }
 
 #winnerText {
@@ -520,13 +497,13 @@
     /* Smaller score displays on small screens */
     .playerName {
         font-size: 12px;
-        padding: 5px 8px;
+        padding: 6px 8px;
     }
     
     .score {
-        width: 45px;
-        height: 45px;
-        font-size: 22px;
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
     }
 }
 
@@ -600,7 +577,209 @@
     }
     
     .playerName {
+        font-size: 10px;
+        padding: 4px 6px;
+        border-width: 1px;
+    }
+}
+
+/* Update the game buttons to have a simpler design */
+.game-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    width: 100%;
+    flex-wrap: nowrap; /* Prevent wrapping to keep all buttons on one row */
+}
+
+.top-buttons {
+    margin-bottom: 25px;
+}
+
+.bottom-buttons {
+    margin-top: 25px;
+}
+
+.game-btn {
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    flex: 1; /* Allow buttons to grow and fill available space */
+    max-width: 200px; /* Limit maximum width */
+    min-width: 0; /* Allow buttons to shrink below their content size */
+    text-align: center;
+    white-space: nowrap; /* Prevent text wrapping inside buttons */
+    transition: background-color 0.2s ease;
+}
+
+.game-btn:hover {
+    background-color: rgba(30, 30, 30, 0.9);
+}
+
+/* Add active state styling */
+.game-btn.active {
+    background-color: rgba(50, 30, 0, 0.9);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-weight: bold;
+    position: relative;
+}
+
+/* Add simple indicator line at bottom of active button */
+.game-btn.active::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 2px;
+    background-color: var(--gold);
+}
+
+/* Adjust for smaller screens while maintaining single row */
+@media (max-width: 768px) {
+    .game-buttons {
+        gap: 10px;
+    }
+    
+    .game-btn {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 576px) {
+    .game-buttons {
+        gap: 8px;
+    }
+    
+    .game-btn {
+        padding: 7px 10px;
+        font-size: 12px;
+        border-width: 1px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-buttons {
+        gap: 5px;
+    }
+    
+    .game-btn {
+        padding: 5px 8px;
         font-size: 11px;
-        padding: 4px 7px;
+    }
+}
+
+/* Tournament styles */
+.tournament-round {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.tournament-match {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px auto;
+    width: 80%;
+    max-width: 300px;
+    color: var(--white);
+}
+
+.tournament-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.tournament-inputs .setting {
+    flex: 1;
+    min-width: 200px;
+    max-width: 250px;
+}
+
+/* Position the tournament announcement as an overlay in the game area */
+#tournamentAnnouncement {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--gold);
+    border-radius: 5px;
+    padding: 15px;
+    width: 80%;
+    max-width: 400px;
+    font-size: 18px;
+    color: var(--gold);
+    z-index: 10;
+    text-align: center;
+    box-shadow: none;
+}
+
+/* Add paddle size classes */
+.paddle-small {
+    height: 10% !important;
+}
+
+.paddle-normal {
+    height: 15% !important;
+}
+
+.paddle-large {
+    height: 20% !important;
+}
+
+/* Add disabled paddle styling */
+.paddle-disabled {
+    opacity: 0.3;
+}
+
+/* Ensure the ball is always visible */
+.ball {
+    z-index: 10;
+}
+
+/* Responsive styles for tournament */
+@media (max-width: 768px) {
+    .tournament-inputs .setting {
+        min-width: 150px;
+    }
+    
+    .tournament-match {
+        width: 90%;
+    }
+}
+
+@media (max-width: 576px) {
+    .game-btn {
+        min-width: 100px;
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+    
+    .tournament-inputs .setting {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-buttons {
+        flex-direction: column;
+        gap: 10px;
     }
 }

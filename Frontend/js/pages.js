@@ -87,15 +87,13 @@ class Pages {
             }));
             
             if (pageName === 'game') {
-                setTimeout(() => {
-                    if (document.getElementById('pvpButton') && document.getElementById('pveButton')) {
-                        document.dispatchEvent(new CustomEvent('gamePageLoaded'));
-                    } else {
-                        setTimeout(() => {
-                            document.dispatchEvent(new CustomEvent('gamePageLoaded'));
-                        }, 200);
-                    }
-                }, 50);
+                // Dynamically load game.js and then fire gamePageLoaded
+                const gameScript = document.createElement('script');
+                gameScript.src = '/js/game.js';
+                gameScript.onload = () => {
+                    document.dispatchEvent(new CustomEvent('gamePageLoaded'));
+                };
+                document.body.appendChild(gameScript);
             }
         } catch (error) {
             components.showToast(

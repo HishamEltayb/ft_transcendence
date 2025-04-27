@@ -7,7 +7,6 @@ import router from './router.js';
 import profile from './profile.js';
 import register from './register.js';
 import components from './components.js';
-import gameLoader from './gameLoader.js'; 
 
 class App {
     constructor() {
