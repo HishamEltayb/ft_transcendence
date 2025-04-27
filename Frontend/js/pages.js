@@ -85,16 +85,6 @@ class Pages {
             document.dispatchEvent(new CustomEvent('pageShown', { 
                 detail: { page: pageName } 
             }));
-            
-            if (pageName === 'game') {
-                // Dynamically load game.js and then fire gamePageLoaded
-                const gameScript = document.createElement('script');
-                gameScript.src = '/js/game.js';
-                gameScript.onload = () => {
-                    document.dispatchEvent(new CustomEvent('gamePageLoaded'));
-                };
-                document.body.appendChild(gameScript);
-            }
         } catch (error) {
             components.showToast(
                 'error',

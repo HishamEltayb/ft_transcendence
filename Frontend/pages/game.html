@@ -6,7 +6,7 @@
         <div class="game-buttons top-buttons">
             <button class="game-btn" id="pvpButton">1 VS 1</button>
             <button class="game-btn" id="pveButton">1 VS AI</button>
-            <button class="game-btn" id="multiplayerButton">4 PLAYERS</button>
+            <button class="game-btn" id="multiplayerButton">MULTIPLAYER</button>
             <button class="game-btn" id="tournamentButton">TOURNAMENT</button>
         </div>
         
@@ -68,8 +68,8 @@
                     <div class="setting">
                         <label for="winScore">Points to Win:</label>
                         <select id="winScore">
-                            <option value="3">3</option>
-                            <option value="5" selected>5</option>
+                            <option value="3" selected>3</option>
+                            <option value="5">5</option>
                             <option value="7">7</option>
                             <option value="10">10</option>
                         </select>
@@ -176,7 +176,7 @@
                 <div class="tournament-round">
                     <h4>Final</h4>
                     <div class="tournament-match" id="final">
-                        <span id="finalPlayer1">TBD</span> vs <span id="finalPlayer2">TBD</span>
+                        <span id="finalPlayer1">Winner</span> vs <span id="finalPlayer2">Winner</span>
                     </div>
                 </div>
             </div>
@@ -208,7 +208,6 @@
             <h3 id="winnerText">Player 1 Wins!</h3>
             <p>Final Score: <span id="finalScore">0 - 0</span></p>
             <button class="game-btn" id="nextMatchButton" style="display: none;">Next Match</button>
-            <button class="game-btn" id="restartButton">Play Again</button>
             <button class="game-btn" id="menuButton">Back to Menu</button>
         </div>
         
@@ -224,7 +223,4 @@
     <audio src="../public/assets/sound/paddle.wav" id="paddleSound"></audio>
     <audio src="../public/assets/sound/wall.wav" id="wallSound"></audio>
     <audio src="../public/assets/sound/loss.wav" id="lossSound"></audio>
-    
-    <!-- Include game.js script -->
-    <script src="../js/game.js"></script>
 </div> 

@@ -323,6 +323,10 @@ input[type="email"].form-control[readonly]:focus {
     text-align: center;
 }
 
+.twoFA-header , #profileUsername {
+    font-size: 15px;
+}
+
 /* CONSOLIDATED MEDIA QUERIES */
 @media (min-width: 768px) and (max-width: 991px) {
     .profile-page-wrapper {
@@ -365,4 +369,79 @@ input[type="email"].form-control[readonly]:focus {
     .profile-container {
         padding: 10px;
     }
+}
+
+/* Match history table customization */
+.table thead th {
+    color: var(--gold) !important;
+    border-bottom: 2px solid var(--gold-light);
+    font-weight: 600;
+}
+
+.table tbody tr {
+    transition: background-color 0.3s ease;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.1) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(212, 175, 55, 0.05);
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.table-warning {
+    background-color: rgba(212, 175, 55, 0.2) !important;
+}
+
+/* Override match history row text colors for normal matches */
+.table tbody tr:not(.table-warning) td {
+    color: var(--white) !important;
+}
+
+/* Tournament match rows text */
+.table tbody tr.table-warning td {
+    color: var(--black) !important;
+}
+
+/* Grouped border for contiguous tournament matches */
+.table tbody tr.table-warning {
+    border-left: 3px solid var(--gold) !important;
+    border-right: 3px solid var(--gold) !important;
+}
+
+/* Top border on first tournament row in each block */
+.table tbody tr:not(.table-warning) + tr.table-warning,
+.table tbody tr.table-warning:first-child {
+    border-top: 3px solid var(--gold) !important;
+}
+
+/* Bottom border on last tournament row in each block */
+.table tbody tr.table-warning + tr:not(.table-warning),
+.table tbody tr.table-warning:last-child {
+    border-bottom: 3px solid var(--gold) !important;
+}
+
+/* Divider row between tournament blocks */
+.table tbody tr.divider-row td {
+    padding: 0;
+    border: none !important;
+    background: transparent !important;
+    height: 8px;
+}
+/* Add a dashed separator line */
+.table tbody tr.divider-row td {
+    border-top: 2px dashed var(--gold-light) !important;
+}
+/* Remove grouping border on adjacent rows next to divider */
+.table tbody tr.divider-row + tr.table-warning {
+    border-top: 3px solid var(--gold) !important;
+}
+.table tbody tr.table-warning + tr.divider-row {
+    border-bottom: none !important;
 } 

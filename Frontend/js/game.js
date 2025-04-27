@@ -6,6 +6,7 @@
 class PongGame {
     constructor() {
         // Game state
+        this.userName = null;
         this.gameRunning = false;
         this.gameOver = false;
         this.lastTime = 0;
@@ -34,8 +35,7 @@ class PongGame {
         this.tournamentWinners = [];
         
         // Game settings
-        this.winScore = 5;
-        this.ballSpeed = 5;
+        this.winScore = 3;
         this.initialBallSpeedX = 5;
         this.initialBallSpeedY = 2;
         this.ballSpeedX = this.initialBallSpeedX;
@@ -80,13 +80,30 @@ class PongGame {
         
         // Animation frame ID for canceling
         this.animationFrameId = null;
+        
+        // Prepare match data for backend submission
+        this.matchObj = {
+            player1Name: '',
+            player2Name: '',
+            player1Score: 0,
+            player2Score: 0,
+            winner: '',
+            matchType: ''
+        };
+        
+        // Array of matches for tournament mode
+        this.tournamentArr = [];
     }
     
     /**
      * Initialize the game when the document is ready
      */
-    init() {
-        console.log('Initializing Pong Game');
+    init(userName, submitMatchFn, submitTournamentFn) {
+        // store callbacks for submitting results
+        this.userName = userName ? userName : 'PLAYER 1';
+
+        this.submitMatch = submitMatchFn;
+        this.submitTournament = submitTournamentFn;
         
         // Get game elements
         this.gameArea = document.querySelector('.gameArea');
@@ -154,6 +171,9 @@ class PongGame {
         if (pvpButton) {
             pvpButton.addEventListener('click', () => {
                 console.log('PVP button clicked from setupEventListeners');
+                // On 1 VS 1, set Player 1's name to current user and Player 2's name to RANDOM
+                this.player1Name.textContent = this.userName;
+                this.player2Name.textContent = 'RANDOM';
                 this.setGameMode('pvp');
             });
         } else {
@@ -165,6 +185,9 @@ class PongGame {
         if (pveButton) {
             pveButton.addEventListener('click', () => {
                 console.log('PVE button clicked from setupEventListeners');
+                // On 1 VS AI, set Player 1's name to current user and Player 2's name to AI
+                this.player1Name.textContent = this.userName;
+                this.player2Name.textContent = 'AI';
                 this.setGameMode('ai');
             });
         } else {
@@ -176,6 +199,8 @@ class PongGame {
         if (multiplayerButton) {
             multiplayerButton.addEventListener('click', () => {
                 console.log('Multiplayer button clicked from setupEventListeners');
+                this.player1Name.textContent = "TEAM 1";
+                this.player2Name.textContent = 'TEAM 2';
                 this.setGameMode('multiplayer');
             });
         } else {
@@ -234,17 +259,6 @@ class PongGame {
         document.getElementById('startTournamentButton').addEventListener('click', () => this.startTournament());
         
         // Game over buttons
-        document.getElementById('restartButton').addEventListener('click', () => {
-            if (this.isTournamentMode && this.currentTournamentMatch < 3) {
-                // Continue to next match in tournament
-                document.getElementById('winScreen').style.display = 'none';
-                this.setupNextTournamentMatch();
-            } else {
-                this.resetGame();
-                this.backToMenu();
-            }
-        });
-        
         document.getElementById('menuButton').addEventListener('click', () => {
             this.resetGame();
             this.backToMenu();
@@ -390,6 +404,10 @@ class PongGame {
         // Show game buttons
         this.showGameButtons();
         
+        // Reset player names to defaults when returning to menu
+        this.player1Name.textContent = 'PLAYER 1';
+        this.player2Name.textContent = 'PLAYER 2';
+        
         // Reset game state if needed
         this.gameRunning = false;
         this.gameOver = false;
@@ -436,8 +454,15 @@ class PongGame {
                 this.isTournamentMode = true;
                 console.log('Setting Tournament mode');
                 activeButton = document.getElementById('tournamentButton');
+                // Show tournament setup
                 document.getElementById('tournamentScreen').style.display = 'block';
                 this.hideGameButtons();
+                // Auto-fill and lock Player 1 input to current user
+                const p1Input = document.getElementById('tournament-p1');
+                if (p1Input) {
+                    p1Input.value = this.userName;
+                    p1Input.readOnly = true;
+                }
                 return; // Don't start game yet, wait for tournament setup
         }
         
@@ -813,46 +838,40 @@ class PongGame {
     checkLeftPaddleCollision(paddle, paddleY, ballLeft, paddleId) {
         // Only check if ball is moving left
         if (this.ballSpeedX >= 0) return false;
-        
-        const ballSize = parseFloat(window.getComputedStyle(this.ball).width);
-        const ballTop = parseFloat(window.getComputedStyle(this.ball).top);
-        
-        // Check if ball is at the paddle's position
-        if (ballLeft <= this.paddleWidth && 
-            ballTop + ballSize > paddleY && 
-            ballTop < paddleY + this.paddleHeight) {
-            
-            // Reverse ball direction
+
+        // Get bounding rectangles for precise collision
+        const ballRect = this.ball.getBoundingClientRect();
+        const paddleRect = paddle.getBoundingClientRect();
+
+        // Ball's front edge (left) collides with paddle's front edge (right)
+        if (ballRect.left <= paddleRect.right &&
+            ballRect.bottom > paddleRect.top &&
+            ballRect.top < paddleRect.bottom) {
+            // Reverse direction
             this.ballSpeedX = -this.ballSpeedX;
-            
-            // Adjust angle based on where ball hit the paddle
+            // Adjust angle
             this.adjustBallDirection(paddleY, this.paddleHeight, true, paddleId);
-            
-            // Speed up ball slightly
+            // Speed up ball
             this.ballSpeedX *= this.ballSpeedMultiplier;
             this.ballSpeedY *= this.ballSpeedMultiplier;
-            
-            // Play collision sound
+            // Play sound
             this.playSound('paddle');
-            
-            // In multiplayer mode, disable this paddle and enable its partner
+            // Multiplayer paddle toggling
             if (this.isMultiplayerMode) {
                 if (paddleId === 1) {
                     this.paddle1Active = false;
                     this.paddle3Active = true;
                     this.paddle1.classList.add('paddle-disabled');
                     this.paddle3.classList.remove('paddle-disabled');
-                } else if (paddleId === 3) {
+                } else {
                     this.paddle3Active = false;
                     this.paddle1Active = true;
                     this.paddle3.classList.add('paddle-disabled');
                     this.paddle1.classList.remove('paddle-disabled');
                 }
             }
-            
             return true;
         }
-        
         return false;
     }
     
@@ -862,46 +881,40 @@ class PongGame {
     checkRightPaddleCollision(paddle, paddleY, ballRight, paddleId) {
         // Only check if ball is moving right
         if (this.ballSpeedX <= 0) return false;
-        
-        const ballSize = parseFloat(window.getComputedStyle(this.ball).width);
-        const ballTop = parseFloat(window.getComputedStyle(this.ball).top);
-        
-        // Check if ball is at the paddle's position
-        if (ballRight >= this.gameWidth - this.paddleWidth && 
-            ballTop + ballSize > paddleY && 
-            ballTop < paddleY + this.paddleHeight) {
-            
-            // Reverse ball direction
+
+        // Get bounding rectangles for precise collision
+        const ballRect = this.ball.getBoundingClientRect();
+        const paddleRect = paddle.getBoundingClientRect();
+
+        // Ball's front edge (right) collides with paddle's front edge (left)
+        if (ballRect.right >= paddleRect.left &&
+            ballRect.bottom > paddleRect.top &&
+            ballRect.top < paddleRect.bottom) {
+            // Reverse direction
             this.ballSpeedX = -this.ballSpeedX;
-            
-            // Adjust angle based on where ball hit the paddle
+            // Adjust angle
             this.adjustBallDirection(paddleY, this.paddleHeight, false, paddleId);
-            
-            // Speed up ball slightly
+            // Speed up ball
             this.ballSpeedX *= this.ballSpeedMultiplier;
             this.ballSpeedY *= this.ballSpeedMultiplier;
-            
-            // Play collision sound
+            // Play sound
             this.playSound('paddle');
-            
-            // In multiplayer mode, disable this paddle and enable its partner
+            // Multiplayer paddle toggling
             if (this.isMultiplayerMode) {
                 if (paddleId === 2) {
                     this.paddle2Active = false;
                     this.paddle4Active = true;
                     this.paddle2.classList.add('paddle-disabled');
                     this.paddle4.classList.remove('paddle-disabled');
-                } else if (paddleId === 4) {
+                } else {
                     this.paddle4Active = false;
                     this.paddle2Active = true;
                     this.paddle4.classList.add('paddle-disabled');
                     this.paddle2.classList.remove('paddle-disabled');
                 }
             }
-            
             return true;
         }
-        
         return false;
     }
     
@@ -943,17 +956,73 @@ class PongGame {
         document.getElementById('finalScore').textContent = 
             `${this.player1Score.textContent} - ${this.player2Score.textContent}`;
         
-        // Show next match button for tournament mode
-        if (this.isTournamentMode && this.currentTournamentMatch < 3) {
-            document.getElementById('nextMatchButton').style.display = 'inline-block';
+        // Capture this match data into matchObj
+        this.fillMatchObj(winnerName);
+        console.log('Match result:', this.matchObj);
+        
+        // Tournament logic: record and show next match button
+        if (this.isTournamentMode) {
+            // Record this match after populating matchObj
+            this.tournamentArr.push({ ...this.matchObj });
+            if (this.currentTournamentMatch < 3) {
+                document.getElementById('nextMatchButton').style.display = 'inline-block';
+            } else {
+                // Final completed: submit and clear
+                this.submitTournament(this.tournamentArr);
+                this.tournamentArr = [];
+                this.tournamentWinners = [];
+                document.getElementById('nextMatchButton').style.display = 'none';
+            }
         } else {
             document.getElementById('nextMatchButton').style.display = 'none';
         }
         
         // Show the win screen
         document.getElementById('winScreen').style.display = 'block';
+        
+        // Submit single match if not in tournament, then clear matchObj
+        if (!this.isTournamentMode) {
+            this.submitMatch(this.matchObj);
+            this.matchObj = { player1Name: '', player2Name: '', player1Score: 0, player2Score: 0, winner: '', matchType: '' };
+        }
     }
     
+    /**
+     * Populate the matchObj with the current match data
+     * @param {string} winnerName - the name of the match winner
+     */
+    fillMatchObj(winnerName) {
+        this.matchObj.player1Name  = this.player1Name.textContent;
+        this.matchObj.player2Name  = this.player2Name.textContent;
+        this.matchObj.player1Score = parseInt(this.player1Score.textContent, 10);
+        this.matchObj.player2Score = parseInt(this.player2Score.textContent, 10);
+        this.matchObj.winner       = winnerName;
+        // Determine match type
+        this.matchObj.matchType = this.getMatchType();
+    }
+
+    getMatchType() {
+      switch (true) {
+        case this.isTournamentMode:
+          return 'tournament';
+        case this.isAIMode:
+          return '1 vs AI';
+        case this.isMultiplayerMode:
+          return 'multiplayer';
+        default:
+          return '1 vs 1';
+      }
+    }
+
+    /**
+     * Get the winner from a match object
+     * @param {Object} match - a match record
+     * @returns {string} the winner's name or empty string
+     */
+    getWinnerName(match) {
+      return match && match.winner ? match.winner : '';
+    }
+
     /**
      * Play a sound effect
      */
@@ -1172,17 +1241,17 @@ class PongGame {
             this.player2Name.textContent = this.tournamentPlayers[3];
             
         } else if (this.currentTournamentMatch === 2) {
-            // Final match
-            document.getElementById('tournamentAnnouncement').textContent = 
-                `Final: ${this.tournamentWinners[0]} vs ${this.tournamentWinners[1]}`;
-            
+            // Final match - announce based on stored tournamentArr winners
+            const winner1 = this.getWinnerName(this.tournamentArr[0]);
+            const winner2 = this.getWinnerName(this.tournamentArr[1]);
+            document.getElementById('tournamentAnnouncement').textContent =
+                `Final: ${winner1} vs ${winner2}`;
             // Update bracket display
-            document.getElementById('finalPlayer1').textContent = this.tournamentWinners[0];
-            document.getElementById('finalPlayer2').textContent = this.tournamentWinners[1];
-            
+            document.getElementById('finalPlayer1').textContent = winner1;
+            document.getElementById('finalPlayer2').textContent = winner2;
             // Set player names for the match
-            this.player1Name.textContent = this.tournamentWinners[0];
-            this.player2Name.textContent = this.tournamentWinners[1];
+            this.player1Name.textContent = winner1;
+            this.player2Name.textContent = winner2;
         }
         
         // Increment match counter
@@ -1228,8 +1297,10 @@ class PongGame {
         const player1NameInput = document.getElementById('player1NameInput');
         const player2NameInput = document.getElementById('player2NameInput');
         
+        // Override stored username if Player 1 name is set in settings
         if (player1NameInput.value) {
-            this.player1Name.textContent = player1NameInput.value;
+            this.userName = player1NameInput.value;
+            this.player1Name.textContent = this.userName;
         }
         
         if (player2NameInput.value) {
@@ -1330,10 +1401,7 @@ class PongGame {
     }
 }
 
-// Initialize the PongGame whenever the game page is fully loaded
-document.addEventListener('gamePageLoaded', () => {
-    const pongGame = new PongGame();
-    pongGame.init();
-    // Make the game instance available globally if needed
-    window.pongGame = pongGame;
-});
+// Export a singleton PongGame instance for app import
+const game = new PongGame();
+
+export default game;

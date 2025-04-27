@@ -192,22 +192,22 @@ body {
 }
 
 .paddle1 {
-    left: 1%;
+    left: 2px;
 }
 
 .paddle2 {
-    right: 1%;
+    right: 2px;
 }
 
 /* New paddles for multiplayer mode */
 .paddle3 {
     background-color: #1eff00;
-    left: 1%;
+    left: 2px;
 }
 
 .paddle4 {
     background-color: #1eff00;
-    right: 1%;
+    right: 2px;
 }
 
 /* Add a class for disabled paddles */
