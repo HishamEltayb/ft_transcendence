@@ -201,7 +201,7 @@
     left: 0%; /* Position paddle on the left */
     /* Remove top positioning to avoid conflict with JS */
     box-shadow: 0 0 8px #1eff00;
-    
+    display: none; /* Hidden by default */
 }
 
 .paddle4 {
@@ -209,6 +209,7 @@
     right: 0%; /* Position paddle on the right */
     /* Remove top positioning to avoid conflict with JS */
     box-shadow: 0 0 8px #1eff00;
+    display: none; /* Hidden by default */
 }
 
 /* Add a class for disabled paddles */

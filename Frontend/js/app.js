@@ -1,13 +1,13 @@
-import components from './components.js';
-import pages from './pages.js';
-import router from './router.js';
 import api from './api.js';
 import utils from './utils.js';
 import login from './login.js';
-import register from './register.js';
-import gameLoader from './gameLoader.js'; 
-import profile from './profile.js';
 import twoFA from './twoFA.js';
+import pages from './pages.js';
+import router from './router.js';
+import profile from './profile.js';
+import register from './register.js';
+import components from './components.js';
+import gameLoader from './gameLoader.js'; 
 
 class App {
     constructor() {
@@ -82,16 +82,33 @@ class App {
     registerRoutes() {
         router.registerRoutes({
             '/': () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
                 pages.showPage('home');
                 login.updateUIAuthState();
+               
             },
             
             '/home': () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
                 pages.showPage('home');
                 login.updateUIAuthState();
             },
             
             '/login': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+
                 components.showSpinner();
                 
                 try {
@@ -131,6 +148,12 @@ class App {
             },
             
             '/game': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+
                 components.showSpinner();
                 
                 try {
@@ -160,6 +183,12 @@ class App {
             },
             
             '/profile': async () => {
+                if (this.get2FAState() && !this.getIsAuthenticated()) {
+                    pages.showPage('twoFA');
+                    login.updateUIAuthState();
+                    return;
+                }
+                
                 components.showSpinner();
                 
                 try {
