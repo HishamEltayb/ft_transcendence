@@ -27,7 +27,7 @@ export const ENDPOINTS = {
     },
     game: {
         tournament: '/api/tournaments/tournament/',
-        match: '/api//tournaments/match/',
+        match: '/api/tournaments/match/',
     },
 }; 
 
