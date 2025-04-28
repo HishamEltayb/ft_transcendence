@@ -4,7 +4,8 @@ from rest_framework          import status
 from .models                 import Tournament, Match
 from users.authentication import JWTCookieAuthentication
 from rest_framework import permissions
-
+from .block import save_tournament, get_tournaments
+# from ...Blockchain.views import get_blockchain
 from django.http import QueryDict
 
 class MatchCreateView(APIView):
@@ -35,6 +36,9 @@ class MatchCreateView(APIView):
 
  
 class TournamentCreateView(APIView):
+    authentication_classes = [JWTCookieAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
     """
     POST /tournaments/
     [
@@ -51,6 +55,7 @@ class TournamentCreateView(APIView):
     """
     def post(self, request):
       data = request.data
+      print("data", request)
       # 1. if it's a QueryDict, rebuild a proper list of dicts
       if isinstance(data, QueryDict):
           matches = []
@@ -60,35 +65,40 @@ class TournamentCreateView(APIView):
               if f"{prefix}[player1Name]" not in data:
                   break
               matches.append({
-                  "player1Name":  data.get(f"{prefix}[player1Name]"),
-                  "player2Name":  data.get(f"{prefix}[player2Name]"),
-                  "player1Score": int(data.get(f"{prefix}[player1Score]", 0)),
-                  "player2Score": int(data.get(f"{prefix}[player2Score]", 0)),
-                  "winner":        data.get(f"{prefix}[winner]"),
+                  "Player1Name":  data.get(f"{prefix}[player1Name]"),
+                  "Player2Name":  data.get(f"{prefix}[player2Name]"),
+                  "Player1Score": int(data.get(f"{prefix}[player1Score]", 0)),
+                  "Player2Score": int(data.get(f"{prefix}[player2Score]", 0)),
+                  "Winner":        data.get(f"{prefix}[winner]"),
               })
               i += 1
       else:
-          matches = data
-
-      tour = Tournament.objects.create()  
-      created_match_ids = []
-      for m in matches:
-          match = Match.objects.create(           # FK → Tournament
-              player1Name  = m['player1Name'],
-              player2Name  = m['player2Name'],
-              player1Score = m['player1Score'],
-              player2Score = m['player2Score'],
-              winner        = m['winner']
-          )
-          created_match_ids.append(match.id)
-
-      # 4. respond with the new tournament’s ID (and match IDs)
-      print("tour.id", tour.id)
-      print("created_match_ids", created_match_ids)
+        matches = [
+            {
+                "Player1Name": match.get("player1Name"),  # Correct the case here
+                "Player2Name": match.get("player2Name"),  # Correct the case here
+                "Player1Score": match.get("player1Score"),
+                "Player2Score": match.get("player2Score"),
+                "Winner": match.get("winner")  # Ensure this matches exactly
+            }
+            for match in data
+        ]
+      print("username", request.user.username)
+      id = save_tournament(tournament_name=request.user.username, matches=matches)
+    #   tour = get_tournaments(request.user.username)
+    #   print("tournement", tour)
       return Response(
           {
-              'tournament_id': tour.id,
-              'match_ids': created_match_ids
+              'tournament_id': id
           },
           status=status.HTTP_201_CREATED
       )
+
+
+class TournamentListView(APIView):
+    authentication_classes = [JWTCookieAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        tournaments = get_tournaments(request.user.username)
+        return Response(tournaments, status=status.HTTP_200_OK)

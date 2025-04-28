@@ -13,3 +13,4 @@ django-two-factor-auth>=1.15.2
 pyotp>=2.8.0
 qrcode>=7.4.2
 Pillow>=10.0.0
+web3

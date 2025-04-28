@@ -1,5 +1,6 @@
 from web3 import Web3, HTTPProvider
 from web3.middleware import ExtraDataToPOAMiddleware
+from models import Match, Tournament, save_tournament, get_tournaments
 import json
 
 
@@ -37,26 +38,20 @@ contract = w3.eth.contract(address=contract_address, abi=abi)
 # 5. Interact with contract
 # ------------------------
 
+
+# Get all tournaments
+
+
 # Add tournaments
 print("Adding tournaments...")
+matches = [
+    Match("Player 1", "Player 2", 2, 1, "player1"),
+    Match("Player 3", "Player 4", 3, 0, "player3"),
+    Match("ai", "aken", 5, 0, "ai")
+]
 
-# Create first tournament and wait
-tx_hash = contract.functions.createTournament("Alpha Cup").transact()
-print(f"Creating Alpha Cup, tx hash: {tx_hash.hex()}")
-tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-print(f"Alpha Cup created in block {tx_receipt.blockNumber}")
+save_tournament("dice", matches)
+print("Tournaments added successfully.")
+tournaments = get_tournaments("dice")
+print(tournaments)
 
-# Create second tournament and wait
-tx_hash = contract.functions.createTournament("Beta Bash").transact()
-print(f"Creating Beta Bash, tx hash: {tx_hash.hex()}")
-tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-print(f"Beta Bash created in block {tx_receipt.blockNumber}")
-
-# Now get the tournaments after waiting for transactions to be mined
-contract.functions.addPlayer("Alpha Cup", "aken", 0).transact()
-# players = contract.functions.getPla
-# names = contract.functions.tournaments(0).call()
-# print("🎯 Players in Alpha Cup:", players)
-
-# print("Fetching tournaments...")
-# print("🎯 Tournaments:", names)
