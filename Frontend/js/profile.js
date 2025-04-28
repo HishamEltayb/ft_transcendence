@@ -77,6 +77,7 @@ class Profile {
             this.profileForm.statsLosses.textContent = app.getTotalLosses() || '0';
         
         if (this.profileForm.statsWinRate)
+            this.profileForm.statsWinRate.textContent = app.getWinRate() || '0';
         
         if (this.profileForm.statsRank)
             this.profileForm.statsRank.textContent = app.getRank() || 'Beginner';

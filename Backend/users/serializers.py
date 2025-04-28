@@ -5,7 +5,7 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'rank']
+        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'win_rate', 'rank']
         read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled']
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -23,5 +23,5 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirmPassword')
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)   
         return user

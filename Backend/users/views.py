@@ -42,6 +42,7 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        user.update_stats()
 
         refresh = RefreshToken.for_user(user)
         access_token_str = str(refresh.access_token)
@@ -261,45 +262,11 @@ class FortyTwoCallbackView(APIView):
             refresh_token = str(refresh) # from refresh token we get refresh token
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') # Get the frontend URL from environment
             redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
+            user.update_stats()
             return redirect(redirect_url)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-
-
-# class PlayerProfileUpdateView(generics.UpdateAPIView):
-#     authentication_classes = [JWTCookieAuthentication]
-#     permission_classes = [permissions.IsAuthenticated]
-#     serializer_class = UserSerializer
-    
-#     def get_object(self):
-#         return self.request.user
-
-#     def update(self, request, *args, **kwargs):
-#         user = self.get_object()
-        
-#         game_result = request.data.get('game_result')
-#         if game_result:
-#             user.total_games += 1
-#             if game_result.lower() == 'win':
-#                 user.wins += 1
-#                 user.rank += 10
-#             elif game_result.lower() == 'loss':
-#                 user.losses += 1
-#                 # Decrement rank for losing, but not below 0
-#                 user.rank = max(0, user.rank - 5)
-#             user.save()
-#             return Response(self.get_serializer(user).data)
-        
-#         # Handle direct stats update (admin or system use)
-#         return super().update(request, *args, **kwargs)
-        
-class LeaderboardView(generics.ListAPIView):
-    authentication_classes = [JWTCookieAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
-    queryset = User.objects.all().order_by('-rank')[:10]  # Top 10 players by rank
-
 
 class LogoutView(APIView):
     """

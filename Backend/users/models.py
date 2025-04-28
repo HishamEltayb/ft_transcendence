@@ -1,8 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from tournaments.models import Match
 
 class User(AbstractUser):
+    """
+    User model for the application.
+    """
     email = models.EmailField(unique=True)
     profile_image = models.CharField(max_length=255, blank=True, null=True)
     
@@ -18,29 +22,28 @@ class User(AbstractUser):
     total_games = models.IntegerField(default=0)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
-    rank = models.IntegerField(default=1000)  # ELO rating starting at 1000
+    win_rate = models.FloatField(default=0.0)
 
+    def update_stats(self):
+        self.total_games = Match.objects.filter(player1Name=self.username).count() + Match.objects.filter(player2Name=self.username).count()
+        self.wins = Match.objects.filter(winner=self.username, player1Name=self.username).count() + Match.objects.filter(winner=self.username, player2Name=self.username).count()
+        self.losses = self.total_games - self.wins
+        self.win_rate = round((self.wins / self.total_games) * 100, 2) if self.total_games > 0 else 0.0
+        self.save()
+
+    @property
+    def rank(self):
+        rank = Match.objects.filter(winner=self.username, player1Name=self.username).count() + \
+               Match.objects.filter(winner=self.username, player2Name=self.username).count()
+        self.rank = rank
+        self.save()
+        return rank
+    
     def __str__(self):
         return self.username
 
 
 
-
-#postgres sql table structure
-
-# CREATE TABLE users_user (
-#     id SERIAL PRIMARY KEY,
-#     username VARCHAR(150) UNIQUE NOT NULL,
-#     password VARCHAR(128) NOT NULL,
-#     email VARCHAR(254) UNIQUE NOT NULL,
-#     profile_image VARCHAR(255),
-#     -- 42 OAuth fields:
-#     intra_id VARCHAR(100) UNIQUE,
-#     intra_login VARCHAR(100),
-#     is_oauth_user BOOLEAN NOT NULL DEFAULT FALSE
-# );
-
-# Model to store revoked Access Token JTIs
 class RevokedAccessToken(models.Model):
     """
     Stores the entire string of access tokens that have been revoked
