@@ -85,18 +85,6 @@ class Pages {
             document.dispatchEvent(new CustomEvent('pageShown', { 
                 detail: { page: pageName } 
             }));
-            
-            if (pageName === 'game') {
-                setTimeout(() => {
-                    if (document.getElementById('pvpButton') && document.getElementById('pveButton')) {
-                        document.dispatchEvent(new CustomEvent('gamePageLoaded'));
-                    } else {
-                        setTimeout(() => {
-                            document.dispatchEvent(new CustomEvent('gamePageLoaded'));
-                        }, 200);
-                    }
-                }, 50);
-            }
         } catch (error) {
             components.showToast(
                 'error',

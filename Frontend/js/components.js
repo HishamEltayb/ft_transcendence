@@ -36,9 +36,8 @@ class Components {
             }
         }
         
-        if (this.toastTimeout) {
+        if (this.toastTimeout)
             clearTimeout(this.toastTimeout);
-        }
         
         this.toastComponent.classList.remove('toast-error', 'toast-warning', 'toast-success', 'toast-info', 'hide');
         
@@ -80,9 +79,8 @@ class Components {
     }
     
     hideToast() {
-        if (!this.toastComponent) {
+        if (!this.toastComponent)
             this.toastComponent = document.getElementById('toastComponent');
-        }
         
         if (this.toastComponent) {
             this.toastComponent.classList.add('hide');
@@ -95,23 +93,19 @@ class Components {
     }
     
     showSpinner() {
-        if (!this.spinnerComponent) {
+        if (!this.spinnerComponent) 
             this.spinnerComponent = document.getElementById('spinnerContainer');
-        }
         
-        if (this.spinnerComponent) {
+        if (this.spinnerComponent)
             this.spinnerComponent.classList.remove('d-none');
-        }
     }
     
     hideSpinner() {
-        if (!this.spinnerComponent) {
+        if (!this.spinnerComponent)
             this.spinnerComponent = document.getElementById('spinnerContainer');
-        }
         
-        if (this.spinnerComponent) {
+        if (this.spinnerComponent) 
             this.spinnerComponent.classList.add('d-none');
-        }
     }
 }
 

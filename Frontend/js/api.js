@@ -61,6 +61,7 @@ class API {
         return { success: false, error: 'No user data received from server' };
       
       localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('isAuthenticated', false);
       
       return { success: true, data: result.user };
     } catch (error) {
@@ -96,10 +97,10 @@ class API {
     try {
       await fetch(ENDPOINTS.auth.logout, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
       });
 
       utils.cleanUp();
@@ -144,9 +145,10 @@ class API {
 
   async getUserData(retryCount = 0) {
     try {
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
       if (retryCount === 0) {
         const user = localStorage.getItem('user');
-        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
         if (user) {
           return { success: true, userData: JSON.parse(user), isAuthenticated };
         }
@@ -181,7 +183,6 @@ class API {
 
       localStorage.setItem('user', JSON.stringify(userData));
 
-      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       
       return { success: true, userData, isAuthenticated };
     } catch (error) {
@@ -196,10 +197,10 @@ class API {
    
       const response = await fetch(refreshEndpoint, {
         method: 'POST',
+        credentials: 'include', 
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', 
       });
 
       if (!response.ok) {
@@ -256,10 +257,10 @@ class API {
       
       const response = await fetch(ENDPOINTS.auth.verify2FA, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ otp_token: code })
       });
       
@@ -303,7 +304,6 @@ class API {
   
   async disable2FA(code, retryCount = 0) {
     try {
-      
       const response = await fetch(ENDPOINTS.auth.disable2FA, {
         method: 'POST',
         credentials: 'include',
@@ -350,8 +350,70 @@ class API {
       };
     }
   }
+
+  async submitMatch(matchData, retryCount = 0) {
+    try {
+      const response = await fetch(ENDPOINTS.game.match, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(matchData)
+      });
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        if (refreshResult.success) {
+          return await this.submitMatch(matchData, retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp();
+          return { success: false, error: 'Authentication expired. Please log in again.', authExpired: true };
+        }
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Failed to create match' };
+      }
+      return { success: true, data };
+    } catch (error) {
+      console.error(`submitMatch error (attempt ${retryCount + 1}):`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async createTournament(tournamentData, retryCount = 0) {
+    try {
+      const response = await fetch(ENDPOINTS.game.tournament, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(tournamentData)
+      });
+      if (response.status === 401 && retryCount < 1) {
+        const refreshResult = await this.refreshToken();
+        if (refreshResult.success) {
+          return await this.createTournament(tournamentData, retryCount + 1);
+        } else {
+          console.error('Token refresh failed:', refreshResult.error);
+          utils.cleanUp();
+          return { success: false, error: 'Authentication expired. Please log in again.', authExpired: true };
+        }
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Failed to create tournament' };
+      }
+      return { success: true, data };
+    } catch (error) {
+      console.error(`createTournament error (attempt ${retryCount + 1}):`, error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 const api = new API();
 
-export default api; 
+export default api;

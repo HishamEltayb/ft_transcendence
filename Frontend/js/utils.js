@@ -234,7 +234,44 @@ class Utils {
         app.logoutInitialized = true;
     }
 
- 
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    extractMatchData(matchHistory, currentUsername) {
+        if (!Array.isArray(matchHistory)) return [];
+        const entries = [];
+        matchHistory.forEach(item => {
+            if (Array.isArray(item)) {
+                // Tournament rounds array
+                item.forEach(match => {
+                    entries.push(this.makeEntry(match, currentUsername));
+                });
+            } else if (item && typeof item === 'object') {
+                entries.push(this.makeEntry(item, currentUsername));
+            }
+        });
+        return entries;
+    }
+
+    makeEntry(match, currentUsername) {
+        const date = this.formatDate(match.createdAt);
+        const opponent = match.player1Name === currentUsername ? match.player2Name : match.player1Name;
+        const score = `${match.player1Score} - ${match.player2Score}`;
+        const result = match.winner === currentUsername ? 'Win' : 'Loss';
+        return {
+            type: match.matchType,
+            opponent,
+            score,
+            result,
+            date,
+            isTournament: match.matchType === 'tournament'
+        };
+    }
 }
 
 const utils = new Utils();
