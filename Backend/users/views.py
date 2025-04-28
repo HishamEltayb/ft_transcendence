@@ -262,6 +262,7 @@ class FortyTwoCallbackView(APIView):
             refresh_token = str(refresh) # from refresh token we get refresh token
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') # Get the frontend URL from environment
             redirect_url = f"{frontend_url}/oauth/callback.html?access_token={access_token}&refresh_token={refresh_token}"
+            user.update_stats()
             return redirect(redirect_url)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
