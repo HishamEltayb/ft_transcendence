@@ -405,7 +405,7 @@ class App {
     }
 
     async setTournament(matchArray) {
-        const result = await api.submitTournament(matchArray);
+        const result = await api.createTournament(matchArray);
 
         if (!result.success) {
             components.showToast('error', 'Tournament Submission Error', 'An error occurred while submitting the tournament.');
