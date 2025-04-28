@@ -25,13 +25,10 @@ export const ENDPOINTS = {
     user: {
         me: '/api/users/me/',
     },
-    // game: {
-    //     create: '/api/games/create/',
-    //     join: '/api/games/join/',
-    //     status: '/api/games/status/',
-    //     history: '/api/games/history/',
-    //     leaderboard: '/api/games/leaderboard/'
-    // },
+    game: {
+        tournament: '/api/tournaments/tournament/',
+        match: '/api//tournaments/match/',
+    },
 }; 
 
 export const VALIDATION_INPUTS = {
