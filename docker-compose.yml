@@ -45,6 +45,8 @@ services:
     container_name: blockchain
     expose:
       - "8545"
+    ports:
+      - "8545:8545"
     volumes:
       - ./blockchain/database:/etc/ethereum/Pong
     networks:
