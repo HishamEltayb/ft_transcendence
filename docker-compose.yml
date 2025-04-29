@@ -13,14 +13,13 @@ services:
       - .env
     environment:
       - ELASTIC_CLIENT_APIVERSIONING=true
-      - discovery.type=single-node
     networks:
       - transcendence
     depends_on:
       postgres:
         condition: service_healthy
-      blockchain:
-        condition: service_healthy
+      # blockchain:
+      #   condition: service_healthy
     restart: unless-stopped
 
   postgres:
@@ -98,8 +97,8 @@ services:
     build: ./Infrastructure/elasticsearch
     image: elk
     container_name: elk
-    expose:
-      - "9200"
+    ports:
+      - "9200:9200"
     volumes:
       - elk:/usr/share/elasticsearch/data
     env_file:
@@ -109,12 +108,6 @@ services:
       - ELASTIC_CLIENT_APIVERSIONING=true
     networks:
       - transcendence
-    # healthcheck:cludflare
-    
-    #   test: ["CMD", "curl", "-f", "http://localhost:9200"]
-    #   interval: 20s
-    #   timeout: 20s
-    #   retries: 5
     restart: unless-stopped
 
   kibana:
@@ -127,22 +120,20 @@ services:
       - kibana:/usr/share/kibana
     env_file:
       - .env
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elk:9200
+      - SERVER_NAME=kibana
+      - SERVER_HOST="0.0.0.0"
+      - SERVER_BASEPATH=/kibana
+      - SERVER_REWRITEBASEPATH=true
+      - SERVER_PUBLICBASEURL=https://localhost/kibana
     networks:
       - transcendence
     depends_on:
       - elasticsearch
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:5601"]
-    #   interval: 20s
-    #   timeout: 20s
-    #   retries: 5
     restart: unless-stopped
 
 volumes:
-  # backend:
-  #   name: backend
-  # frontend:
-  #   name: frontend
   postgres:
     name: postgres
   ssl: 
@@ -153,8 +144,6 @@ volumes:
     name: kibana
   blockchain:
     name: blockchain/database
-  # elasticsearch:
-  #   name: elasticsearch
 
 
 
@@ -162,4 +151,3 @@ networks:
   transcendence:
     name: transcendence
     driver: bridge
-    
