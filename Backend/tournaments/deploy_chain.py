@@ -7,7 +7,7 @@ import json
 # 1. Connect to local node
 # ------------------------
 print("Connecting to local node...") 
-w3 = Web3(HTTPProvider('http://192.168.32.4:8545'))
+w3 = Web3(HTTPProvider('http://blockchain:8545'))
 w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 print("Connected to local node:", w3.is_connected())
 print("accounts: ", w3.eth.accounts)
