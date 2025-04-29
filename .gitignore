@@ -12,3 +12,5 @@ staticfiles/
 __pycache__/
 .github/
 000*
+database/
+.github/
