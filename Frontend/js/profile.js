@@ -19,8 +19,6 @@ class Profile {
         });
         
         this.initialized = true;
-        // console.log('Profile module initialized');
-        
     }
     
     getProfileForm() {
@@ -79,11 +77,13 @@ class Profile {
             this.profileForm.statsLosses.textContent = app.getTotalLosses() || '0';
         
         if (this.profileForm.statsWinRate)
+            this.profileForm.statsWinRate.textContent = app.getWinRate() || '0';
         
         if (this.profileForm.statsRank)
             this.profileForm.statsRank.textContent = app.getRank() || 'Beginner';
         
         this.update2FAUI();
+        this.renderMatchHistory();
     }
     
     update2FAUI() {
@@ -351,6 +351,41 @@ class Profile {
                 errorElement.textContent = error.message || 'Failed to disable 2FA';
                 errorElement.classList.remove('d-none');
             }
+        }
+    }
+
+    renderMatchHistory() {
+        const tableBody = document.getElementById('matchHistoryTable');
+        const tableHead = tableBody.closest('table').querySelector('thead');
+
+        tableHead.innerHTML = `<tr>
+            <th>Type</th>
+            <th>Opponent</th>
+            <th>Score</th>
+            <th>Result</th>
+            <th>Date</th>
+        </tr>`;
+
+        const currentUser = app.getUsername();
+        const history = app.state.user.matchHistory || [];
+        const entries = utils.extractMatchData(history, currentUser);
+
+        tableBody.innerHTML = '';
+        if (entries.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No match history available</td></tr>`;
+        } else {
+            entries.forEach(entry => {
+                const tr = document.createElement('tr');
+                if (entry.isTournament) tr.classList.add('table-warning');
+                tr.innerHTML = `
+                    <td>${entry.type}</td>
+                    <td>${entry.opponent}</td>
+                    <td>${entry.score}</td>
+                    <td>${entry.result}</td>
+                    <td>${entry.date}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
         }
     }
 }

@@ -3,11 +3,11 @@ import utils from './utils.js';
 import login from './login.js';
 import twoFA from './twoFA.js';
 import pages from './pages.js';
+import game from './game.js';
 import router from './router.js';
 import profile from './profile.js';
 import register from './register.js';
 import components from './components.js';
-import gameLoader from './gameLoader.js'; 
 
 class App {
     constructor() {
@@ -18,7 +18,6 @@ class App {
         this.state = {
             user: null,
             isAuthenticated: false,
-            gameSettings: {},
         };
     }
     
@@ -89,7 +88,6 @@ class App {
                 }
                 pages.showPage('home');
                 login.updateUIAuthState();
-               
             },
             
             '/home': () => {
@@ -170,6 +168,11 @@ class App {
                         this.state.isAuthenticated = result.isAuthenticated;
                         login.updateUIAuthState();
                         pages.showPage('game');
+                        game.init(
+                            this.getUsername(),
+                            this.setMatch.bind(this),
+                            this.setTournament.bind(this)
+                        );
                     } else {
                         components.showToast('warning', 'Authentication Required', 'Please log in to play the game.');
                         router.navigate('/login');
@@ -323,47 +326,57 @@ class App {
     }
 
     getUser() {
-        return this.state.user;
+        if (this.state.user)
+            return this.state.user;
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) 
+            return null;
+        try {
+            return JSON.parse(storedUser);
+        } catch (err) {
+            console.error('Error parsing stored user from localStorage:', err);
+            return null;
+        }
     }
 
     getUserImg() {
-        return this.state.user.profile_image;
+        return this.state.user?.profile_image || '';
     }
 
     getUsername() {
-        return this.state.user.username;
+        return this.state.user?.username || '';
     }
 
     getEmail() {
-        return this.state.user.email;
+        return this.state.user?.email || '';
     }
 
     getIs42User() {
-        return this.state.user.is_oauth_user;
+        return !!this.state.user?.is_oauth_user;
     }
 
     getTotalGamesPlayed() {
-        return this.state.user.total_games;
+        return this.state.user?.total_games || 0;
     }
 
     getTotalWins() {
-        return this.state.user.wins;
+        return this.state.user?.wins || 0;
     }
 
     getWinRate() {
-        return this.state.user.win_rate;
+        return this.state.user?.win_rate || 0;
     }
 
     getTotalLosses() {
-        return this.state.user.losses;
+        return this.state.user?.losses || 0;
     }
 
     getRank() {
-        return this.state.user.rank;
+        return this.state.user?.rank || '';
     }
 
     get2FAState() {
-        return this.state.user.is_two_factor_enabled;
+        return !!this.state.user?.is_two_factor_enabled;
     }
     
     getIsAuthenticated() {
@@ -371,8 +384,37 @@ class App {
         return !!this.state.isAuthenticated;
     }
 
-    isReady() {
-        return this.initialized;
+    initmatchHistoryArray() {
+        if (!this.state.user) return;
+        if (!Array.isArray(this.state.user.matchHistory)) {
+            this.state.user.matchHistory = [];
+        }
+    }
+
+    async setMatch(matchObj) {
+        const result = await api.submitMatch(matchObj);
+
+        if (!result.success) {
+            components.showToast('error', 'Match Submission Error', 'An error occurred while submitting the match.');
+            return;
+        }
+
+        this.initmatchHistoryArray();
+        this.state.user.matchHistory.push(matchObj);
+        localStorage.setItem('user', JSON.stringify(this.state.user));
+    }
+
+    async setTournament(matchArray) {
+        const result = await api.createTournament(matchArray);
+
+        if (!result.success) {
+            components.showToast('error', 'Tournament Submission Error', 'An error occurred while submitting the tournament.');
+            return;
+        }
+
+        this.initmatchHistoryArray();
+        this.state.user.matchHistory.push(matchArray);
+        localStorage.setItem('user', JSON.stringify(this.state.user));
     }
 }
 
@@ -397,3 +439,5 @@ document.addEventListener('visibilitychange', () => {
 });
 
 export default app;
+
+

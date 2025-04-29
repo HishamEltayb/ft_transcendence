@@ -4,7 +4,7 @@ from .views import (
     RegisterView, LoginView, UserDetailView, LogoutView,
     FortyTwoLoginView, FortyTwoCallbackView,
     Setup2FAView, Verify2FAView, Disable2FAView,
-    LeaderboardView, CookieTokenRefreshView)
+    CookieTokenRefreshView)
 
 urlpatterns = [
     # User endpoints
@@ -28,6 +28,4 @@ urlpatterns = [
     path('2fa/verify/', Verify2FAView.as_view(), name='2fa-verify'),
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
 
-    # Player Profile endpoints
-    path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
 ]

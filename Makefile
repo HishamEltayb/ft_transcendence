@@ -31,6 +31,9 @@ logs:
 attach-backend:
 	docker exec -it backend /bin/sh
 
+attach-blockchain:
+	docker exec -it blockchain /bin/bash
+
 attach-frontend:
 	docker exec -it frontend /bin/sh
 

@@ -19,6 +19,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      blockchain:
+        condition: service_healthy
     restart: unless-stopped
 
   postgres:
@@ -35,6 +37,25 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  blockchain:
+    build: ./Blockchain
+    image: blockchain
+    container_name: blockchain
+    expose:
+      - "8545"
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./blockchain/database:/etc/ethereum/Pong
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD", "ping", "-c", "1", "localhost:8545"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -130,6 +151,10 @@ volumes:
     name: elk
   kibana:
     name: kibana
+  blockchain:
+    name: blockchain/database
+  # elasticsearch:
+  #   name: elasticsearch
 
 
 

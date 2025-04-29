@@ -1,38 +1,39 @@
+# Backend/tournaments/serializers.py
 from rest_framework import serializers
 from .models import Tournament, Match
 
-
-class TournamentSerializer(serializers.ModelSerializer):
-    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
-    class Meta:
-        model = Tournament
-        fields = ['id', 'name', 'description', 'start_date', 'end_date', 'created_at', 'updated_at', 'created_by', 'participants', 'created_by_username']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'participants', 'created_by_username']
-
-    def validate(self, attrs):
-        if 'start_date' in attrs and 'end_date' in attrs and attrs['start_date'] > attrs['end_date']:
-            raise serializers.ValidationError({"dates": "Start date must be before end date."})
-        return attrs
-
 class MatchSerializer(serializers.ModelSerializer):
-    player1_username = serializers.CharField(source='player1.username', read_only=True)
-    player2_username = serializers.CharField(source='player2.username', read_only=True)
-    winner_username = serializers.CharField(source='winner.username', read_only=True)
     class Meta:
         model = Match
+        # List all the fields from the Match model you want in the JSON output
         fields = [
             'id',
-            'tournament',
-            'player1',
-            'player2',
+            'player1_name',
+            'player2_name',
             'player1_score',
             'player2_score',
+            'match_type',
             'winner',
-            'match_status',
             'created_at',
             'updated_at',
-            'player1_username',
-            'player2_username',
-            'winner_username'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'player1_username', 'player2_username', 'winner_username', 'tournament']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+class TournamentSerializer(serializers.ModelSerializer):
+    # This tells the serializer to use MatchSerializer for the 'matches' field
+    # 'many=True' means it's a list of matches
+    # 'read_only=True' means we can only read this data, not write it through the Tournament endpoint
+    matches = MatchSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Tournament
+        # List all the fields from the Tournament model you want in the JSON output
+        fields = [
+            'id',
+            'matches', 
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
