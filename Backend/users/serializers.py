@@ -5,7 +5,7 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'win_rate', 'rank']
+        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'win_rate', 'matchHistory']
         read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled']
 
 class RegisterSerializer(serializers.ModelSerializer):

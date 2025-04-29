@@ -368,6 +368,7 @@ class Profile {
 
         const currentUser = app.getUsername();
         const history = app.state.user.matchHistory || [];
+        console.log('Match history:', history);
         const entries = utils.extractMatchData(history, currentUser);
 
         tableBody.innerHTML = '';
@@ -375,13 +376,21 @@ class Profile {
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No match history available</td></tr>`;
         } else {
             entries.forEach(entry => {
+                console.log('Entry:', entry);
+                user_pos = 0;
+                if (entry.player2Name === currentUser) {
+                    user_pos = 1;
+                }
+                opponent = user_pos === 0 ? entry.player2Name : entry.player1Name;
+                score = user_pos === 0 ? entry.score1 + ' - ' + entry.score2 : entry.score2 + ' - ' + entry.score1;
+                result = entry.winner === currentUser ? 'Won' : 'Lost';
                 const tr = document.createElement('tr');
                 if (entry.isTournament) tr.classList.add('table-warning');
                 tr.innerHTML = `
-                    <td>${entry.type}</td>
-                    <td>${entry.opponent}</td>
-                    <td>${entry.score}</td>
-                    <td>${entry.result}</td>
+                    <td>${entry.matchType}</td>
+                    <td>${opponent}</td>
+                    <td>${score}</td>
+                    <td>${result}</td>
                     <td>${entry.date}</td>
                 `;
                 tableBody.appendChild(tr);

@@ -147,12 +147,12 @@ class API {
     try {
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-      if (retryCount === 0) {
-        const user = localStorage.getItem('user');
-        if (user) {
-          return { success: true, userData: JSON.parse(user), isAuthenticated };
-        }
-      }
+      // if (retryCount === 0) {
+      //   const user = localStorage.getItem('user');
+      //   if (user) {
+      //     return { success: true, userData: JSON.parse(user), isAuthenticated };
+      //   }
+      // }
       
       const response = await fetch(ENDPOINTS.user.me, {
         method: 'GET',
@@ -412,6 +412,25 @@ class API {
       return { success: false, error: error.message };
     }
   }
+  // async fetchMatchHistory() {
+  //   try {
+  //     const response = await fetch(ENDPOINTS.game.match_history, {
+  //       method: 'GET',
+  //       credentials: 'include',
+  //       headers: { 
+  //         'Content-Type': 'application/json' 
+  //       }
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch match history: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     return { success: true, data };
+  //   } catch (error) {
+  //     console.error('Error fetching match history:', error);
+  //     return { success: false, error: error.message };
+  //   }
+  // }
 }
 
 const api = new API();
