@@ -5,6 +5,8 @@ set -e # Exit immediately if a command exits with a non-zero status.
 python manage.py makemigrations
 python manage.py migrate
 
+python manage.py index_users
+
 python manage.py collectstatic --noinput
 
 # Create superuser if DJANGO_SUPERUSER variables are set
@@ -19,4 +21,9 @@ python /app/tournaments/deploy_chain.py
 
 # Start server
 echo "Starting server..."
-python manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8000&
+
+# Wait a bit for Kibana to be up, then create the index pattern
+python tools/create_kibana_index_pattern.py
+
+wait

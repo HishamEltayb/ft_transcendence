@@ -13,4 +13,5 @@ django-two-factor-auth>=1.15.2
 pyotp>=2.8.0
 qrcode>=7.4.2
 Pillow>=10.0.0
+elasticsearch==7.13.4
 web3

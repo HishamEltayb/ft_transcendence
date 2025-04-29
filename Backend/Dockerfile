@@ -18,7 +18,7 @@ RUN apk add --no-cache \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# COPY . .
 
 COPY tools/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

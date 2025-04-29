@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'tournaments',
     'rest_framework_simplejwt.token_blacklist',
+    'elk',
+    
     # 'two_factor'
 ]
 
