@@ -52,7 +52,7 @@ services:
     ports:
       - "8545:8545"
     volumes:
-      - ./blockchain/database:/etc/ethereum/Pong
+      - blockchain:/etc/ethereum/Pong
     networks:
       - transcendence
     healthcheck:
@@ -151,7 +151,7 @@ volumes:
   kibana:
     name: kibana
   blockchain:
-    name: blockchain/database
+    name: eth
 
 
 

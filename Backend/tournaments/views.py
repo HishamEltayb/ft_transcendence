@@ -7,6 +7,7 @@ from rest_framework import permissions
 from .block import save_tournament, get_tournaments
 # from ...Blockchain.views import get_blockchain
 from django.http import QueryDict
+from users.models import User
 
 class MatchCreateView(APIView):
     authentication_classes = [JWTCookieAuthentication]
@@ -32,6 +33,7 @@ class MatchCreateView(APIView):
             winner        = data['winner'],
             matchType = data['matchType']
         )
+        User.objects.filter(username=data['player1Name'])[0].update_stats()
         return Response({'match_id': m.id}, status=status.HTTP_201_CREATED)
 
  
@@ -87,6 +89,7 @@ class TournamentCreateView(APIView):
       id = save_tournament(tournament_name=request.user.username, matches=matches)
     #   tour = get_tournaments(request.user.username)
     #   print("tournement", tour)
+      User.objects.filter(username=data['player1Name'])[0].update_stats()
       return Response(
           {
               'tournament_id': id
