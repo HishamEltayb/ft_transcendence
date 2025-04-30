@@ -360,35 +360,68 @@ class Profile {
 
         tableHead.innerHTML = `<tr>
             <th>Type</th>
-            <th>Opponent</th>
+            <th>Vs</th>
             <th>Score</th>
-            <th>Result</th>
-            <th>Date</th>
+            <th>Winner</th>
         </tr>`;
 
         const currentUser = app.getUsername();
         const history = app.state.user.matchHistory || [];
-        console.log('Match history:', history);
         const entries = utils.extractMatchData(history, currentUser);
 
         tableBody.innerHTML = '';
         if (entries.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No match history available</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-center">No match history available</td></tr>`;
         } else {
             entries.forEach(entry => {
-                console.log('Entry:', entry);
                 const tr = document.createElement('tr');
-                if (entry.isTournament) tr.classList.add('table-warning');
+                if (entry.winner === currentUser) {
+                    tr.classList.add('match-win');
+                } else {
+                    tr.classList.add('match-loss');
+                }
                 tr.innerHTML = `
                     <td>${entry.type}</td>
-                    <td>${entry.opponent}</td>
+                    <td>${entry.vs}</td>
                     <td>${entry.score}</td>
-                    <td>${entry.result}</td>
-                    <td>${entry.date}</td>
+                    <td>${entry.winner}</td>
                 `;
                 tableBody.appendChild(tr);
             });
         }
+        // Render tournaments after match history
+        this.renderTournamentMatches(tableBody);
+    }
+
+    // Render tournament matches grouped with a blank separator before each
+    renderTournamentMatches(tableBody) {
+        const currentUser = app.getUsername();
+        const tournaments = app.state.user.tournaments || [];
+        tournaments.forEach(tournament => {
+            // Tournament summary row (ID and winner)
+            const summary = document.createElement('tr');
+            summary.classList.add('table-warning');
+            summary.innerHTML = `
+                <td colspan="4" class="text-center fw-bold">
+                    Tournament #${tournament.tournament_id} — Winner: ${tournament.winner}
+                </td>`;
+            tableBody.appendChild(summary);
+            // Add each tournament match
+            tournament.matches.forEach(match => {
+                const entry = utils.makeEntry(match, currentUser);
+                const tr = document.createElement('tr');
+                // Style all tournament match rows by the tournament winner
+                if (tournament.winner === currentUser) tr.classList.add('match-win');
+                else tr.classList.add('match-loss');
+                tr.innerHTML = `
+                    <td>${entry.type}</td>
+                    <td>${entry.vs}</td>
+                    <td>${entry.score}</td>
+                    <td>${tournament.winner}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        });
     }
 }
 

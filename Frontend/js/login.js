@@ -133,7 +133,6 @@ class Login {
                 
                 const userData = result.data;
                 app.state.user = userData;
-                console.log('Login successful:', userData);
                 localStorage.setItem('user', JSON.stringify(userData));
                 
                 this.updateUIAuthState();

@@ -136,6 +136,7 @@ def get_tournaments(name: str) -> list:
         result.append(
         {
             "tournament_id": tournament[2],
+            "winner": tournament[1],
             "matches": [
                 {
                     "matchType": "Tournament", 
