@@ -18,6 +18,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      blockchain:
+        condition: service_healthy
       elasticsearch:
         condition: service_healthy
     restart: unless-stopped
