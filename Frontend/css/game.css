@@ -4,7 +4,6 @@
     color: var(--white);
     display: flex;
     justify-content: center;
-    background: url('../public/assets/images/background.jpg') center/cover no-repeat fixed;
     max-height: 100vh;
     overflow-y: auto;
 }
