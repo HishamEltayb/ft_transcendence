@@ -62,13 +62,13 @@ def load_contract():
     """
 
     w3 = init_account()
-    with open('/app/contract/Tournaments.json', 'r') as file:
+    with open('/app/tools/Tournaments.json', 'r') as file:
         contract_data = json.load(file)
 
     abi = contract_data['abi']
     contract_address = None
     try:
-        with open('/app/contract/contract_address.json', 'r') as file:
+        with open('/app/tools/contract_address.json', 'r') as file:
             contract_address = json.load(file)
             print("Contract address loaded from file:", contract_address)
     except FileNotFoundError:

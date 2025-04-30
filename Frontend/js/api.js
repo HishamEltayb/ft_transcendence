@@ -147,13 +147,6 @@ class API {
     try {
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-      // if (retryCount === 0) {
-      //   const user = localStorage.getItem('user');
-      //   if (user) {
-      //     return { success: true, userData: JSON.parse(user), isAuthenticated };
-      //   }
-      // }
-      
       const response = await fetch(ENDPOINTS.user.me, {
         method: 'GET',
         credentials: 'include'

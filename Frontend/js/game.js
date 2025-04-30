@@ -205,6 +205,8 @@ class PongGame {
         
         // Check window size
         this.checkWindowSize();
+
+        this.resetGame();
     }
     
     /**
@@ -541,9 +543,9 @@ class PongGame {
                 this.isMultiplayerMode = true;
                 activeButton = document.getElementById('multiplayerButton');
                 // Determine team names: respect settings overrides or use defaults
-                const team2InputEl = document.getElementById('team2NameInput');
-                const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
-                this.player2Name.textContent = team2Name;
+                // const team2InputEl = document.getElementById('team2NameInput');
+                // const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
+                // this.player2Name.textContent = team2Name;
                 break;
                 
             case 'tournament':
@@ -1171,9 +1173,13 @@ class PongGame {
         this.gameOver = true;
         
         // Update win screen content
-        document.getElementById('winnerText').textContent = `${winnerName} Wins!`;
-        document.getElementById('finalScore').textContent = 
-            `${this.player1Score.textContent} - ${this.player2Score.textContent}`;
+        const winnerText = document.getElementById('winnerText');
+        const finalScore = document.getElementById('finalScore');
+       
+        if (winnerText && finalScore) {
+            winnerText.textContent = `${winnerName} Wins!`;
+            finalScore.textContent = `${this.player1Score.textContent} - ${this.player2Score.textContent}`;
+        }
         
         // Capture this match data into matchObj
         this.fillMatchObj(winnerName);
@@ -1192,7 +1198,8 @@ class PongGame {
                 document.getElementById('nextMatchButton').style.display = 'none';
             }
         } else {
-            document.getElementById('nextMatchButton').style.display = 'none';
+            const nextMatchButton = document.getElementById('nextMatchButton');
+            if (nextMatchButton) nextMatchButton.style.display = 'none';
         }
         
         // Show the win screen
@@ -1604,12 +1611,12 @@ class PongGame {
         }
         
         // If in multiplayer mode, apply team name overrides or retain current values
-        if (this.isMultiplayerMode) {
-            const team1Val = document.getElementById('team1NameInput').value;
-            const team2Val = document.getElementById('team2NameInput').value;
-            this.player1Name.textContent = team1Val || this.player1Name.textContent;
-            this.player2Name.textContent = team2Val || this.player2Name.textContent;
-        }
+        // if (this.isMultiplayerMode) {
+        //     const team1Val = document.getElementById('team1NameInput').value;
+        //     const team2Val = document.getElementById('team2NameInput').value;
+        //     this.player1Name.textContent = team1Val || this.player1Name.textContent;
+        //     this.player2Name.textContent = team2Val || this.player2Name.textContent;
+        // }
         
         // Apply background setting
         const backgroundSelect = document.getElementById('backgroundSelect');
