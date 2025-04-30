@@ -5,7 +5,8 @@
     display: flex;
     justify-content: center;
     background: url('../public/assets/images/background.jpg') center/cover no-repeat fixed;
-    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .game-container {
