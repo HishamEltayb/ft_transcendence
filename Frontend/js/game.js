@@ -59,7 +59,7 @@ class PongGame {
         this.paddle2Speed = 0;
         this.paddle3Speed = 0;
         this.paddle4Speed = 0;
-        this.paddleMaxSpeed = 5;
+        this.paddleMaxSpeed = 7;
         this.aiReactionDelay = 0;
         this.aiPredictionAccuracy = 0.8;
         this.aiRandomOffset = 20;
@@ -175,10 +175,16 @@ class PongGame {
         const videoBgInit = document.getElementById('videoBackground');
         if (videoBgInit) {
             videoBgInit.style.display = 'none';
-            videoBgInit.style.zIndex = '-1';
+            videoBgInit.style.zIndex = '1';
             if (videoBgInit.pause) {
                 videoBgInit.pause();
                 videoBgInit.currentTime = 0;
+            }
+            
+            // Prepare the overlay for future video use
+            const overlay = videoBgInit.querySelector('.video-overlay');
+            if (overlay) {
+                overlay.style.background = 'rgba(0, 0, 0, 1)'; // Start with solid black
             }
         }
         
@@ -614,8 +620,7 @@ class PongGame {
         // Start the game loop
         this.gameRunning = true;
         this.lastTime = performance.now();
-        this.animationFrameId = requestAnimationFrame(this.gameLoop);
-        
+        this.animationFrameId = requestAnimationFrame(this.gameLoop);        
     }
     
     /**
@@ -1241,16 +1246,19 @@ class PongGame {
             case 'paddle':
                 if (this.paddleSound) {
                     this.paddleSound.currentTime = 0;
+                    this.paddleSound.play();
                 }
                 break;
             case 'wall':
                 if (this.wallSound) {
                     this.wallSound.currentTime = 0;
+                    this.wallSound.play();
                 }
                 break;
             case 'loss':
                 if (this.lossSound) {
                     this.lossSound.currentTime = 0;
+                    this.lossSound.play();
                 }
                 break;
         }
@@ -1604,12 +1612,39 @@ class PongGame {
         const backgroundSelect = document.getElementById('backgroundSelect');
         const videoBg = document.getElementById('videoBackground');
         if (backgroundSelect.value === 'video') {
-            videoBg.style.display = 'block';
-            videoBg.style.zIndex = '-1';
+            // Create dark sparkle background effect
+            this.gameArea.style.backgroundColor = '#000000'; // Solid black background
+            if (videoBg) {
+                videoBg.style.display = 'block';
+                videoBg.style.zIndex = '1'; // Ensure it's above the base background
+                
+                // Remove semi-transparent overlay for now
+                const overlay = videoBg.querySelector('.video-overlay');
+                if (overlay) {
+                    overlay.style.background = 'rgba(0, 0, 0, 0.3)'; // Semi-transparent black
+                }
+                
+                // Play/restart the video when Sparkle mode is selected
+                const videoElement = videoBg.querySelector('video');
+                if (videoElement && typeof videoElement.play === 'function') {
+                    videoElement.currentTime = 0; // Reset to beginning
+                    videoElement.play().catch(e => console.log('Error playing video background:', e));
+                }
+            }
         } else {
-            videoBg.pause();
-            videoBg.currentTime = 0;
-            videoBg.style.display = 'none';
+            // Classic mode - make sure we have a valid video element before trying to pause
+            if (videoBg) {
+                // Only try to pause if it's a video with pause method
+                const videoElement = videoBg.querySelector('video');
+                if (videoElement && typeof videoElement.pause === 'function') {
+                    videoElement.pause();
+                    videoElement.currentTime = 0;
+                }
+                videoBg.style.display = 'none';
+                videoBg.style.zIndex = '-1';
+            }
+            // Always set the background color to black for classic mode
+            this.gameArea.style.backgroundColor = '#000000'; // Solid black
         }
     }
     

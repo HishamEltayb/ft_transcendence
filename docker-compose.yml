@@ -141,6 +141,24 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  logstash:
+    build: ./Infrastructure/logstash
+    image: logstash
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - logstash:/usr/share/logstash/data
+      - ./Infrastructure/logstash/pipeline/:/usr/share/logstash/pipeline/
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres:
     name: postgres
@@ -152,7 +170,8 @@ volumes:
     name: kibana
   blockchain:
     name: eth
-
+  logstash:
+    name: logstash
 
 
 networks:

@@ -126,6 +126,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Password hashers
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -177,3 +185,51 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # # Enable two-factor auth
 # LOGIN_URL = 'two_factor:login'
 # LOGIN_REDIRECT_URL = 'two_factor:profile'
+
+# LOGGING CONFIGURATION for Logstash
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False, # Keep Django's default loggers
+    'formatters': {
+        'json_formatter': {
+            'format': '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s", "pathname": "%(pathname)s", "lineno": %(lineno)d}',
+            'datefmt': '%Y-%m-%dT%H:%M:%S%z'
+        },
+        'verbose': { # Keep a standard formatter for console output if needed
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': { # Standard console handler (optional, good for dev)
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'logstash': {
+            'level': 'INFO', # Send INFO level logs and above to Logstash
+            'class': 'logstash_async.handler.AsynchronousLogstashHandler',
+            'host': 'logstash', # Docker service name for Logstash
+            'port': 5044,       # Port configured in logstash.conf input
+            'database_path': 'logstash_test.db', # Path for buffering if Logstash is unavailable
+            'formatter': 'json_formatter', # Use the JSON formatter
+        },
+    },
+    'loggers': {
+        'django': { # Configure Django's internal logger
+            'handlers': ['logstash', 'console'], # Send to Logstash and console
+            'level': 'INFO', # Adjust level as needed (e.g., WARNING for production)
+            'propagate': False, # Don't send Django logs to the root logger too
+        },
+        # Add configuration for your specific app loggers if needed
+        # 'users': {
+        #     'handlers': ['logstash', 'console'],
+        #     'level': 'DEBUG',
+        #     'propagate': False,
+        # },
+    },
+    'root': { # Catch-all logger
+        'handlers': ['logstash', 'console'], # Send all other logs to Logstash and console
+        'level': 'INFO', # Adjust level as needed
+    },
+}
+# END LOGGING CONFIGURATION
