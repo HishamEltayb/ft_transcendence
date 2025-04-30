@@ -543,9 +543,9 @@ class PongGame {
                 this.isMultiplayerMode = true;
                 activeButton = document.getElementById('multiplayerButton');
                 // Determine team names: respect settings overrides or use defaults
-                const team2InputEl = document.getElementById('team2NameInput');
-                const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
-                this.player2Name.textContent = team2Name;
+                // const team2InputEl = document.getElementById('team2NameInput');
+                // const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
+                // this.player2Name.textContent = team2Name;
                 break;
                 
             case 'tournament':
