@@ -135,8 +135,8 @@ services:
     build: ./Infrastructure/logstash
     image: logstash
     container_name: logstash
-    ports:
-      - "5044:5044"
+    expose:
+      - "5044"
     volumes:
       - logstash:/usr/share/logstash/data
       - ./Infrastructure/logstash/pipeline/:/usr/share/logstash/pipeline/
@@ -164,8 +164,8 @@ volumes:
     name: eth
   logstash:
     name: logstash
-  # frontend:
-  #   name: frontend
+  frontend:
+    name: frontend
 
 secrets:
   password:
