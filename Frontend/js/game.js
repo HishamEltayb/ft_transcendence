@@ -515,6 +515,12 @@ class PongGame {
         const modeButtons = document.querySelectorAll('.top-buttons .game-btn');
         modeButtons.forEach(btn => btn.classList.remove('active'));
         
+        const player1NameInput = document.getElementById('player1NameInput');
+        if (player1NameInput) {
+            player1NameInput.value = this.userName;
+            player1NameInput.readOnly = true;
+        }
+
         // Add active class to the clicked button
         let activeButton;
         
@@ -535,11 +541,8 @@ class PongGame {
                 this.isMultiplayerMode = true;
                 activeButton = document.getElementById('multiplayerButton');
                 // Determine team names: respect settings overrides or use defaults
-                const team1InputEl = document.getElementById('team1NameInput');
                 const team2InputEl = document.getElementById('team2NameInput');
-                const team1Name = (team1InputEl && team1InputEl.value) ? team1InputEl.value : this.userName;
                 const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
-                this.player1Name.textContent = team1Name;
                 this.player2Name.textContent = team2Name;
                 break;
                 
@@ -1258,7 +1261,7 @@ class PongGame {
             case 'loss':
                 if (this.lossSound) {
                     this.lossSound.currentTime = 0;
-                    this.lossSound.play();
+                    this.lossSound.play().catch(e => console.log("Error playing sound:", e));
                 }
                 break;
         }
