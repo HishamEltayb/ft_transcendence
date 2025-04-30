@@ -14,7 +14,6 @@
 \usepackage{verbatim}  % Needed for the "comment" environment to make LaTeX comments
 \usepackage{vector}  % Allows "\bvec{}" and "\buvec{}" for "blackboard" style bold vectors in maths
 \usepackage{placeins}
-\usepackage{fancyhdr} % Added for header control
 
 \usepackage{array}
 \usepackage[table]{xcolor}
@@ -23,21 +22,9 @@
 \hypersetup{urlcolor=blue, colorlinks=true}  % Colours hyperlinks in blue, but this can be distracting if there are many links.
 \renewcommand{\bibname}{References}
 
-% Setup fancyhdr page style
-\pagestyle{fancy}
-\fancyhf{} % clear all header and footer fields
-\fancyhead[L]{\nouppercase{\leftmark}} % Use the chapter mark on the left header
-\fancyfoot[C]{\thepage} % Page number centered in the footer
-\renewcommand{\headrulewidth}{0.4pt} % Optional line under header
-\renewcommand{\footrulewidth}{0.4pt} % Optional line above footer
-\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
-
 %% ----------------------------------------------------------------
 \begin{document}
 \frontmatter	  % Begin Roman style (i, ii, iii, iv...) page numbering
-
-% Ensure all front matter pages have page numbers too
-% \pagestyle{fancy}
 
 % Set up the Title Page
 \title  {ft\_transcendence}
@@ -56,6 +43,13 @@
 
 \setstretch{1.3}  % It is better to have smaller font and larger line spacing than the other way round
 
+% Define the page headers using the FancyHdr package and set up for one-sided printing
+\fancyhead{}  % Clears all page headers and footers
+\rhead{\thepage}  % Sets the right side header to show the page number
+\lhead{}  % Clears the left side page header
+
+\pagestyle{fancy}  % Finally, use the "fancy" page style to implement the FancyHdr headers
+
 %% ----------------------------------------------------------------
 % Declaration Page required for the Thesis, your institution may give you a different text to place here
 \clearpage  % Declaration ended, now start a new page
@@ -67,49 +61,48 @@
 \textbf{ft\_transcendence} is a modern, feature-rich clone of the classic Pong game implemented as a full-stack web application. It demonstrates the integration of real-time gameplay, secure authentication, on-chain tournament recording, and full DevOps automation within a Docker-Compose stack. The backend is powered by Django and PostgreSQL, exposing a clean RESTful API secured with JWT cookies and optional TOTP-based Two-Factor Authentication (2FA). Users can authenticate via 42 OAuth or traditional credentials. The frontend, crafted using vanilla JavaScript and Bootstrap 5, delivers a responsive single-page application rendered on an HTML5 \texttt{<canvas>} element for immersive gameplay. Game modes include 1v1, AI opponents, 4-player multiplayer, and tournament brackets. Match and tournament data are stored both in PostgreSQL and on an Ethereum sidechain, ensuring immutability and verifiability. Static content and reverse proxying are handled by Nginx, which also enforces HTTPS using TLS. The system integrates centralized logging and monitoring through the ELK stack (Elasticsearch, Kibana), and supports production-grade deployment via Docker and Makefiles. Accessibility, cross-browser compatibility (including Firefox), and visually impaired user support are emphasized throughout. This project showcases a secure, scalable, and extensible architecture aimed at enhancing user engagement through profile customization, friends lists, online status, and detailed match history.
 }
 
+
 \clearpage  % Abstract ended, start a new page
 %% ----------------------------------------------------------------
 \clearpage  % End of the Acknowledgements
 %% ----------------------------------------------------------------
 
+\pagestyle{fancy}  %The page style headers have been "empty" all this time, now use the "fancy" headers as defined before to bring them back
+
+
 %% ----------------------------------------------------------------
+\lhead{\emph{Contents}}  % Set the left side page header to "Contents"
 \tableofcontents  % Write out the Table of Contents
 
 %% ----------------------------------------------------------------
+\lhead{\emph{List of Figures}}  % Set the left side page header to "List of Figures"
 \listoffigures  % Write out the List of Figures
 
 %% ----------------------------------------------------------------
+\lhead{\emph{List of Tables}}  % Set the left side page header to "List of Tables"
 \listoftables  % Write out the List of Tables
 
 %% ----------------------------------------------------------------
+\lhead{\emph{List of Abbreviations}}  % Set the left side page header to "List of Abbreviations"
 \chapter*{List of Abbreviations}  % Create a new unnumbered chapter for the abbreviations
 \addcontentsline{toc}{chapter}{List of Abbreviations}  % Add this to the Table of Contents
 \begin{tabbing}
-    \textbf{2FA} \hspace{1cm} \= Two-Factor Authentication\\
-    \textbf{API} \> Application Programming Interface\\
-    \textbf{CI/CD} \> Continuous Integration and Continuous Delivery/Deployment\\
-    \textbf{CSS} \> Cascading Style Sheets\\
-    \textbf{DevOps} \> Development Operations\\
-    \textbf{DOM} \> Document Object Model\\
-    \textbf{DRF} \> Django Rest Framework\\
-    \textbf{ELK} \> Elasticsearch, Logstash, and Kibana\\
-    \textbf{ES6} \> ECMAScript 6\\
-    \textbf{Git} \> Global Information Tracker\\
-    \textbf{HTML} \> HyperText Markup Language\\
-    \textbf{JS} \> JavaScript\\
-    \textbf{JWT} \> JSON Web Tokens\\
-    \textbf{OAuth} \> Open Authorization\\
-    \textbf{OTP} \> One-Time Password\\
-    \textbf{POA} \> Proof of Authority\\
-    \textbf{SDLC} \> Software Development Life Cycle\\
-    \textbf{SPA} \> Single Page Application\\
-    \textbf{SQL} \> Structured Query Language\\
-    \textbf{SSR} \> Server-Side Rendering\\
-    \textbf{TLS} \> Transport Layer Security\\
-    \textbf{TOTP} \> Time-based One-Time Password\\
-    \textbf{UI} \> User Interface\\
-    \textbf{URL} \> Uniform Resource Locator\\
-    \textbf{XSS} \> Cross-Site Scripting\\
+    \textbf{2FA} Two-Factor Authentication\\
+    \textbf{CI/CD} Continuous Integration and Continuous Delivery/Deployment\\
+    \textbf{DOM} Document Object Model\\
+    \textbf{DevOps} Development Operations\\
+    \textbf{Git} Global Information Tracker\\
+    \textbf{JWT} JSON Web Tokens\\
+    \textbf{OAuth} Open Authorization\\
+    \textbf{OTP} One-Time Password\\
+    \textbf{SPA} Single Page Application\\
+    \textbf{SDLC} Software Development Life Cycle\\
+    \textbf{SSR} Server-Side Rendering\\
+    \textbf{SQL} Structured Query Language\\
+    \textbf{TLS} Transport Layer Security\\
+    \textbf{UI} User Interface\\
+    \textbf{URL} Uniform Resource Locator\\
+    \textbf{XSS} Cross-Site Scripting\\
 \end{tabbing}
 
 
@@ -120,6 +113,7 @@
 
 %% ----------------------------------------------------------------
 \mainmatter	  % Begin normal, numeric (1,2,3...) page numbering
+\pagestyle{fancy}  % Return the page headers back to the "fancy" style
 
 % Include the chapters of the thesis, as separate files
 % Just uncomment the lines as you write the chapters
