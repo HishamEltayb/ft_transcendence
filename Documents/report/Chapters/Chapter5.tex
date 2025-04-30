@@ -1,0 +1,81 @@
+
+\chapter{Detailed System Design and Implementation}
+\label{ch:implementation}
+
+This chapter delves into the specific implementation details of the core components of the \textbf{ft\_transcendence} application, expanding on the architectural overview provided previously. It covers the backend logic, frontend structure, data persistence mechanisms, real-time communication, and the containerization strategy.
+
+\section{Backend Implementation (Django)}
+\label{sec:backend_impl}
+The backend is built using the Django framework (version 5), leveraging its robust features for web development and the Django Rest Framework (DRF) for creating the RESTful API.
+
+\subsection{Project Structure}
+The Django project follows a standard layout, organized into distinct apps for modularity:
+\begin{itemize}
+    \item \texttt{users}: Handles user registration, authentication (native credentials, 42 OAuth), profile management, and friend relationships.
+    \item \texttt{game}: Contains the logic for Pong gameplay, including game state management, rules enforcement, and matchmaking (for 1v1 online).
+    \item \texttt{tournaments}: Manages the creation, progression, and recording of tournament brackets.
+    \item \texttt{chat}: (If implemented) Would handle real-time chat functionalities.
+\end{itemize}
+
+\subsection{API Design (DRF)}
+The API provides endpoints for frontend interaction. DRF's ViewSets and Serializers are used to handle data validation, database interaction, and JSON response generation. Key endpoints likely include:
+\begin{itemize}
+    \item User authentication and registration.
+    \item Profile viewing and editing (including avatar upload).
+    \item Friend request management.
+    \item Game initiation and state updates.
+    \item Tournament creation and status retrieval.
+    \item Match history access.
+\end{itemize}
+
+\subsection{Authentication and Authorization}
+Security is managed through multiple layers:
+\begin{itemize}
+    \item \textbf{Native Credentials:} Standard username/password login.
+    \item \textbf{42 OAuth:} Integration with the 42 Intra's OAuth2 system for seamless login for 42 students.
+    \item \textbf{JWT (JSON Web Tokens):} Simple-JWT library is used to issue JWTs stored in secure HTTP-only cookies upon successful login, authenticating subsequent API requests.
+    \item \textbf{2FA (TOTP):} Optional Time-based One-Time Password (TOTP) using \texttt{django-otp} provides an additional security layer.
+\end{itemize}
+
+\section{Frontend Implementation (Vanilla JS)}
+\label{sec:frontend_impl}
+The frontend is a Single Page Application (SPA) built entirely with vanilla JavaScript (ES6+), HTML5, and styled with Bootstrap 5. This approach avoids reliance on heavy frontend frameworks.
+
+\subsection{SPA Architecture}
+JavaScript manages routing (likely using the History API or hash-based routing) to dynamically load content and views without full page reloads. State management might be handled through simple JavaScript objects or potentially a lightweight custom solution.
+
+\subsection{Rendering}
+\begin{itemize}
+    \item \textbf{Game Interface:} The core Pong gameplay (paddles, ball, score) is rendered dynamically on an HTML5 \texttt{<canvas>} element, providing fine-grained control over animations and interactions.
+    \item \textbf{UI Elements:} Other interface components (dashboard, login forms, profile page, menus) are built using standard HTML elements manipulated via the Document Object Model (DOM) by JavaScript. Bootstrap provides styling and layout components.
+\end{itemize}
+
+\subsection{API Interaction}
+The frontend communicates with the Django backend via asynchronous JavaScript (e.g., using the \texttt{fetch} API) to send requests to the RESTful API endpoints and receive data in JSON format. Real-time updates (discussed below) are handled separately.
+
+\section{Database Implementation}
+\label{sec:database_impl}
+Data persistence relies on two distinct systems:
+
+\subsection{PostgreSQL}
+A PostgreSQL (version 15) relational database serves as the primary datastore for user accounts, profiles, friend relationships, game settings, and detailed match history. Django's ORM (Object-Relational Mapper) facilitates interaction with the database.
+
+\subsection{Ethereum Sidechain}
+For tournament results, an Ethereum-compatible sidechain (potentially using Proof of Authority) is employed to ensure immutable and verifiable record-keeping. The Django backend interacts with a deployed smart contract via the \texttt{Web3.py} library to record the winners and potentially other key tournament data.
+
+\section{Real-time Communication}
+\label{sec:realtime_impl}
+Real-time functionality, crucial for interactive gameplay and potentially chat, is likely implemented using \textbf{WebSockets}. Django Channels is the probable framework used within Django to handle WebSocket connections, allowing bidirectional communication between the server and connected clients for instant game state synchronization and message passing.
+
+\section{DevOps and Containerization (Docker)}
+\label{sec:devops_impl}
+The entire application stack is containerized using Docker and orchestrated with Docker Compose, facilitating consistent development, testing, and deployment environments.
+
+The \texttt{docker-compose.yml} file defines the services:
+\begin{itemize}
+    \item \textbf{Backend:} Runs the Django application (likely using Gunicorn or Uvicorn).
+    \item \textbf{Frontend/Nginx:} An Nginx container serves the static frontend files (HTML, CSS, JS) and acts as a reverse proxy for the Django backend. It also handles TLS termination for HTTPS.
+    \item \textbf{Database:} A PostgreSQL container manages the relational data.
+    \item \textbf{ELK Stack:} Separate containers for Elasticsearch and Kibana handle centralized logging and monitoring.
+\end{itemize}
+Makefiles are likely used to streamline common Docker operations like building images, starting/stopping containers, and running management commands.
