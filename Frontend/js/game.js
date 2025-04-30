@@ -59,7 +59,7 @@ class PongGame {
         this.paddle2Speed = 0;
         this.paddle3Speed = 0;
         this.paddle4Speed = 0;
-        this.paddleMaxSpeed = 5;
+        this.paddleMaxSpeed = 7;
         this.aiReactionDelay = 0;
         this.aiPredictionAccuracy = 0.8;
         this.aiRandomOffset = 20;
@@ -172,10 +172,16 @@ class PongGame {
         const videoBgInit = document.getElementById('videoBackground');
         if (videoBgInit) {
             videoBgInit.style.display = 'none';
-            videoBgInit.style.zIndex = '-1';
+            videoBgInit.style.zIndex = '1';
             if (videoBgInit.pause) {
                 videoBgInit.pause();
                 videoBgInit.currentTime = 0;
+            }
+            
+            // Prepare the overlay for future video use
+            const overlay = videoBgInit.querySelector('.video-overlay');
+            if (overlay) {
+                overlay.style.background = 'rgba(0, 0, 0, 1)'; // Start with solid black
             }
         }
         
@@ -1604,13 +1610,24 @@ class PongGame {
         const backgroundSelect = document.getElementById('backgroundSelect');
         const videoBg = document.getElementById('videoBackground');
         if (backgroundSelect.value === 'video') {
+            // Create dark sparkle background effect
+            this.gameArea.style.backgroundColor = '#000000'; // Solid black background
             videoBg.style.display = 'block';
-            videoBg.style.zIndex = '-1';
-            videoBg.play().catch(e => console.log('Error playing video background:', e));
+            videoBg.style.zIndex = '1'; // Ensure it's above the base background
+            
+            // Remove semi-transparent overlay for now
+            const overlay = videoBg.querySelector('.video-overlay');
+            if (overlay) {
+                overlay.style.background = 'rgba(0, 0, 0, 0.3)'; // Completely opaque for now
+            }
+            
+            // For future video implementation, uncomment:
+            // videoBg.play().catch(e => console.log('Error playing video background:', e));
         } else {
             videoBg.pause();
             videoBg.currentTime = 0;
             videoBg.style.display = 'none';
+            this.gameArea.style.backgroundColor = 'rgba(0, 0, 0, 1)'; // Reset to original style
         }
     }
     
