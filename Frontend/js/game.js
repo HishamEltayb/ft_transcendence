@@ -113,6 +113,12 @@ class PongGame {
         // Add scaling factors for consistent movement
         this.scaleX = 1;
         this.scaleY = 1;
+        
+        // AI-related variables
+        this.lastAIUpdateTime = null;
+        this.aiTargetY = undefined;
+        this.aiPredictedY = undefined;
+        this.aiTargetOffset = 0;
     }
     
     /**
@@ -1020,27 +1026,33 @@ class PongGame {
             if (paddleId === 4 && this.lastPaddleHit.rightSide === 'paddle4') return false;
         }
         
-        // Trajectory-based collision detection
-        if (this.ballLastX + parseFloat(this.ball.style.width) < paddleLeft &&
-            parseFloat(this.ball.style.left) + parseFloat(this.ball.style.width) >= paddleLeft) {
+        const ballWidth = parseFloat(this.ball.style.width);
+        const ballLeft = parseFloat(this.ball.style.left);
+        
+        // Trajectory-based collision detection - check if ball's right edge crosses paddle's left edge
+        if (this.ballLastX + ballWidth < paddleLeft && ballLeft + ballWidth >= paddleLeft) {
             // Calculate the y position at the time of intersection using linear interpolation
-            const ratio = (paddleLeft - (this.ballLastX + parseFloat(this.ball.style.width))) /
-                         (parseFloat(this.ball.style.left) - this.ballLastX);
+            const ratio = (paddleLeft - (this.ballLastX + ballWidth)) /
+                         ((ballLeft + ballWidth) - (this.ballLastX + ballWidth));
             const intersectY = this.ballLastY + ratio * (parseFloat(this.ball.style.top) - this.ballLastY);
             
             // Check if this y position is within the paddle's height bounds
             if (intersectY + parseFloat(this.ball.style.height) >= paddleY &&
                 intersectY <= paddleY + this.paddleHeight) {
+                // Set ball position so its right edge exactly touches the paddle's left edge
+                this.ball.style.left = `${paddleLeft - ballWidth}px`;
                 this.adjustBallDirection(paddleY, this.paddleHeight, false, paddleId);
                 this.collisionProcessedThisFrame = true;
                 return true;
             }
         }
         // Backup collision check for slower balls or edge cases
-        else if (parseFloat(this.ball.style.left) + parseFloat(this.ball.style.width) >= paddleLeft - 2 &&
-                 parseFloat(this.ball.style.left) < paddleLeft + this.paddleWidth &&
+        else if (ballLeft + ballWidth >= paddleLeft - 2 &&
+                 ballLeft < paddleLeft + this.paddleWidth &&
                  parseFloat(this.ball.style.top) + parseFloat(this.ball.style.height) >= paddleY - 2 &&
                  parseFloat(this.ball.style.top) <= paddleY + this.paddleHeight + 2) {
+            // Set ball position so its right edge exactly touches the paddle's left edge
+            this.ball.style.left = `${paddleLeft - ballWidth}px`;
             this.adjustBallDirection(paddleY, this.paddleHeight, false, paddleId);
             this.collisionProcessedThisFrame = true;
             return true;
@@ -1211,50 +1223,55 @@ class PongGame {
         // Skip if not in AI mode
         if (!this.isAIMode) return;
         
-        // Get current ball position
-        const ballStyle = window.getComputedStyle(this.ball);
-        const ballLeft = parseFloat(ballStyle.left);
-        const ballTop = parseFloat(ballStyle.top);
-        const ballSize = parseFloat(ballStyle.width);
-        const ballCenterY = ballTop + ballSize / 2;
-        
-        // Get current paddle position
-        const paddleCenterY = this.paddle2Y + this.paddleHeight / 2;
-        
-        // Set difficulty parameters
-        switch (this.aiDifficulty) {
-            case 'easy':
-                this.aiReactionDelay = 0.3; // 300ms delay
-                this.aiPredictionAccuracy = 0.5; // 50% accuracy
-                this.aiRandomOffset = 40; // Larger random offset
-                this.paddle2Speed = this.paddleMaxSpeed * 0.6; // 60% speed
-                break;
-                
-            case 'medium':
-                this.aiReactionDelay = 0.15; // 150ms delay
-                this.aiPredictionAccuracy = 0.8; // 80% accuracy
-                this.aiRandomOffset = 20; // Medium random offset
-                this.paddle2Speed = this.paddleMaxSpeed * 0.8; // 80% speed
-                break;
-                
-            case 'hard':
-                this.aiReactionDelay = 0.05; // 50ms delay
-                this.aiPredictionAccuracy = 0.95; // 95% accuracy
-                this.aiRandomOffset = 5; // Small random offset
-                this.paddle2Speed = this.paddleMaxSpeed * 1.0; // Full speed
-                break;
+        // Only update AI decisions once per second
+        const currentTime = Date.now();
+        if (!this.lastAIUpdateTime) {
+            this.lastAIUpdateTime = currentTime;
         }
         
-        // Only move if ball is moving towards AI paddle
-        if (this.ballSpeedX > 0) {
-            // Predict where ball will be when it reaches the paddle
-            const distanceX = this.gameWidth - ballLeft - ballSize - this.paddleWidth;
-            const timeToReach = distanceX / (this.ballSpeedX * 60); // in seconds
+        // Calculate time since last update (in seconds)
+        const timeSinceLastUpdate = (currentTime - this.lastAIUpdateTime) / 1000;
+        
+        // Only make new decisions once per second
+        if (timeSinceLastUpdate >= 1) {
+            // Store current ball position for AI decision making
+            const ballStyle = window.getComputedStyle(this.ball);
+            const ballLeft = parseFloat(ballStyle.left);
+            const ballTop = parseFloat(ballStyle.top);
+            const ballSize = parseFloat(ballStyle.width);
+            const ballCenterY = ballTop + ballSize / 2;
             
-            // Only react if ball is close enough or moving fast
-            if (timeToReach < this.aiReactionDelay || distanceX < this.gameWidth * 0.5) {
+            // Set difficulty parameters
+            switch (this.aiDifficulty) {
+                case 'easy':
+                    this.aiPredictionAccuracy = 0.3; // 30% accuracy
+                    this.aiRandomOffset = 50; // Larger random offset
+                    this.paddle2Speed = this.paddleMaxSpeed * 0.4; // 40% speed
+                    this.aiTargetOffset = 30; // Intentionally miss more often
+                    break;
+                    
+                case 'medium':
+                    this.aiPredictionAccuracy = 0.6; // 60% accuracy
+                    this.aiRandomOffset = 20; // Medium random offset
+                    this.paddle2Speed = this.paddleMaxSpeed * 0.7; // 70% speed
+                    this.aiTargetOffset = 15; // Occasionally miss
+                    break;
+                    
+                case 'hard':
+                    this.aiPredictionAccuracy = 0.9; // 90% accuracy
+                    this.aiRandomOffset = 10; // Small random offset
+                    this.paddle2Speed = this.paddleMaxSpeed * 0.9; // 90% speed
+                    this.aiTargetOffset = 5; // Rarely miss
+                    break;
+            }
+            
+            // Only calculate new target if ball is moving towards AI paddle
+            if (this.ballSpeedX > 0) {
+                // Predict where ball will be when it reaches the paddle
+                const distanceX = this.gameWidth - ballLeft - ballSize - this.paddleWidth;
+                
                 // Predict Y position
-                let predictedY = this.predictBallPosition(
+                this.aiPredictedY = this.predictBallPosition(
                     ballLeft, 
                     ballTop, 
                     this.ballSpeedX, 
@@ -1263,47 +1280,50 @@ class PongGame {
                 );
                 
                 // Add randomness based on difficulty
-                predictedY += (Math.random() * 2 - 1) * this.aiRandomOffset;
+                this.aiPredictedY += (Math.random() * 2 - 1) * this.aiRandomOffset;
                 
-                // Adjust prediction accuracy
-                predictedY = paddleCenterY * (1 - this.aiPredictionAccuracy) + 
-                             predictedY * this.aiPredictionAccuracy;
+                // Add intentional offset based on difficulty
+                if (Math.random() > this.aiPredictionAccuracy) {
+                    // Occasionally move away from the ball
+                    this.aiPredictedY += (Math.random() > 0.5 ? 1 : -1) * this.aiTargetOffset;
+                }
                 
-                // Move paddle towards predicted position
-                const targetY = predictedY - this.paddleHeight / 2;
+                // Store the calculated target position
+                this.aiTargetY = this.aiPredictedY - this.paddleHeight / 2;
                 
                 // Clamp target position to game boundaries
-                const clampedTargetY = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, targetY));
-                
-                // Move towards target position
-                if (paddleCenterY < predictedY - this.paddleHeight / 10) {
+                this.aiTargetY = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, this.aiTargetY));
+            } else {
+                // When ball is moving away, gradually return to center
+                this.aiTargetY = (this.gameHeight - this.paddleHeight) / 2;
+            }
+            
+            // Update last AI update time
+            this.lastAIUpdateTime = currentTime;
+        }
+        
+        // Move paddle towards the target position (smooth movement)
+        if (this.aiTargetY !== undefined) {
+            const paddleCenterY = this.paddle2Y + this.paddleHeight / 2;
+            const targetCenterY = this.aiTargetY + this.paddleHeight / 2;
+            
+            // Only move if the paddle is not very close to the target
+            if (Math.abs(paddleCenterY - targetCenterY) > this.paddleHeight / 10) {
+                // Move towards target at constant speed
+                if (paddleCenterY < targetCenterY) {
                     // Move down
                     this.paddle2Y += this.paddle2Speed * this.deltaTime * 60;
-                } else if (paddleCenterY > predictedY + this.paddleHeight / 10) {
+                } else {
                     // Move up
                     this.paddle2Y -= this.paddle2Speed * this.deltaTime * 60;
                 }
                 
                 // Clamp position to game boundaries
                 this.paddle2Y = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, this.paddle2Y));
-                
-                // Update DOM
-                this.paddle2.style.top = `${this.paddle2Y}px`;
             }
-        } else {
-            // Return to center when ball moving away
-            if (Math.abs(paddleCenterY - this.gameHeight / 2) > this.paddleHeight / 4) {
-                if (paddleCenterY > this.gameHeight / 2) {
-                    // Move up
-                    this.paddle2Y -= this.paddle2Speed * 0.5 * this.deltaTime * 60;
-                } else {
-                    // Move down
-                    this.paddle2Y += this.paddle2Speed * 0.5 * this.deltaTime * 60;
-                }
-                
-                // Update DOM
-                this.paddle2.style.top = `${this.paddle2Y}px`;
-            }
+            
+            // Update DOM
+            this.paddle2.style.top = `${this.paddle2Y}px`;
         }
     }
     
