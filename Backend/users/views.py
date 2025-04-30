@@ -52,7 +52,6 @@ class LoginView(APIView):
             'success': True
         })
         response.data['user']['tournaments'] = get_tournaments(user.username)
-        print(response.data)
         response.set_cookie(key='access_token', value=access_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 30)
         response.set_cookie(key='refresh_token', value=refresh_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 60 * 24)
         return response
