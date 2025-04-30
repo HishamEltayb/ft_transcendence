@@ -8,11 +8,9 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./Backend:/app
+      - backend:/app
     env_file:
       - .env
-    environment:
-      - ELASTIC_CLIENT_APIVERSIONING=true
     networks:
       - transcendence
     depends_on:
@@ -44,15 +42,15 @@ services:
     restart: unless-stopped
 
   blockchain:
-    build: ./Blockchain
+    build: ./Infrastructure/Blockchain
     image: blockchain
     container_name: blockchain
     expose:
       - "8545"
-    ports:
-      - "8545:8545"
     volumes:
       - blockchain:/etc/ethereum/Pong
+    secrets:
+      - password
     networks:
       - transcendence
     healthcheck:
@@ -97,17 +95,16 @@ services:
 
   elasticsearch:
     build: ./Infrastructure/elasticsearch
-    image: elk
-    container_name: elk
+    image: elasticsearch
+    container_name: elasticsearch
     ports:
       - "9200:9200"
     volumes:
-      - elk:/usr/share/elasticsearch/data
+      - elasticsearch:/usr/share/elasticsearch/data
     env_file:
       - .env
     environment:
       - discovery.type=single-node
-      - ELASTIC_CLIENT_APIVERSIONING=true
     networks:
       - transcendence
     healthcheck:
@@ -127,13 +124,6 @@ services:
       - kibana:/usr/share/kibana
     env_file:
       - .env
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elk:9200
-      - SERVER_NAME=kibana
-      - SERVER_HOST="0.0.0.0"
-      - SERVER_BASEPATH=/kibana
-      - SERVER_REWRITEBASEPATH=true
-      - SERVER_PUBLICBASEURL=https://localhost/kibana
     networks:
       - transcendence
     depends_on:
@@ -160,19 +150,26 @@ services:
     restart: unless-stopped
 
 volumes:
+  backend:
+    name: backend
   postgres:
     name: postgres
   ssl: 
     name: ssl
-  elk:
-    name: elk
+  elasticsearch:
+    name: elasticsearch
   kibana:
     name: kibana
   blockchain:
     name: eth
   logstash:
     name: logstash
+  # frontend:
+  #   name: frontend
 
+secrets:
+  password:
+    file: ./Infrastructure/Blockchain/secrets/password
 
 networks:
   transcendence:

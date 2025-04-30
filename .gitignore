@@ -11,7 +11,7 @@ venv.bak/
 staticfiles/
 __pycache__/
 .github/
-Backend/contract/contract_address.json
 000*
 database/
 .github/
+password

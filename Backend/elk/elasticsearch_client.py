@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 import os
 
-ELASTICSEARCH_HOST = os.environ.get("ELASTICSEARCH_HOST")
+ELASTICSEARCH_HOSTS = os.environ.get("ELASTICSEARCH_HOSTS")
 # ELASTICSEARCH_USER = os.environ.get("ELASTICSEARCH_USER", "elastic")
 # ELASTICSEARCH_PASS = os.environ.get("ELASTICSEARCH_PASSWORD1", "elastic")
 
@@ -9,7 +9,7 @@ ELASTICSEARCH_HOST = os.environ.get("ELASTICSEARCH_HOST")
 
 
 es = Elasticsearch(
-    hosts=[ELASTICSEARCH_HOST],
+    hosts=[ELASTICSEARCH_HOSTS],
     # basic_auth=(ELASTICSEARCH_USER, ELASTICSEARCH_PASS),
     verify_certs=False,  # For local dev/self-signed certs
     ssl_show_warn=False,

@@ -20,7 +20,7 @@ print("balance:", w3.from_wei(w3.eth.get_balance(w3.eth.default_account), 'ether
 # 2. load the contract
 # -------------------------
 
-with open('/app/contract/Tournaments.json', 'r') as file:
+with open('/app/tools/Tournaments.json', 'r') as file:
     contract_data = json.load(file)
 
 abi = contract_data['abi']
@@ -40,6 +40,6 @@ contract = w3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
 
 print("✅ Contract deployed at:", contract.address)
 
-with open('/app/contract/contract_address.json', 'w') as file:
+with open('/app/tools/contract_address.json', 'w') as file:
     json.dump(contract.address, file)
 print("Contract address saved to contract_address.json")
