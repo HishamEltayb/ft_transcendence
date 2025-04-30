@@ -34,8 +34,8 @@ class MatchCreateView(APIView):
             winner        = data['winner'],
             matchType = data['matchType']
         )
-        if data['matchType'] != 'multiplayer':
-            User.objects.filter(username=data['player1Name'])[0].update_stats()
+        User.objects.filter(username=request.user.username)[0].matchHistory.add(m)
+        User.objects.filter(username=request.user.username)[0].update_stats()
         return Response({'match_id': m.id}, status=status.HTTP_201_CREATED)
 
  

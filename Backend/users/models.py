@@ -24,24 +24,26 @@ class User(AbstractUser):
     losses = models.IntegerField(default=0)
     win_rate = models.FloatField(default=0.0)
     matchHistory = models.ManyToManyField(Match, blank=True, related_name="matchHistory")
+    rank = models.CharField(max_length=100, blank=True, null=True)
 
     def update_stats(self):
-        self.total_games = Match.objects.filter(player1Name=self.username).count() + Match.objects.filter(player2Name=self.username).count()
-        self.wins = Match.objects.filter(winner=self.username, player1Name=self.username).count() + Match.objects.filter(winner=self.username, player2Name=self.username).count()
+        self.total_games = self.matchHistory.count()
+        self.wins = self.matchHistory.filter(winner=self.username).count()
         self.losses = self.total_games - self.wins
         self.win_rate = round((self.wins / self.total_games) * 100, 2) if self.total_games > 0 else 0.0
-        self.matchHistory.clear()
-        matches = Match.objects.filter(player1Name=self.username) | Match.objects.filter(player2Name=self.username)
-        self.matchHistory.add(*matches)  # Add all related matches
+        if self.wins < 5:
+            self.rank = "Bronze"
+        elif self.wins < 10:
+            self.rank = "Silver"
+        elif self.wins < 20:
+            self.rank = "Gold"
+        elif self.wins < 50:
+            self.rank = "Platinum"
+        elif self.wins < 100:
+            self.rank = "Diamond"
+        else:
+            self.rank = "Master"
         self.save()
-
-    @property
-    def rank(self):
-        rank = Match.objects.filter(winner=self.username, player1Name=self.username).count() + \
-               Match.objects.filter(winner=self.username, player2Name=self.username).count()
-        self.rank = rank
-        self.save()
-        return rank
     
     def __str__(self):
         return self.username
