@@ -25,6 +25,7 @@ class MatchCreateView(APIView):
     """
     def post(self, request):
         data = request.data
+        print("data", data)
         m = Match.objects.create(
             player1Name  = data['player1Name'],
             player2Name  = data['player2Name'],
@@ -33,7 +34,8 @@ class MatchCreateView(APIView):
             winner        = data['winner'],
             matchType = data['matchType']
         )
-        User.objects.filter(username=data['player1Name'])[0].update_stats()
+        if data['matchType'] != 'multiplayer':
+            User.objects.filter(username=data['player1Name'])[0].update_stats()
         return Response({'match_id': m.id}, status=status.HTTP_201_CREATED)
 
  
@@ -87,9 +89,7 @@ class TournamentCreateView(APIView):
         ]
       print("username", request.user.username)
       id = save_tournament(tournament_name=request.user.username, matches=matches)
-    #   tour = get_tournaments(request.user.username)
-    #   print("tournement", tour)
-      User.objects.filter(username=data['player1Name'])[0].update_stats()
+      User.objects.filter(username=request.user.username)[0].update_stats()
       return Response(
           {
               'tournament_id': id

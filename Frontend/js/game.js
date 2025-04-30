@@ -256,8 +256,8 @@ class PongGame {
         if (multiplayerButton) {
             multiplayerButton.addEventListener('click', () => {
                 console.log('Multiplayer button clicked from setupEventListeners');
-                this.player1Name.textContent = "TEAM 1";
-                this.player2Name.textContent = 'TEAM 2';
+                this.player1Name.textContent = this.userName;
+                this.player2Name.textContent = 'Obs Team';
                 this.setGameMode('multiplayer');
             });
         } else {
@@ -517,6 +517,9 @@ class PongGame {
                 this.isMultiplayerMode = true;
                 console.log('Setting Multiplayer mode');
                 activeButton = document.getElementById('multiplayerButton');
+                // Set default display names for multiplayer: user vs Obs team
+                if (this.player1Name) this.player1Name.textContent = this.userName;
+                if (this.player2Name) this.player2Name.textContent = 'Obs team';
                 break;
                 
             case 'tournament':
@@ -1197,6 +1200,7 @@ class PongGame {
     }
 
     getMatchType() {
+        // console.log("this.isTournamentMode", this.isTournamentMode)
       switch (true) {
         case this.isTournamentMode:
           return 'tournament';
@@ -1587,14 +1591,10 @@ class PongGame {
             
             if (team1NameInput.value) {
                 this.player1Name.textContent = team1NameInput.value;
-            } else {
-                this.player1Name.textContent = 'Left Team';
             }
             
             if (team2NameInput.value) {
                 this.player2Name.textContent = team2NameInput.value;
-            } else {
-                this.player2Name.textContent = 'Right Team';
             }
         }
         
