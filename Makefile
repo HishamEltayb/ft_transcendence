@@ -1,10 +1,7 @@
-
-all:
+all-log:
 	docker compose up --build
-	
 
-down:
-	docker compose down -v
+all: up build
 
 up:
 	docker compose up -d
@@ -12,28 +9,46 @@ up:
 build:
 	docker compose build
 
-clean-images:
-	docker image rm -f backend
+down:
+	-@docker compose down -v
 
-clean-volumes:
-	docker volume rm -f backend
+clean:
+	-@docker rm -f $$(docker container ls -aq)
+	-@docker rmi -f $$(docker images -q)
+	-@docker network rm transcendence
+	-@docker volume rm -f $$(docker volume ls -q)
 
-clean-all:
-	docker compose down -v
-	docker image rm -f backend
-	docker volume rm -f backend
-
-fclean: down
-	yes | docker system prune -a
-	yes | docker image prune -a
-	yes | docker volume prune
-	yes | docker network prune
-	yes | docker container prune
-
+fclean: clean
+	-@yes | docker system prune -a
+	-@yes | docker image prune -a
+	-@yes | docker volume prune
+	-@yes | docker network prune
+	-@yes | docker container prune
 
 logs:
 	docker compose logs -f
 
-re: clean-all all
+attach-backend:
+	docker exec -it backend /bin/sh
+
+attach-blockchain:
+	docker exec -it blockchain /bin/bash
+
+attach-frontend:
+	docker exec -it frontend /bin/sh
+
+attach-database:
+	docker exec -it postgres /bin/sh
+
+attach-nginx:
+	docker exec -it nginx /bin/sh
+
+re: clean all-log
+
+.PHONY: all down clean fclean logs re all-log attach-backend attach-frontend attach-database attach-nginx up build
 
 
+backend-test:
+	docker compose exec backend python3 manage.py test users.tests_register --verbosity=2
+	docker compose exec backend python3 manage.py test users.tests_login.LoginViewTests --verbosity=2
+	docker compose exec backend python3 manage.py test users.tests_2fa --verbosity=2
