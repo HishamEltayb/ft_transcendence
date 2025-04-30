@@ -1198,7 +1198,8 @@ class PongGame {
                 document.getElementById('nextMatchButton').style.display = 'none';
             }
         } else {
-            document.getElementById('nextMatchButton').style.display = 'none';
+            const nextMatchButton = document.getElementById('nextMatchButton');
+            if (nextMatchButton) nextMatchButton.style.display = 'none';
         }
         
         // Show the win screen
