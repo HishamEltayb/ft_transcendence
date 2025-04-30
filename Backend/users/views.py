@@ -20,6 +20,7 @@ import io
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from tournaments.block import get_tournaments
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -43,7 +44,6 @@ class LoginView(APIView):
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         user.update_stats()
-
         refresh = RefreshToken.for_user(user)
         access_token_str = str(refresh.access_token)
         refresh_token_str = str(refresh)
@@ -51,6 +51,7 @@ class LoginView(APIView):
             'user': UserSerializer(user).data,
             'success': True
         })
+        response.data['user']['tournaments'] = get_tournaments(user.username)
         response.set_cookie(key='access_token', value=access_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 30)
         response.set_cookie(key='refresh_token', value=refresh_token_str, httponly=True, secure=True, samesite='Lax', max_age=60 * 60 * 24)
         return response
@@ -174,8 +175,15 @@ class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-    def get_object(self):
-        return self.request.user
+    def get(self, request):
+        user = self.request.user
+        response = Response({
+            'user': UserSerializer(user).data,
+            'status': 'success',
+            'success': True
+        })
+        response.data['user']['tournaments'] = get_tournaments(user.username)
+        return response
 
 class FortyTwoLoginView(APIView):
     """
