@@ -377,20 +377,13 @@ class Profile {
         } else {
             entries.forEach(entry => {
                 console.log('Entry:', entry);
-                user_pos = 0;
-                if (entry.player2Name === currentUser) {
-                    user_pos = 1;
-                }
-                opponent = user_pos === 0 ? entry.player2Name : entry.player1Name;
-                score = user_pos === 0 ? entry.score1 + ' - ' + entry.score2 : entry.score2 + ' - ' + entry.score1;
-                result = entry.winner === currentUser ? 'Won' : 'Lost';
                 const tr = document.createElement('tr');
                 if (entry.isTournament) tr.classList.add('table-warning');
                 tr.innerHTML = `
-                    <td>${entry.matchType}</td>
-                    <td>${opponent}</td>
-                    <td>${score}</td>
-                    <td>${result}</td>
+                    <td>${entry.type}</td>
+                    <td>${entry.opponent}</td>
+                    <td>${entry.score}</td>
+                    <td>${entry.result}</td>
                     <td>${entry.date}</td>
                 `;
                 tableBody.appendChild(tr);

@@ -23,7 +23,7 @@ class User(AbstractUser):
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
     win_rate = models.FloatField(default=0.0)
-    matchHistory = models.ManyToManyField(Match, blank=True, related_name='matchHistory')
+    matchHistory = models.ManyToManyField(Match, blank=True, related_name="matchHistory")
 
     def update_stats(self):
         self.total_games = Match.objects.filter(player1Name=self.username).count() + Match.objects.filter(player2Name=self.username).count()
@@ -31,9 +31,8 @@ class User(AbstractUser):
         self.losses = self.total_games - self.wins
         self.win_rate = round((self.wins / self.total_games) * 100, 2) if self.total_games > 0 else 0.0
         self.matchHistory.clear()
-        self.matchHistory.add(Match.objects.filter(player1Name=self.username))
-        print("Match history player1:", Match.objects.filter(player1Name=self.username))
-        self.matchHistory.add(Match.objects.filter(player2Name=self.username))
+        matches = Match.objects.filter(player1Name=self.username) | Match.objects.filter(player2Name=self.username)
+        self.matchHistory.add(*matches)  # Add all related matches
         self.save()
 
     @property

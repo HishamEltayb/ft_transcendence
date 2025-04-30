@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from .models import User
+from tournaments.serializers import MatchSerializer
 
 class UserSerializer(serializers.ModelSerializer):
+
+    matchHistory = MatchSerializer(many=True, read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'win_rate', 'matchHistory']
+        fields = ['id', 'username', 'email', 'profile_image', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled', 'total_games', 'wins', 'losses', 'win_rate', 'rank', 'matchHistory']
         read_only_fields = ['id', 'intra_id', 'intra_login', 'is_oauth_user', 'is_two_factor_enabled']
 
 class RegisterSerializer(serializers.ModelSerializer):
