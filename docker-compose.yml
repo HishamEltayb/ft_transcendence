@@ -82,7 +82,7 @@ services:
     expose:
       - "3000"
     volumes:
-      - ./Frontend:/app
+      - frontend:/app
     networks:
       - transcendence
     healthcheck:
