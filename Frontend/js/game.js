@@ -257,7 +257,7 @@ class PongGame {
             multiplayerButton.addEventListener('click', () => {
                 console.log('Multiplayer button clicked from setupEventListeners');
                 this.player1Name.textContent = this.userName;
-                this.player2Name.textContent = 'Obs Team';
+                this.player2Name.textContent = 'Obs team';
                 this.setGameMode('multiplayer');
             });
         } else {
@@ -277,13 +277,17 @@ class PongGame {
         
         // Settings and How to Play buttons
         document.getElementById('settingsButton').addEventListener('click', () => {
+            // Show team name inputs only in multiplayer mode
+            document.querySelectorAll('.setting-team').forEach(el => {
+                el.style.display = this.isMultiplayerMode ? 'flex' : 'none';
+            });
             // Clear active state from all bottom buttons
             const bottomButtons = document.querySelectorAll('.bottom-buttons .game-btn');
             bottomButtons.forEach(btn => btn.classList.remove('active'));
-            
+
             // Set active state for the settings button
             document.getElementById('settingsButton').classList.add('active');
-            
+
             this.hideGameButtons();
             document.getElementById('settingsScreen').style.display = 'block';
         });
@@ -517,9 +521,13 @@ class PongGame {
                 this.isMultiplayerMode = true;
                 console.log('Setting Multiplayer mode');
                 activeButton = document.getElementById('multiplayerButton');
-                // Set default display names for multiplayer: user vs Obs team
-                if (this.player1Name) this.player1Name.textContent = this.userName;
-                if (this.player2Name) this.player2Name.textContent = 'Obs team';
+                // Determine team names: respect settings overrides or use defaults
+                const team1InputEl = document.getElementById('team1NameInput');
+                const team2InputEl = document.getElementById('team2NameInput');
+                const team1Name = (team1InputEl && team1InputEl.value) ? team1InputEl.value : this.userName;
+                const team2Name = (team2InputEl && team2InputEl.value) ? team2InputEl.value : 'Obs team';
+                this.player1Name.textContent = team1Name;
+                this.player2Name.textContent = team2Name;
                 break;
                 
             case 'tournament':
@@ -1584,18 +1592,12 @@ class PongGame {
             this.player2Name.textContent = `AI (${difficultyName})`;
         }
         
-        // Apply team names for multiplayer mode
+        // If in multiplayer mode, apply team name overrides or retain current values
         if (this.isMultiplayerMode) {
-            const team1NameInput = document.getElementById('team1NameInput');
-            const team2NameInput = document.getElementById('team2NameInput');
-            
-            if (team1NameInput.value) {
-                this.player1Name.textContent = team1NameInput.value;
-            }
-            
-            if (team2NameInput.value) {
-                this.player2Name.textContent = team2NameInput.value;
-            }
+            const team1Val = document.getElementById('team1NameInput').value;
+            const team2Val = document.getElementById('team2NameInput').value;
+            this.player1Name.textContent = team1Val || this.player1Name.textContent;
+            this.player2Name.textContent = team2Val || this.player2Name.textContent;
         }
         
         // Apply background setting
