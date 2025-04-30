@@ -205,7 +205,6 @@ class PongGame {
      * Set up event listeners for menu buttons and game controls
      */
     setupEventListeners() {
-        console.log('Setting up event listeners');
         // Bind event handlers to this instance
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -227,10 +226,8 @@ class PongGame {
         
         // Game mode buttons
         const pvpButton = document.getElementById('pvpButton');
-        console.log('setupEventListeners - pvpButton:', pvpButton);
         if (pvpButton) {
             pvpButton.addEventListener('click', () => {
-                console.log('PVP button clicked from setupEventListeners');
                 // On 1 VS 1, set Player 1's name to current user and Player 2's name to RANDOM
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'RANDOM';
@@ -241,10 +238,8 @@ class PongGame {
         }
         
         const pveButton = document.getElementById('pveButton');
-        console.log('setupEventListeners - pveButton:', pveButton);
         if (pveButton) {
             pveButton.addEventListener('click', () => {
-                console.log('PVE button clicked from setupEventListeners');
                 // On 1 VS AI, set Player 1's name to current user and Player 2's name to AI
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'AI';
@@ -255,10 +250,8 @@ class PongGame {
         }
         
         const multiplayerButton = document.getElementById('multiplayerButton');
-        console.log('setupEventListeners - multiplayerButton:', multiplayerButton);
         if (multiplayerButton) {
             multiplayerButton.addEventListener('click', () => {
-                console.log('Multiplayer button clicked from setupEventListeners');
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'Obs team';
                 this.setGameMode('multiplayer');
@@ -268,10 +261,8 @@ class PongGame {
         }
         
         const tournamentButton = document.getElementById('tournamentButton');
-        console.log('setupEventListeners - tournamentButton:', tournamentButton);
         if (tournamentButton) {
             tournamentButton.addEventListener('click', () => {
-                console.log('Tournament button clicked from setupEventListeners');
                 this.setGameMode('tournament');
             });
         } else {
@@ -524,21 +515,18 @@ class PongGame {
         switch (mode) {
             case 'pvp':
                 // Player vs Player mode
-                console.log('Setting PvP mode');
                 activeButton = document.getElementById('pvpButton');
                 break;
                 
             case 'ai':
                 // Player vs AI mode
                 this.isAIMode = true;
-                console.log('Setting AI mode - isAIMode set to', this.isAIMode);
                 activeButton = document.getElementById('pveButton');
                 break;
                 
             case 'multiplayer':
                 // 4 player mode
                 this.isMultiplayerMode = true;
-                console.log('Setting Multiplayer mode');
                 activeButton = document.getElementById('multiplayerButton');
                 // Determine team names: respect settings overrides or use defaults
                 const team1InputEl = document.getElementById('team1NameInput');
@@ -552,7 +540,6 @@ class PongGame {
             case 'tournament':
                 // Tournament mode
                 this.isTournamentMode = true;
-                console.log('Setting Tournament mode');
                 activeButton = document.getElementById('tournamentButton');
                 // Show tournament setup
                 document.getElementById('tournamentScreen').style.display = 'block';
@@ -629,7 +616,6 @@ class PongGame {
         this.lastTime = performance.now();
         this.animationFrameId = requestAnimationFrame(this.gameLoop);
         
-        console.log('Game started');
     }
     
     /**
@@ -1183,7 +1169,6 @@ class PongGame {
         
         // Capture this match data into matchObj
         this.fillMatchObj(winnerName);
-        console.log('Match result:', this.matchObj);
         
         // Tournament logic: record and show next match button
         if (this.isTournamentMode) {
@@ -1227,7 +1212,6 @@ class PongGame {
     }
 
     getMatchType() {
-        // console.log("this.isTournamentMode", this.isTournamentMode)
       switch (true) {
         case this.isTournamentMode:
           return 'tournament';
@@ -1257,19 +1241,16 @@ class PongGame {
             case 'paddle':
                 if (this.paddleSound) {
                     this.paddleSound.currentTime = 0;
-                    this.paddleSound.play().catch(e => console.log("Error playing sound:", e));
                 }
                 break;
             case 'wall':
                 if (this.wallSound) {
                     this.wallSound.currentTime = 0;
-                    this.wallSound.play().catch(e => console.log("Error playing sound:", e));
                 }
                 break;
             case 'loss':
                 if (this.lossSound) {
                     this.lossSound.currentTime = 0;
-                    this.lossSound.play().catch(e => console.log("Error playing sound:", e));
                 }
                 break;
         }
@@ -1625,7 +1606,6 @@ class PongGame {
         if (backgroundSelect.value === 'video') {
             videoBg.style.display = 'block';
             videoBg.style.zIndex = '-1';
-            videoBg.play().catch(e => console.log('Error playing video background:', e));
         } else {
             videoBg.pause();
             videoBg.currentTime = 0;

@@ -183,8 +183,7 @@ class API {
 
       localStorage.setItem('user', JSON.stringify(userData));
 
-      
-      return { success: true, userData, isAuthenticated };
+      return { success: true, userData: userData.user, isAuthenticated };
     } catch (error) {
       console.error(`Error in getUserData (attempt ${retryCount + 1}):`, error);
       return { success: false, error: error.message };
@@ -412,25 +411,6 @@ class API {
       return { success: false, error: error.message };
     }
   }
-  // async fetchMatchHistory() {
-  //   try {
-  //     const response = await fetch(ENDPOINTS.game.match_history, {
-  //       method: 'GET',
-  //       credentials: 'include',
-  //       headers: { 
-  //         'Content-Type': 'application/json' 
-  //       }
-  //     });
-  //     if (!response.ok) {
-  //       throw new Error(`Failed to fetch match history: ${response.status}`);
-  //     }
-  //     const data = await response.json();
-  //     return { success: true, data };
-  //   } catch (error) {
-  //     console.error('Error fetching match history:', error);
-  //     return { success: false, error: error.message };
-  //   }
-  // }
 }
 
 const api = new API();
