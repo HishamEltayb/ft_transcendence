@@ -246,14 +246,16 @@ class Utils {
     }
 
     makeEntry(match, currentUsername) {
-        const opponent = match.player2Name;
-        const score = `${match.player1Score} - ${match.player2Score}`;
-        const result = match.winner === currentUsername ? 'Win' : 'Loss';
+        const p1 = match.player1Name || match.Player1Name || '';
+        const p2 = match.player2Name || match.Player2Name || '';
+        const vs = `${p1} vs ${p2}`;
+        const score = `${match.player1Score !== undefined ? match.player1Score : match.Player1Score || 0} - ${match.player2Score !== undefined ? match.player2Score : match.Player2Score || 0}`;
+        const winner = match.winner || '';
         return {
             type: match.matchType,
-            opponent,
+            vs,
             score,
-            result,
+            winner,
         };
     }
 }

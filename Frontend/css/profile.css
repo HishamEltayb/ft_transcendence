@@ -408,9 +408,17 @@ input[type="email"].form-control[readonly]:focus {
     font-weight: 600;
 }
 
+/* Remove all borders from table rows */
 .table tbody tr {
-    transition: background-color 0.3s ease;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border: none !important;
+}
+
+/* Make sure tournament header still has its top border */
+.table tbody tr.table-warning {
+    border-top: 3px solid var(--gold) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
 }
 
 .table tbody tr:hover {
@@ -451,12 +459,6 @@ input[type="email"].form-control[readonly]:focus {
     border-top: 3px solid var(--gold) !important;
 }
 
-/* Bottom border on last tournament row in each block */
-.table tbody tr.table-warning + tr:not(.table-warning),
-.table tbody tr.table-warning:last-child {
-    border-bottom: 3px solid var(--gold) !important;
-}
-
 /* Divider row between tournament blocks */
 .table tbody tr.divider-row td {
     padding: 0;
@@ -468,10 +470,24 @@ input[type="email"].form-control[readonly]:focus {
 .table tbody tr.divider-row td {
     border-top: 2px dashed var(--gold-light) !important;
 }
-/* Remove grouping border on adjacent rows next to divider */
+/* Override: remove solid gold border above tournament summary rows, keep only the dotted separator */
 .table tbody tr.divider-row + tr.table-warning {
-    border-top: 3px solid var(--gold) !important;
+    border-top: none !important;
 }
-.table tbody tr.table-warning + tr.divider-row {
+
+/* Optional: remove left/right border on summary row if undesired */
+.table tbody tr.table-warning {
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* Remove solid gold border under the first tournament match row */
+.table tbody tr.table-warning + tr:not(.table-warning) {
+    border-bottom: none !important;
+}
+
+/* Remove border under the first match row following a tournament header */
+.table tbody tr.table-warning + tr {
+    border-top: none !important;
     border-bottom: none !important;
 } 
