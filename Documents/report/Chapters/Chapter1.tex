@@ -1,0 +1,21 @@
+%% Chapter 1
+% This is an example chapter
+
+
+
+
+
+\chapter{Introduction} % Write in your own chapter title
+\section{Introduction}
+
+This project, \textbf{ft\_transcendence}, delivers a modern, feature-rich clone of the classic Pong game implemented as a full-stack web application. The primary goal is to provide a highly interactive and accessible multiplayer gaming experience directly within a web browser, leveraging a Single-Page Application (SPA) architecture. By incorporating features such as user history tracking, matchmaking, and tournament brackets, the platform enhances user engagement through competitive play and detailed gameplay statistics.
+
+The system ensures that user data, match history, and tournament results are securely stored and managed. Standard gameplay data is persisted in a \textbf{PostgreSQL} database, while tournament outcomes are additionally recorded immutably on an \textbf{Ethereum sidechain}, showcasing a novel approach to data integrity in online gaming. The application is built using modern web technologies and DevOps best practices, aiming for a responsive, scalable, and secure platform where users can engage in real-time contests.
+
+Key technical components include a \textbf{Django backend} utilizing the Django Rest Framework (DRF) to expose a clean RESTful API, and a \textbf{Vanilla JavaScript frontend} employing ES6 modules and Bootstrap 5 for a responsive user interface rendered on an HTML5 `<canvas>` element. The entire application stack, including the backend, frontend, database, blockchain node, and monitoring tools, is orchestrated using \textbf{Docker and Docker-Compose}, facilitated by \textbf{Nginx} serving as a reverse proxy and handling HTTPS termination. Centralized logging and monitoring are integrated via the \textbf{ELK stack} (Elasticsearch, Kibana).
+
+Standard user management features are robust, offering secure registration and login via \textbf{native credentials} or \textbf{42 Intra OAuth 2.0}. Authentication relies on \textbf{JWT cookies}, with optional \textbf{Time-based One-Time Password (TOTP) Two-Factor Authentication (2FA)} for enhanced security. User profiles allow for customization (including avatar uploads and unique display names), display online status, manage friends lists, and provide insights into gameplay statistics such as wins, losses, and match history. Access to detailed profiles and social features is restricted to logged-in users.
+
+The platform offers diverse gameplay options, including \textbf{1-vs-1} matches against other online players, challenging an \textbf{AI opponent}, engaging in local \textbf{4-player multiplayer} matches, and participating in structured \textbf{tournaments} with persistent, on-chain results. Throughout development, emphasis was placed on performance, security, and inclusivity, including considerations for users with visual impairments and ensuring cross-browser compatibility.
+
+This project aims to push the boundaries of web-based gaming applications by integrating real-time gameplay, secure authentication, blockchain technology, and comprehensive DevOps automation into a cohesive and engaging user experience.

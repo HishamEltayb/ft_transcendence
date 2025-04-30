@@ -1,0 +1,333 @@
+\chapter{Elements of SDLC}
+
+\section{SDLC Methodology}
+
+The Software Development Life Cycle (SDLC) for this project followed a hybrid approach, combining the structured framework of the Waterfall model with Agile elements for flexibility. While Waterfall provided sequential stages (requirement analysis, design, implementation, testing), Agile practices like ongoing feedback and peer-reviewed GitHub pull requests (PRs) were integrated. This PR review process allowed team members to assess code, identify issues early, and ensure quality and consistency. This hybrid methodology balanced systematic progression with iterative refinement based on team collaboration and insights.
+
+\section{Gantt Chart}
+The Gantt Chart delineates the project timeline, outlining tasks, dependencies, and milestones, thereby mapping the project’s progression through each phase of the Software Development Life Cycle (SDLC), as follows:
+
+\begin{figure}[H]
+    \includegraphics[width=1\linewidth]{images/gantt-chart.png}
+    \caption{Gantt Chart}
+    \label{fig:gantt-chart}
+\end{figure}
+
+This Gantt chart outlines the project timeline for \textbf{ft\_transcendence}, showing tasks, their durations, and assigned resources. It spans from August to October 2024, covering development milestones like setting up the \textbf{Docker environment} with \textbf{Docker-Compose}, designing user interfaces using \textbf{Bootstrap 5}, and implementing essential features such as user authentication (\textbf{Native Credentials, 42 OAuth, JWT, TOTP 2FA}). The project includes building the main Pong game modes (\textbf{1v1, vs AI, 4-player local, Tournaments}), integrating \textbf{Blockchain} for tournament storage, setting up the \textbf{ELK stack} for monitoring, and implementing user features like friend management, match history, and account settings. Key phases involve testing, debugging, and updating, with the planned submission date due by October 29, 2024. Various team members are responsible for specific tasks, ensuring collaborative progress throughout the timeline.
+
+\section{Risk Register and Risk Matrix}
+The risk register table was utilized to identify potential risks early in the project, prioritizing them according to their impact and likelihood. Mitigation strategies were developed to minimize or prevent the risks from impacting the project.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{2} % Increase the height of each cell
+    \begin{tabular}{c|c|c|c|c|c|c|}
+    \multicolumn{1}{c}{} & \multicolumn{5}{c}{\textbf{Impact}} \\
+    \cline{2-7}
+    \multicolumn{1}{c|}{} & \textbf{Risk Matrix} & \textbf{Insignificant 1} & \textbf{Minor 2} & \textbf{Moderate 3} & \textbf{Major 4} & \textbf{Severe 5} \\
+    \hline
+    \multirow{5}{*}{\rotatebox{90}{\textbf{Likelihood}}} 
+    & \textbf{Almost Certain 5} & \cellcolor{yellow!50}Medium 5 & \cellcolor{orange!50}High 10 & \cellcolor{red!50}Very High 15 & \cellcolor{red!70}Extreme 20 & \cellcolor{red!70}Extreme 25 \\
+    \cline{2-6}
+    & \textbf{Likely 4} & \cellcolor{yellow!50}Medium 4 & \cellcolor{yellow!50}Medium 8 & \cellcolor{orange!50}High 12 & \cellcolor{red!50}Very High 16 & \cellcolor{red!70}Extreme 20 \\
+    \cline{2-6}
+    & \textbf{Possible 3} & \cellcolor{green!100}Low 3 & \cellcolor{yellow!50}Medium 6 & \cellcolor{yellow!50}Medium 9 & \cellcolor{orange!50}High 12 & \cellcolor{red!50}Very High 15 \\
+    \cline{2-6}
+    & \textbf{Unlikely 2} & \cellcolor{green!50}Very Low 2 & \cellcolor{green!100}Low 4 & \cellcolor{yellow!50}Medium 6 & \cellcolor{yellow!50}Medium 8 & \cellcolor{orange!50}High 10 \\
+    \cline{2-6}
+    & \textbf{Rare 1} & \cellcolor{green!50}Very Low 1 & \cellcolor{green!50}Very Low 2 & \cellcolor{green!100}Low 3 & \cellcolor{yellow!50}Medium 4 & \cellcolor{yellow!50}Medium 5 \\
+    \hline
+    \end{tabular}
+    \caption{Risk Matrix}
+    \label{tab:risk_matrix}
+\end{table}
+
+The status of each risk was monitored continuously throughout the project's duration to ensure timely responses. To facilitate the analysis and mitigation process, the risks were divided between the \textit{Frontend Team} and the \textit{Backend Team}, considering the project's scope and the number of developers involved. In a real-world project at a well-established company, it would be preferable to allocate risks across additional specialized teams, such as the Security Team, DevOps, and Project Management, etc., to ensure a more comprehensive approach to risk management.
+
+\begin{table}[H]
+    \small
+    \centering
+    \renewcommand{\arraystretch}{1.0}
+    \begin{tabular}{|p{4cm}|c|c|c|c|p{5.5cm}|}
+    \hline
+    \textbf{Risk Description} & \textbf{Impact} & \textbf{Likelihood} & \textbf{Severity} & \textbf{Risk Owner} & \textbf{Mitigation Strategy} \\
+    \hline
+    Security vulnerabilities: Issues in Auth (Native, OAuth, JWT, 2FA) mechanisms could lead to unauthorized access. & 4 & 2 & 8 & Backend Team & Perform regular security audits, use established libraries (Simple-JWT, django-otp), enforce HTTPS, follow security best practices. \\
+    \hline
+    Data loss or corruption: PostgreSQL database could face corruption or unintentional data loss. & 3 & 1 & 3 & Backend Team & Implement regular automated backups, use database transactions, monitor disk space and performance. \\
+    \hline
+    Cross-browser compatibility issues: Inconsistent behavior across different browsers (esp. Canvas rendering). & 2 & 3 & 6 & Frontend Team & Perform cross-browser testing (Chrome, Firefox), use standardized JS/Canvas APIs, provide fallbacks if necessary. \\
+    \hline
+    Frontend responsiveness issues: Problems with the Bootstrap 5 layout may lead to poor user experience on various devices. & 2 & 2 & 4 & Frontend Team & Test across different screen sizes/devices, use Bootstrap grid system and utilities effectively, employ media queries for adjustments. \\
+    \hline
+    Docker container/compose misconfigurations: Incorrect configurations may cause services to malfunction or fail to start. & 4 & 3 & 12 & DevOps/Backend & Implement configuration validation, use environment variables (.env) properly, version control Dockerfiles/compose files, test configurations thoroughly. \\
+    \hline
+    Accessibility compliance issues: Features for visually impaired users may not meet required standards or be ineffective. & 3 & 3 & 9 & Frontend Team & Conduct accessibility testing (e.g., screen readers, keyboard navigation), adhere to WCAG guidelines, gather user feedback. \\
+    \hline
+    Blockchain integration issues: Problems with smart contract deployment, interaction (Web3.py), or sidechain availability/performance. & 4 & 2 & 8 & Backend/Blockchain & Thoroughly test smart contracts, handle potential transaction failures gracefully, monitor sidechain status, have clear error handling for Web3 calls. \\
+    \hline
+    ELK Stack integration/performance issues: Problems configuring Logstash/Filebeat, Elasticsearch indexing load, or Kibana visualization errors. & 3 & 2 & 6 & DevOps/Backend & Validate configurations, monitor Elasticsearch performance and disk usage, optimize indexing, ensure proper resource allocation for ELK containers. \\
+    \hline
+    Third-party service dependency issues: Problems with external services (e.g., 42 OAuth API availability). & 4 & 2 & 8 & Backend Team & Implement proper error handling and user feedback for API failures, monitor third-party service status, potentially implement timeouts or circuit breakers. \\
+    \hline
+    User data privacy concerns: Inadequate handling of user data could lead to privacy violations (GDPR, etc.). & 3 & 1 & 3 & Backend Team & Minimize data collection, anonymize/encrypt sensitive data where possible, clearly state data usage policy, implement access controls. \\
+    \hline
+    \end{tabular}
+    \caption{Risk Register}
+    \label{tab:risk_register}
+\end{table}
+
+\section{Functional Requirements}
+\subsection*{User Authentication and Management}
+\begin{itemize}
+    \item Secure registration, login, and profile management.
+    \item Support for multiple authentication mechanisms: Native username/password, 42 Intra OAuth 2.0, and optional TOTP-based Two-Factor Authentication (2FA).
+    \item User profile management features, including unique display names, avatar uploads, and online status visibility.
+    \item Friends list management (add, remove, view status).
+\end{itemize}
+
+\subsection*{Gameplay and Game Modes}
+\begin{itemize}
+    \item Core Pong gameplay implemented on HTML5 Canvas.
+    \item Multiple game modes:
+        \begin{itemize}
+            \item 1 vs 1: Online match against another registered user.
+            \item 1 vs AI: Match against a computer-controlled opponent.
+            \item Local Multiplayer: Up to 4 players on the same screen.
+            \item Tournament: Knockout bracket competition among registered users.
+        \end{itemize}
+\end{itemize}
+
+\subsection*{Match History and Statistics}
+\begin{itemize}
+    \item Tracking and storing user gameplay statistics, including wins, losses.
+    \item Displaying match history for logged-in users.
+    \item Recording tournament results in PostgreSQL and immutably on the Ethereum sidechain.
+\end{itemize}
+
+\subsection*{Accessibility Features}
+\begin{itemize}
+    \item Considerations for visually impaired users (e.g., high-contrast options, clear UI elements).
+    \item Keyboard navigation support for gameplay and interface interaction.
+\end{itemize}
+
+\section{Technical Requirements}
+\section*{Software Specifications}
+
+\subsection*{Operating System}
+\begin{itemize}
+    \item \textbf{Server Deployment}: Linux-based distribution (e.g., Debian, Ubuntu) is recommended for hosting Docker containers.
+    \item \textbf{Development/Client}: Cross-platform compatibility (Linux, macOS, Windows) for development and playing via supported web browsers.
+\end{itemize}
+
+\subsection*{Programming Languages, Frameworks, and Libraries}
+\begin{itemize}
+    \item \textbf{Backend}: Python 3 with Django 5 framework. Django Rest Framework (DRF) for API development. Libraries include `djangorestframework-simplejwt` for JWT authentication and `django-otp` for 2FA.
+    \item \textbf{Frontend}: Vanilla JavaScript (ES6+), HTML5, CSS3. Bootstrap 5 for responsive UI components and layout.
+    \item \textbf{Blockchain Interaction}: Web3.py library for interacting with the Ethereum sidechain from the backend (or helper scripts).
+\end{itemize}
+
+\subsection*{Database and Data Storage}
+\begin{itemize}
+    \item \textbf{Primary Database}: PostgreSQL (Version 15 specified) for storing user data, match history, game settings, etc.
+    \item \textbf{Blockchain}: Local Ethereum Proof-of-Authority (POA) sidechain (using Geth) for immutable storage of tournament results. Smart contracts developed in Solidity (details likely in `Blockchain/` directory).
+\end{itemize}
+
+\subsection*{Web Server and Reverse Proxy}
+\begin{itemize}
+    \item Nginx: Used as a reverse proxy to route traffic to the Django backend (via Gunicorn or similar WSGI server), serve static frontend files (JS, CSS, images), and handle TLS/SSL termination for HTTPS.
+\end{itemize}
+
+\subsection*{Containerization and Orchestration}
+\begin{itemize}
+    \item Docker: To containerize each service (frontend, backend, database, Nginx, ELK, blockchain node).
+    \item Docker-Compose: To define and manage the multi-container application stack.
+\end{itemize}
+
+\subsection*{Authentication and Security Mechanisms}
+\begin{itemize}
+    \item JSON Web Tokens (JWT): Used for stateless session management via secure HTTP-only cookies.
+    \item Two-Factor Authentication (2FA): TOTP-based 2FA support via `django-otp`.
+    \item OAuth 2.0: Integration with 42 Intra's OAuth service.
+    \item TLS/SSL: Encryption for all communication via HTTPS, handled by Nginx.
+\end{itemize}
+
+\subsection*{Monitoring and Logging}
+\begin{itemize}
+    \item ELK Stack: Elasticsearch (Version 7 specified) for log aggregation and indexing, Kibana (Version 8 specified) for visualization and analysis. Log shipping likely handled by Filebeat or integrated Django logging.
+\end{itemize}
+
+\section*{Hardware Specifications}
+\subsection*{Server Requirements (Development/Small Scale)}
+\begin{itemize}
+    \item Processor: Modern multi-core CPU.
+    \item Memory: Minimum 8 GB RAM (16 GB+ recommended, especially with ELK stack).
+    \item Storage: SSD recommended (minimum 50-100 GB, depending on data volume and logs).
+    \item Network: Standard internet connectivity.
+\end{itemize}
+*Note: Production requirements would depend heavily on user load.*
+
+\subsection*{Client Requirements}
+\begin{itemize}
+    \item Device: Desktop, laptop with modern web browser.
+    \item Browser: Latest versions of Chrome or Firefox recommended.
+    \item Network: Stable internet connection for real-time gameplay.
+\end{itemize}
+
+\section*{System Architecture}
+\subsection*{Client Layer (Frontend SPA)}
+The frontend is a Single-Page Application (SPA) responsible for rendering the user interface, handling user interactions, and managing client-side game logic. Technologies:
+\begin{itemize}
+    \item Framework/Libraries: Vanilla JavaScript (ES6+), Bootstrap 5.
+    \item Structure: HTML templates, CSS3 for styling.
+    \item Rendering: Client-side rendering. Game logic executed directly in the browser, primarily using the HTML5 Canvas API for Pong gameplay.
+    \item API Communication: Uses Fetch API or similar to interact with the backend REST API for data retrieval, user actions, and submitting game results.
+    \item Authentication Handling: Manages JWT tokens received from the backend (stored securely, likely in HttpOnly cookies handled by the browser).
+\end{itemize}
+
+\subsection*{Application Layer (Backend API)}
+The backend provides the RESTful API, manages business logic, handles user authentication, interacts with the database and blockchain, and integrates with monitoring systems. Technologies:
+\begin{itemize}
+    \item Framework: Django 5 (Python 3).
+    \item API: Django Rest Framework (DRF) for creating API endpoints.
+    \item Authentication: Handles user registration, login (native, OAuth), JWT generation/validation (`djangorestframework-simplejwt`), and 2FA logic (`django-otp`).
+    \item Database Interaction: Uses Django ORM to communicate with the PostgreSQL database.
+    \item Blockchain Interaction: May trigger helper scripts (`Web3.py`) to interact with the Ethereum sidechain for storing tournament data.
+    \item Logging: Integrates with the ELK stack for centralized logging.
+    \item WSGI Server: Typically runs behind Nginx using a WSGI server like Gunicorn (though not explicitly mentioned in README, it's standard for Django deployment).
+\end{itemize}
+
+\subsection*{Data Layer (Persistence)}
+The data layer ensures persistent storage of application data using both relational and blockchain technologies. Technologies:
+\begin{itemize}
+    \item Relational Database: PostgreSQL 15 for user accounts, profiles, settings, individual match history, etc.
+    \item Blockchain Database: Ethereum sidechain (Geth node running POA) for immutable recording of official tournament outcomes via smart contracts.
+\end{itemize}
+
+\subsection*{Infrastructure Layer (Orchestration and Hosting)}
+This layer encompasses the tools and services used for deployment, management, and operation of the application stack. Technologies:
+\begin{itemize}
+    \item Containerization: Docker packages each component (frontend, backend, Postgres, Nginx, ELK, Geth) into isolated containers.
+    \item Orchestration: Docker-Compose defines the relationships and configurations for running the multi-container application.
+    \item Reverse Proxy / Web Server: Nginx manages incoming HTTPS traffic, routes requests to the appropriate backend service, serves static frontend assets, and handles SSL/TLS termination.
+    \item Monitoring: ELK Stack (Elasticsearch, Kibana) provides infrastructure for log aggregation and analysis.
+\end{itemize}
+
+\subsection*{Communication and Networking}
+\begin{itemize}
+    \item Internal Communication: Services within the Docker network communicate over a private network defined by Docker-Compose.
+    \item External Communication: All external client communication occurs over HTTPS (port 443), managed by Nginx.
+    \item API Calls: Frontend communicates with the backend via RESTful HTTP requests to the API endpoints.
+    \item Blockchain Calls: Backend (or scripts triggered by it) communicates with the Geth node via RPC calls (typically over HTTP or IPC).
+\end{itemize}
+
+\section{Non-functional Requirements}
+Non-functional requirements define the quality attributes and constraints of the system.
+
+\subsection*{Performance}
+\begin{itemize}
+    \item \textbf{Responsiveness}: The SPA frontend should provide a smooth user experience with minimal delays during navigation and interaction. Game rendering on the Canvas should be efficient to maintain playable frame rates.
+    \item \textbf{Latency}: Network latency for real-time 1v1 games should be minimized, although the current implementation seems focused on client-side rendering with results submitted post-game. API response times should be reasonably fast.
+    \item \textbf{Load Handling}: The system (especially Nginx and the Django backend) should be capable of handling a moderate number of concurrent users, scalable via Docker if needed.
+\end{itemize}
+
+\subsection*{Security}
+\begin{itemize}
+    \item \textbf{Authentication}: Secure mechanisms for login (native, 42 OAuth) and session management (JWT over HTTPS, HttpOnly cookies).
+    \item \textbf{Authorization}: Proper checks to ensure users can only access their own data and perform actions they are permitted to.
+    \item \textbf{Data Protection}: Use of HTTPS (TLS/SSL) for all external communication. Sensitive data in the database should be handled securely (e.g., password hashing via Django). Input validation to prevent common web vulnerabilities (XSS, SQL Injection) provided by Django/DRF.
+    \item \textbf{Infrastructure Security}: Containers should run with non-root users. Network policies within Docker can restrict communication between containers.
+    \item \textbf{2FA}: Optional TOTP-based 2FA provides an additional security layer.
+\end{itemize}
+
+\subsection*{Reliability}
+\begin{itemize}
+    \item \textbf{Availability}: The application should be available with minimal downtime. Docker and Nginx help manage service availability.
+    \item \textbf{Data Integrity}: PostgreSQL ensures relational data integrity. Blockchain provides immutability for tournament records.
+    \item \textbf{Fault Tolerance}: Containerized architecture allows individual services to be restarted if they fail. Error handling should be robust in both frontend and backend.
+    \item \textbf{Backup and Recovery}: Regular backups of the PostgreSQL database are crucial (mentioned as a mitigation strategy).
+\end{itemize}
+
+\subsection*{Scalability}
+\begin{itemize}
+    \item \textbf{Component Scaling}: Docker-Compose allows scaling individual services (e.g., adding more backend instances) if necessary, although load balancing setup might need adjustment.
+    \item \textbf{Database Scaling}: PostgreSQL offers various scaling options if needed in the future.
+    \item \textbf{Stateless Backend}: Using JWT promotes a stateless backend architecture, which generally scales better horizontally.
+\end{itemize}
+
+\subsection*{Maintainability}
+\begin{itemize}
+    \item \textbf{Modularity}: The project is divided into distinct components (Frontend, Backend, Blockchain, Infrastructure) and containerized services, promoting separation of concerns.
+    \item \textbf{Code Quality}: Adherence to coding standards and use of frameworks (Django, Bootstrap) aids maintainability.
+    \item \textbf{Configuration Management}: Environment variables (`.env` file) are used for configuration, separating code from configuration.
+    \item \textbf{DevOps Automation}: Makefile and Docker-Compose simplify build, deployment, and management tasks.
+\end{itemize}
+
+\subsection*{Usability and Accessibility}
+\begin{itemize}
+    \item \textbf{User Interface}: The UI, built with Bootstrap, should be intuitive and easy to navigate.
+    \item \textbf{Responsiveness}: The application should adapt to different screen sizes (desktops primarily, given the game type).
+    \item \textbf{Accessibility}: Conscious effort to include features for visually impaired users (high contrast, keyboard navigation) as stated in goals.
+\end{itemize}
+
+\section{Implementation}
+The implementation phase involved developing the actual code and functionality based on the design specifications. Key aspects included:
+\begin{itemize}
+    \item \textbf{Backend Development:} Core functionality was built using Django and Django Rest Framework (DRF), providing a secure RESTful API. This included managing user data (PostgreSQL), handling authentication (Native, 42 OAuth, JWT, 2FA), supporting multiple Pong game modes, and ensuring security against common vulnerabilities like SQL injection and XSS through Django's built-in features.
+    \item \textbf{Frontend Development:} A responsive Single-Page Application (SPA) interface was built using Vanilla JavaScript, HTML5, and CSS3, leveraging Bootstrap 5 for layout and components. Accessibility features like high-contrast themes and keyboard navigation were incorporated. The frontend interacts with the backend API and uses the HTML5 Canvas for rendering the Pong game dynamically.
+    \item \textbf{Game Development:} Pong game mechanics were implemented using JavaScript and Canvas, including ball/paddle physics, scoring, and real-time updates (potentially via WebSockets, although not explicitly detailed in prior context). Game modes (1v1, vs AI, 4-player local, Tournament) were developed.
+    \item \textbf{Blockchain Integration:} Smart contracts (Solidity) were developed and deployed to a local Ethereum sidechain (Geth) to immutably record tournament results. Backend interaction was handled using Web3.py.
+    \item \textbf{User History and Statistics:} A system was integrated to track and display user match history and statistics (wins/losses), stored primarily in PostgreSQL.
+    \item \textbf{User Management and Authentication:} Secure user registration, login (Native, 42 OAuth), profile management (display name, avatar), friends list, and TOTP 2FA were implemented. JWTs, managed via secure HttpOnly cookies, were used for session management.
+    \item \textbf{DevOps and Deployment:} The entire application (Backend, Frontend, PostgreSQL, Nginx, ELK, Geth node) was containerized using Docker and orchestrated with Docker Compose. Nginx served as a reverse proxy and static file server. The ELK stack was configured for centralized logging and monitoring.
+    \item \textbf{Collaborative Workflow:} GitHub branches were used for parallel development (e.g., backend, frontend, game features). Peer reviews were conducted on Pull Requests before merging to the main branch to maintain code quality.
+\end{itemize}
+
+\section{Testing}
+The testing phase ensured the application's functionality, security, usability, and adherence to requirements. Key testing types included:
+\begin{itemize}
+    \item \textbf{Unit Testing:} Verifying individual components like authentication logic, specific API endpoints, Canvas rendering functions, and game rule implementations (e.g., ball collision, scoring) in isolation.
+    \item \textbf{Integration Testing:} Testing interactions between components, such as frontend API calls to the backend for login/registration, fetching user profiles, submitting game results, database interactions (PostgreSQL CRUD operations), and backend communication with the Ethereum sidechain.
+    \item \textbf{Functional Testing:} Validating end-to-end features against requirements. This involved testing all Pong game modes, user registration/login flows (Native, OAuth, 2FA), profile updates, friend management, tournament creation/participation, and ensuring restricted content access controls worked correctly.
+    \item \textbf{Usability Testing:} Evaluating the user interface and experience for intuitiveness and accessibility. Testing responsiveness across different screen sizes (desktop, tablet, mobile) using Bootstrap, checking keyboard navigation, and verifying accessibility features for visually impaired users.
+    \item \textbf{Compatibility Testing:} Ensuring consistent functionality across target browsers (latest Chrome and Firefox).
+    \item \textbf{Security Testing:} Reviewing implementations for common web vulnerabilities (though specific penetration testing might not have been performed), verifying JWT handling, 2FA enforcement, and general adherence to security best practices mentioned in mitigation strategies.
+    \item \textbf{CI/CD Integration:} Using GitHub Actions (as implied by Figure \ref{fig:ci-cd}) to automate checks (e.g., linters, basic tests) to prevent merging failing code into the main branch.
+\end{itemize}
+
+\section{Evolution}
+This phase focuses on maintaining and enhancing the software post-initial deployment.
+\subsection*{Backend Development}
+\begin{itemize}
+    \item \textbf{Initial Phase:} Focused on core Django/DRF setup, basic user auth, and foundational API endpoints for Pong.
+    \item \textbf{Intermediate Phase:} Expanded to support multiple game modes, integrated 42 OAuth and 2FA, developed blockchain interaction logic (Web3.py), and refined APIs based on frontend needs.
+    \item \textbf{Current Phase:} Provides a comprehensive API managing users, game logic, statistics, tournaments (with blockchain logging), and authentication, running within a Dockerized environment integrated with ELK.
+\end{itemize}
+
+\subsection*{Frontend Development}
+\begin{itemize}
+    \item \textbf{Initial Phase:} Basic SPA structure with Vanilla JS, Bootstrap layout, initial Canvas implementation for Pong.
+    \item \textbf{Intermediate Phase:} Refined UI/UX based on feedback, improved responsiveness, enhanced Canvas rendering, integrated API calls for dynamic data, added accessibility features.
+    \item \textbf{Current Phase:} Delivers an interactive SPA experience with real-time updates, customizable settings, smooth navigation, robust game interface via Canvas, and accessibility considerations.
+\end{itemize}
+
+\subsection*{Game Development}
+\begin{itemize}
+    \item \textbf{Initial Phase:} Developed core Pong mechanics on Canvas (ball/paddle movement, collision, scoring).
+    \item \textbf{Intermediate Phase:} Added different game modes (1v1, AI, 4-player, Tournament), improved real-time responsiveness, added basic customization.
+    \item \textbf{Current Phase:} Offers multiple Pong game modes integrated seamlessly within the SPA, with results feeding into the user history and tournament system.
+\end{itemize}
+
+\subsection*{User History and Statistics}
+\begin{itemize}
+    \item \textbf{Initial Phase:} Basic recording of game outcomes to PostgreSQL.
+    \item \textbf{Intermediate Phase:} Expanded tracking to include more details (opponents, scores, dates), developed API endpoints for retrieval.
+    \item \textbf{Current Phase:} Provides comprehensive user statistics and match history accessible via the user profile, with tournament results also logged immutably on the blockchain.
+\end{itemize}
+
+\subsection*{User Management and Authentication}
+\begin{itemize}
+    \item \textbf{Initial Phase:} Implemented native registration/login, basic profile management.
+    \item \textbf{Intermediate Phase:} Added 42 OAuth integration, JWT implementation, friend list functionality, and initial 2FA setup.
+    \item \textbf{Current Phase:} Offers a robust system with multiple auth methods (Native, OAuth, 2FA), secure session management (JWT via HttpOnly cookies), comprehensive profile features (avatar, stats), and friend management.
+\end{itemize}

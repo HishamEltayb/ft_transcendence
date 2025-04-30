@@ -180,3 +180,10 @@ Contributions are welcome!  Please open an issue to discuss major changes first.
 
 ## License
 This project is licensed under the MIT License – see `LICENSE` for details.
+
+
+
+
+given these secitonss and infromation i want to update the whole document (i already updated team name + abstract with abbriviations). 
+now you can apply this in the whole project, given that the project folder is @transcendence 
+review it wisely in steps, understand it and then edit the tex files. 

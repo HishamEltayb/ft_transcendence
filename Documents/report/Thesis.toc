@@ -1,0 +1,65 @@
+\contentsline {chapter}{Abstract}{i}{dummy.1}%
+\vspace {1em}
+\contentsline {chapter}{List of Figures}{iv}{dummy.3}%
+\contentsline {chapter}{List of Tables}{v}{dummy.5}%
+\contentsline {chapter}{List of Abbreviations}{vi}{chapter*.7}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.8}%
+\contentsline {section}{\numberline {1.1}Introduction}{1}{section.9}%
+\contentsline {chapter}{\numberline {2}Project Goals and Requirements}{3}{chapter.10}%
+\contentsline {chapter}{\numberline {3}Software Development Life Cycle (SDLC)}{5}{chapter.11}%
+\contentsline {section}{\numberline {3.1}Requirement Analysis}{5}{section.12}%
+\contentsline {section}{\numberline {3.2}Modules Implemented}{6}{section.13}%
+\contentsline {section}{\numberline {3.3}Design the System Architecture}{7}{section.25}%
+\contentsline {section}{\numberline {3.4}Implementation}{8}{section.27}%
+\contentsline {section}{\numberline {3.5}Testing the application and its functionalities}{9}{section.28}%
+\contentsline {chapter}{\numberline {4}Elements of SDLC}{11}{chapter.29}%
+\contentsline {section}{\numberline {4.1}SDLC Methodology}{11}{section.30}%
+\contentsline {section}{\numberline {4.2}Gantt Chart}{11}{section.31}%
+\contentsline {section}{\numberline {4.3}Risk Register and Risk Matrix}{13}{section.33}%
+\contentsline {section}{\numberline {4.4}Functional Requirements}{15}{section.36}%
+\contentsline {section}{\numberline {4.5}Technical Requirements}{16}{section.41}%
+\contentsline {section}{\numberline {4.6}Non-functional Requirements}{20}{section.59}%
+\contentsline {section}{\numberline {4.7}Implementation}{22}{section.66}%
+\contentsline {section}{\numberline {4.8}Testing}{23}{section.67}%
+\contentsline {section}{\numberline {4.9}Evolution}{23}{section.68}%
+\contentsline {chapter}{\numberline {5}User Interface and Features}{26}{chapter.74}%
+\contentsline {section}{\numberline {5.1}Wireframes and User Journey}{26}{section.75}%
+\contentsline {chapter}{\numberline {6}Detailed System Design and Implementation}{39}{chapter.90}%
+\contentsline {section}{\numberline {6.1}Backend Implementation (Django)}{39}{section.91}%
+\contentsline {subsection}{\numberline {6.1.1}Project Structure}{39}{subsection.92}%
+\contentsline {subsection}{\numberline {6.1.2}API Design (DRF)}{40}{subsection.93}%
+\contentsline {subsection}{\numberline {6.1.3}Authentication and Authorization}{40}{subsection.94}%
+\contentsline {section}{\numberline {6.2}Frontend Implementation (Vanilla JS)}{40}{section.95}%
+\contentsline {subsection}{\numberline {6.2.1}SPA Architecture}{40}{subsection.96}%
+\contentsline {subsection}{\numberline {6.2.2}Rendering}{41}{subsection.97}%
+\contentsline {subsection}{\numberline {6.2.3}API Interaction}{41}{subsection.98}%
+\contentsline {section}{\numberline {6.3}Database Implementation}{41}{section.99}%
+\contentsline {subsection}{\numberline {6.3.1}PostgreSQL}{41}{subsection.100}%
+\contentsline {subsection}{\numberline {6.3.2}Ethereum Sidechain}{41}{subsection.101}%
+\contentsline {section}{\numberline {6.4}Real-time Communication}{41}{section.102}%
+\contentsline {section}{\numberline {6.5}DevOps and Containerization (Docker)}{42}{section.103}%
+\contentsline {chapter}{\numberline {7}Testing and Evaluation}{43}{chapter.104}%
+\contentsline {section}{\numberline {7.1}Testing Strategy}{43}{section.105}%
+\contentsline {section}{\numberline {7.2}Unit Testing}{43}{section.106}%
+\contentsline {section}{\numberline {7.3}Integration Testing}{44}{section.107}%
+\contentsline {section}{\numberline {7.4}End-to-End (E2E) Testing}{44}{section.108}%
+\contentsline {section}{\numberline {7.5}Security Testing}{45}{section.109}%
+\contentsline {section}{\numberline {7.6}Usability and Accessibility Testing}{45}{section.110}%
+\contentsline {section}{\numberline {7.7}Evaluation}{45}{section.111}%
+\contentsline {chapter}{\numberline {8}Blockchain Integration for Tournament Records}{47}{chapter.112}%
+\contentsline {section}{\numberline {8.1}Rationale for Blockchain Integration}{47}{section.113}%
+\contentsline {section}{\numberline {8.2}Technology Choices}{48}{section.114}%
+\contentsline {section}{\numberline {8.3}Smart Contract Design}{48}{section.115}%
+\contentsline {section}{\numberline {8.4}Backend Interaction (Django)}{49}{section.116}%
+\contentsline {section}{\numberline {8.5}Security Considerations}{49}{section.123}%
+\contentsline {section}{\numberline {8.6}Limitations and Alternatives}{50}{section.124}%
+\contentsline {chapter}{\numberline {9}Deployment and Operations}{51}{chapter.125}%
+\contentsline {section}{\numberline {9.1}Deployment Strategy}{51}{section.126}%
+\contentsline {section}{\numberline {9.2}Environment Configuration}{52}{section.127}%
+\contentsline {section}{\numberline {9.3}Web Server and Reverse Proxy (Nginx)}{52}{section.128}%
+\contentsline {section}{\numberline {9.4}Monitoring and Logging (ELK Stack)}{53}{section.129}%
+\contentsline {section}{\numberline {9.5}Maintenance Considerations}{53}{section.130}%
+\vspace {2em}
+\contentsline {chapter}{Conclusion}{54}{chapter*.131}%
+\contentsline {chapter}{\numberline {10}Appendix}{55}{chapter.132}%
+\contentsline {section}{References}{57}{figure.caption.135}%

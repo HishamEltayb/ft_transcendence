@@ -1,0 +1,54 @@
+\chapter{Deployment and Operations}
+\label{ch:deployment}
+
+Deploying and operating the \textbf{ft\_transcendence} application involves leveraging the containerization and orchestration tools defined in the project architecture. This chapter outlines the deployment strategy, configuration management, web server setup, monitoring practices, and basic maintenance considerations.
+
+\section{Deployment Strategy}
+\label{sec:deployment_strategy}
+The primary deployment mechanism relies on Docker and Docker Compose, ensuring consistency across different environments (development, testing, production).
+\begin{itemize}
+    \item \textbf{Docker Compose:} The \texttt{docker-compose.yml} file defines and configures all the necessary services: the Django backend, the Nginx web server/reverse proxy, the PostgreSQL database, and the ELK stack components (Elasticsearch, Kibana). It manages container builds, network connections between services, and volume mounts for persistent data.
+    \item \textbf{Makefile:} A \texttt{Makefile} simplifies common deployment and management tasks by providing commands (e.g., \texttt{make up}, \texttt{make down}, \texttt{make build}, \texttt{make logs}) that abstract away the underlying Docker Compose commands, making the process more user-friendly and less error-prone.
+\end{itemize}
+Deployment typically involves cloning the repository onto the target server, configuring environment variables, and running a \texttt{make} command to build and start all services.
+
+\section{Environment Configuration}
+\label{sec:env_config}
+Managing configuration, especially sensitive data like API keys, database passwords, and the backend's blockchain wallet private key, is crucial for security. This is typically handled through environment variables, often sourced from a \texttt{.env} file located in the project root.
+\begin{itemize}
+    \item \textbf{\texttt{.env} File:} This file (which should be included in \texttt{.gitignore} and never committed to version control) stores key-value pairs for settings like \texttt{SECRET\_KEY}, \texttt{POSTGRES\_PASSWORD}, \texttt{ETH\_NODE\_URL}, \texttt{BACKEND\_WALLET\_PK}, etc.
+    \item \textbf{Docker Compose Integration:} The \texttt{docker-compose.yml} file is configured to load variables from the \texttt{.env} file and inject them into the respective service containers' environments at runtime.
+\end{itemize}
+This approach keeps sensitive information separate from the codebase.
+
+\section{Web Server and Reverse Proxy (Nginx)}
+\label{sec:nginx_config}
+Nginx plays a critical role in the deployed architecture:
+\begin{itemize}
+    \item \textbf{Static File Serving:} It efficiently serves the static frontend assets (HTML, CSS, JavaScript, images) directly to users, reducing the load on the Django backend.
+    \item \textbf{Reverse Proxy:} It acts as a reverse proxy, receiving incoming HTTP/HTTPS requests and forwarding appropriate requests (e.g., API calls to \texttt{/api/...}) to the Django backend application (likely running with Gunicorn or Uvicorn inside its container).
+    \item \textbf{HTTPS/TLS Termination:} Nginx is configured to handle SSL/TLS certificates (e.g., obtained via Let's Encrypt) to enforce HTTPS, encrypting traffic between clients and the server. It terminates the TLS connection and communicates with the backend over the internal Docker network, simplifying the backend configuration.
+    \item \textbf{Load Balancing (Optional):} While not explicitly stated for the base project, Nginx could potentially be configured to load balance requests across multiple instances of the backend container if scaling becomes necessary.
+\end{itemize}
+Nginx configuration files define these behaviors, specifying server blocks, locations, proxy settings, and SSL parameters.
+
+\section{Monitoring and Logging (ELK Stack)}
+\label{sec:elk_monitoring}
+Centralized logging and monitoring are handled by the ELK stack (Elasticsearch, Kibana):
+\begin{itemize}
+    \item \textbf{Log Collection:} Application logs (from Django, Nginx, potentially others) are configured to be shipped to Elasticsearch. This might involve container logging drivers configured in Docker Compose or agents like Filebeat/Logstash (though Logstash wasn't explicitly required, implying a simpler setup might be used).
+    \item \textbf{Elasticsearch:} Stores and indexes the log data efficiently, enabling fast searching and aggregation.
+    \item \textbf{Kibana:} Provides a web interface for visualizing the log data stored in Elasticsearch. Developers and operators can use Kibana to search logs, create dashboards to monitor application health (e.g., error rates, request times), and troubleshoot issues.
+\end{itemize}
+This centralized system provides crucial operational visibility into the running application.
+
+\section{Maintenance Considerations}
+\label{sec:maintenance}
+Ongoing operation requires routine maintenance:
+\begin{itemize}
+    \item \textbf{Updates:} Regularly updating base Docker images, operating systems within containers, and application dependencies (Django, Python packages, JS libraries) is essential for security and performance.
+    \item \textbf{Backups:} Implementing a strategy for backing up the PostgreSQL database volume is critical to prevent data loss. Blockchain data is inherently persistent on the sidechain itself.
+    \item \textbf{Monitoring Checks:} Regularly reviewing logs and dashboards in Kibana helps proactively identify and address potential issues.
+    \item \textbf{Certificate Renewal:} Ensuring SSL/TLS certificates are renewed before expiration is vital for maintaining HTTPS.
+\end{itemize}
+The containerized nature of the application simplifies some maintenance tasks, as updates can often be managed by rebuilding Docker images and redeploying containers.
