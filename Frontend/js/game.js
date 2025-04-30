@@ -1173,9 +1173,13 @@ class PongGame {
         this.gameOver = true;
         
         // Update win screen content
-        document.getElementById('winnerText').textContent = `${winnerName} Wins!`;
-        document.getElementById('finalScore').textContent = 
-            `${this.player1Score.textContent} - ${this.player2Score.textContent}`;
+        const winnerText = document.getElementById('winnerText');
+        const finalScore = document.getElementById('finalScore');
+       
+        if (winnerText && finalScore) {
+            winnerText.textContent = `${winnerName} Wins!`;
+            finalScore.textContent = `${this.player1Score.textContent} - ${this.player2Score.textContent}`;
+        }
         
         // Capture this match data into matchObj
         this.fillMatchObj(winnerName);
