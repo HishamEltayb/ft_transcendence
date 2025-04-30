@@ -27,13 +27,17 @@
 \pagestyle{fancy}
 \fancyhf{} % clear all header and footer fields
 \fancyhead[L]{\nouppercase{\leftmark}} % Use the chapter mark on the left header
-% \fancyhead[R]{\thepage} % Page number on the right header
+\fancyfoot[C]{\thepage} % Page number centered in the footer
 \renewcommand{\headrulewidth}{0.4pt} % Optional line under header
+\renewcommand{\footrulewidth}{0.4pt} % Optional line above footer
 \renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
 
 %% ----------------------------------------------------------------
 \begin{document}
 \frontmatter	  % Begin Roman style (i, ii, iii, iv...) page numbering
+
+% Ensure all front matter pages have page numbers too
+% \pagestyle{fancy}
 
 % Set up the Title Page
 \title  {ft\_transcendence}
