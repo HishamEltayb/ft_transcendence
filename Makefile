@@ -10,15 +10,12 @@ build:
 	docker compose build
 
 down:
+	-@docker compose down
+
+clean: 
 	-@docker compose down -v
 
-clean:
-	-@docker rm -f $$(docker container ls -aq)
-	-@docker rmi -f $$(docker images -q)
-	-@docker network rm transcendence
-	-@docker volume rm -f $$(docker volume ls -q)
-
-fclean: clean
+fclean:
 	-@yes | docker system prune -a
 	-@yes | docker image prune -a
 	-@yes | docker volume prune
@@ -43,12 +40,6 @@ attach-database:
 attach-nginx:
 	docker exec -it nginx /bin/sh
 
-re: clean all-log
+re: down all-log
 
 .PHONY: all down clean fclean logs re all-log attach-backend attach-frontend attach-database attach-nginx up build
-
-
-backend-test:
-	docker compose exec backend python3 manage.py test users.tests_register --verbosity=2
-	docker compose exec backend python3 manage.py test users.tests_login.LoginViewTests --verbosity=2
-	docker compose exec backend python3 manage.py test users.tests_2fa --verbosity=2
