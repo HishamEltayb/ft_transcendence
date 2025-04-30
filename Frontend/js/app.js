@@ -207,7 +207,6 @@ class App {
                     // }
                     
                     const result = await api.getUserData();
-                    console.log('result', result);
                     
                     if (result.success && result.userData) {
                         this.state.user = result.userData;

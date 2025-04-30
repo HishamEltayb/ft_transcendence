@@ -15,67 +15,7 @@ The Gantt Chart delineates the project timeline, outlining tasks, dependencies, 
 
 This Gantt chart outlines the project timeline for \textbf{ft\_transcendence}, showing tasks, their durations, and assigned resources. It spans from August to October 2024, covering development milestones like setting up the \textbf{Docker environment} with \textbf{Docker-Compose}, designing user interfaces using \textbf{Bootstrap 5}, and implementing essential features such as user authentication (\textbf{Native Credentials, 42 OAuth, JWT, TOTP 2FA}). The project includes building the main Pong game modes (\textbf{1v1, vs AI, 4-player local, Tournaments}), integrating \textbf{Blockchain} for tournament storage, setting up the \textbf{ELK stack} for monitoring, and implementing user features like friend management, match history, and account settings. Key phases involve testing, debugging, and updating, with the planned submission date due by October 29, 2024. Various team members are responsible for specific tasks, ensuring collaborative progress throughout the timeline.
 
-\section{Risk Register and Risk Matrix}
-The risk register table was utilized to identify potential risks early in the project, prioritizing them according to their impact and likelihood. Mitigation strategies were developed to minimize or prevent the risks from impacting the project.
 
-\begin{table}[H]
-    \centering
-    \renewcommand{\arraystretch}{2} % Increase the height of each cell
-    \begin{tabular}{c|c|c|c|c|c|c|}
-    \multicolumn{1}{c}{} & \multicolumn{5}{c}{\textbf{Impact}} \\
-    \cline{2-7}
-    \multicolumn{1}{c|}{} & \textbf{Risk Matrix} & \textbf{Insignificant 1} & \textbf{Minor 2} & \textbf{Moderate 3} & \textbf{Major 4} & \textbf{Severe 5} \\
-    \hline
-    \multirow{5}{*}{\rotatebox{90}{\textbf{Likelihood}}} 
-    & \textbf{Almost Certain 5} & \cellcolor{yellow!50}Medium 5 & \cellcolor{orange!50}High 10 & \cellcolor{red!50}Very High 15 & \cellcolor{red!70}Extreme 20 & \cellcolor{red!70}Extreme 25 \\
-    \cline{2-6}
-    & \textbf{Likely 4} & \cellcolor{yellow!50}Medium 4 & \cellcolor{yellow!50}Medium 8 & \cellcolor{orange!50}High 12 & \cellcolor{red!50}Very High 16 & \cellcolor{red!70}Extreme 20 \\
-    \cline{2-6}
-    & \textbf{Possible 3} & \cellcolor{green!100}Low 3 & \cellcolor{yellow!50}Medium 6 & \cellcolor{yellow!50}Medium 9 & \cellcolor{orange!50}High 12 & \cellcolor{red!50}Very High 15 \\
-    \cline{2-6}
-    & \textbf{Unlikely 2} & \cellcolor{green!50}Very Low 2 & \cellcolor{green!100}Low 4 & \cellcolor{yellow!50}Medium 6 & \cellcolor{yellow!50}Medium 8 & \cellcolor{orange!50}High 10 \\
-    \cline{2-6}
-    & \textbf{Rare 1} & \cellcolor{green!50}Very Low 1 & \cellcolor{green!50}Very Low 2 & \cellcolor{green!100}Low 3 & \cellcolor{yellow!50}Medium 4 & \cellcolor{yellow!50}Medium 5 \\
-    \hline
-    \end{tabular}
-    \caption{Risk Matrix}
-    \label{tab:risk_matrix}
-\end{table}
-
-The status of each risk was monitored continuously throughout the project's duration to ensure timely responses. To facilitate the analysis and mitigation process, the risks were divided between the \textit{Frontend Team} and the \textit{Backend Team}, considering the project's scope and the number of developers involved. In a real-world project at a well-established company, it would be preferable to allocate risks across additional specialized teams, such as the Security Team, DevOps, and Project Management, etc., to ensure a more comprehensive approach to risk management.
-
-\begin{table}[H]
-    \small
-    \centering
-    \renewcommand{\arraystretch}{1.0}
-    \begin{tabular}{|p{4cm}|c|c|c|c|p{5.5cm}|}
-    \hline
-    \textbf{Risk Description} & \textbf{Impact} & \textbf{Likelihood} & \textbf{Severity} & \textbf{Risk Owner} & \textbf{Mitigation Strategy} \\
-    \hline
-    Security vulnerabilities: Issues in Auth (Native, OAuth, JWT, 2FA) mechanisms could lead to unauthorized access. & 4 & 2 & 8 & Backend Team & Perform regular security audits, use established libraries (Simple-JWT, django-otp), enforce HTTPS, follow security best practices. \\
-    \hline
-    Data loss or corruption: PostgreSQL database could face corruption or unintentional data loss. & 3 & 1 & 3 & Backend Team & Implement regular automated backups, use database transactions, monitor disk space and performance. \\
-    \hline
-    Cross-browser compatibility issues: Inconsistent behavior across different browsers (esp. Canvas rendering). & 2 & 3 & 6 & Frontend Team & Perform cross-browser testing (Chrome, Firefox), use standardized JS/Canvas APIs, provide fallbacks if necessary. \\
-    \hline
-    Frontend responsiveness issues: Problems with the Bootstrap 5 layout may lead to poor user experience on various devices. & 2 & 2 & 4 & Frontend Team & Test across different screen sizes/devices, use Bootstrap grid system and utilities effectively, employ media queries for adjustments. \\
-    \hline
-    Docker container/compose misconfigurations: Incorrect configurations may cause services to malfunction or fail to start. & 4 & 3 & 12 & DevOps/Backend & Implement configuration validation, use environment variables (.env) properly, version control Dockerfiles/compose files, test configurations thoroughly. \\
-    \hline
-    Accessibility compliance issues: Features for visually impaired users may not meet required standards or be ineffective. & 3 & 3 & 9 & Frontend Team & Conduct accessibility testing (e.g., screen readers, keyboard navigation), adhere to WCAG guidelines, gather user feedback. \\
-    \hline
-    Blockchain integration issues: Problems with smart contract deployment, interaction (Web3.py), or sidechain availability/performance. & 4 & 2 & 8 & Backend/Blockchain & Thoroughly test smart contracts, handle potential transaction failures gracefully, monitor sidechain status, have clear error handling for Web3 calls. \\
-    \hline
-    ELK Stack integration/performance issues: Problems configuring Logstash/Filebeat, Elasticsearch indexing load, or Kibana visualization errors. & 3 & 2 & 6 & DevOps/Backend & Validate configurations, monitor Elasticsearch performance and disk usage, optimize indexing, ensure proper resource allocation for ELK containers. \\
-    \hline
-    Third-party service dependency issues: Problems with external services (e.g., 42 OAuth API availability). & 4 & 2 & 8 & Backend Team & Implement proper error handling and user feedback for API failures, monitor third-party service status, potentially implement timeouts or circuit breakers. \\
-    \hline
-    User data privacy concerns: Inadequate handling of user data could lead to privacy violations (GDPR, etc.). & 3 & 1 & 3 & Backend Team & Minimize data collection, anonymize/encrypt sensitive data where possible, clearly state data usage policy, implement access controls. \\
-    \hline
-    \end{tabular}
-    \caption{Risk Register}
-    \label{tab:risk_register}
-\end{table}
 
 \section{Functional Requirements}
 \subsection*{User Authentication and Management}

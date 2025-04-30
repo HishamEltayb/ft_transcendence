@@ -139,6 +139,9 @@ class PongGame {
         this.aiReturnToMiddleSpeed = 0.3;   // How quickly AI returns to center
         this.aiCenteringProbability = 0.6;  // How often AI tries to center itself
         this.shouldReturnToCenter = false;  // Flag to indicate if AI should return to center
+        
+        // Track current screen mode: 'menu', 'pvp', 'ai', 'multiplayer', 'tournament'
+        this.currentMode = 'menu';
     }
     
     /**
@@ -361,18 +364,24 @@ class PongGame {
      * Handle key down events for paddle movement
      */
     handleKeyDown(e) {
-        // Press Escape to go back to the menu and reset game
+        // Always handle Escape to return to menu
         if (e.key === 'Escape') {
             this.resetGame();
             this.backToMenu();
             return;
         }
+        // Ignore other keys when in menu
+        if (this.currentMode === 'menu') return;
         this.keysPressed[e.key] = true;
         
-        // Check if game should be started with any key when start text is displayed
+        // Only start the game when startText is visible and menu hidden
         const startText = document.getElementById('startText');
-        if (startText && startText.style.display === 'block' && 
-            !this.gameRunning && !this.gameOver) {
+        const topButtons = document.querySelector('.top-buttons');
+        if (
+            startText && startText.style.display === 'block' &&
+            topButtons && topButtons.style.display === 'none' &&
+            !this.gameRunning && !this.gameOver
+        ) {
             this.startGame();
         }
     }
@@ -381,6 +390,7 @@ class PongGame {
      * Handle key up events for paddle movement
      */
     handleKeyUp(e) {
+        if (this.currentMode === 'menu') return;
         this.keysPressed[e.key] = false;
     }
     
@@ -484,6 +494,13 @@ class PongGame {
         // Show game buttons
         this.showGameButtons();
         
+        // Reset to menu mode
+        this.currentMode = 'menu';
+        
+        // Hide start prompt
+        const startText = document.getElementById('startText');
+        if (startText) startText.style.display = 'none';
+        
         // Reset player names to defaults when returning to menu
         this.player1Name.textContent = 'PLAYER 1';
         this.player2Name.textContent = 'PLAYER 2';
@@ -497,6 +514,8 @@ class PongGame {
      * Set the game mode and initialize accordingly
      */
     setGameMode(mode) {
+        // Enter game mode
+        this.currentMode = mode;
         this.isAIMode = false;
         this.isMultiplayerMode = false;
         this.isTournamentMode = false;
