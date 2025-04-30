@@ -119,6 +119,26 @@ class PongGame {
         this.aiTargetY = undefined;
         this.aiPredictedY = undefined;
         this.aiTargetOffset = 0;
+        
+        // Add AI perception variables
+        this.aiPerceptionBallX = 0;
+        this.aiPerceptionBallY = 0;
+        this.aiPerceptionBallSpeedX = 0;
+        this.aiPerceptionBallSpeedY = 0;
+        
+        // AI simulated key state
+        this.aiKeyState = {
+            'ArrowUp': false,
+            'ArrowDown': false
+        };
+        
+        // AI behavior parameters
+        this.aiMistakeChance = 0.15;        // Chance of AI misperceiving the ball
+        this.aiErrorMargin = 0.15;          // Paddle targeting precision
+        this.aiReactionDelay = 1000;        // AI updates its perception once per second (1000ms)
+        this.aiReturnToMiddleSpeed = 0.3;   // How quickly AI returns to center
+        this.aiCenteringProbability = 0.6;  // How often AI tries to center itself
+        this.shouldReturnToCenter = false;  // Flag to indicate if AI should return to center
     }
     
     /**
@@ -488,7 +508,7 @@ class PongGame {
             case 'ai':
                 // Player vs AI mode
                 this.isAIMode = true;
-                console.log('Setting AI mode');
+                console.log('Setting AI mode - isAIMode set to', this.isAIMode);
                 activeButton = document.getElementById('pveButton');
                 break;
                 
@@ -704,15 +724,16 @@ class PongGame {
         // Cap delta time to prevent large jumps
         if (this.deltaTime > 0.1) this.deltaTime = 0.1;
         
+        // If in AI mode, update AI decisions first before updating paddles
+        if (this.isAIMode) {
+            this.updateAIDecisions();
+        }
+        
         // Update paddle positions based on input
         this.updatePaddle1(this.deltaTime);
         
         // Update second paddle based on game mode
-        if (this.isAIMode) {
-            this.updateAIDecisions();
-        } else {
-            this.updatePaddle2(this.deltaTime);
-        }
+        this.updatePaddle2(this.deltaTime);
         
         // Update paddles 3 and 4 in multiplayer mode
         if (this.isMultiplayerMode) {
@@ -765,20 +786,27 @@ class PongGame {
         // Check if paddle is active in multiplayer mode
         if (this.isMultiplayerMode && !this.paddle2Active) return;
         
-        this.paddle2Speed = 0;
-        
-        // Arrow Up - move up
-        if (this.keysPressed['ArrowUp']) {
-            this.paddle2Speed = -this.paddleMaxSpeed;
+        // If in AI mode, the paddle speed was already updated in updateAIDecisions
+        // Just apply the movement
+        if (!this.isAIMode) {
+            this.paddle2Speed = 0;
+            
+            // Arrow Up - move up
+            if (this.keysPressed['ArrowUp']) {
+                this.paddle2Speed = -this.paddleMaxSpeed;
+            }
+            
+            // Arrow Down - move down
+            if (this.keysPressed['ArrowDown']) {
+                this.paddle2Speed = this.paddleMaxSpeed;
+            }
         }
         
-        // Arrow Down - move down
-        if (this.keysPressed['ArrowDown']) {
-            this.paddle2Speed = this.paddleMaxSpeed;
-        }
+        // Apply movement using the current paddle speed (set either by AI or player controls)
+        const effectiveSpeed = this.paddle2Speed * deltaTime * 60;
         
         // Update paddle position
-        this.paddle2Y += this.paddle2Speed * deltaTime * 60;
+        this.paddle2Y += effectiveSpeed;
         
         // Clamp position to game boundaries
         this.paddle2Y = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, this.paddle2Y));
@@ -1223,108 +1251,172 @@ class PongGame {
         // Skip if not in AI mode
         if (!this.isAIMode) return;
         
-        // Only update AI decisions once per second
+        // Reset key states at the beginning of each frame - this simulates keyboard input
+        this.aiKeyState['ArrowUp'] = false;
+        this.aiKeyState['ArrowDown'] = false;
+        
+        // Check if ball changed direction (to activate return to center behavior)
+        if (this.ballSpeedX < 0 && this.aiPerceptionBallSpeedX > 0) {
+            this.shouldReturnToCenter = true;
+        }
+        
+        // Update AI's perception of the ball based on reaction delay
+        // The AI can only refresh its view of the game once per second
         const currentTime = Date.now();
         if (!this.lastAIUpdateTime) {
             this.lastAIUpdateTime = currentTime;
+            
+            // Initial perception
+            this.aiPerceptionBallX = parseFloat(this.ball.style.left);
+            this.aiPerceptionBallY = parseFloat(this.ball.style.top);
+            this.aiPerceptionBallSpeedX = this.ballSpeedX;
+            this.aiPerceptionBallSpeedY = this.ballSpeedY;
         }
         
-        // Calculate time since last update (in seconds)
-        const timeSinceLastUpdate = (currentTime - this.lastAIUpdateTime) / 1000;
-        
-        // Only make new decisions once per second
-        if (timeSinceLastUpdate >= 1) {
-            // Store current ball position for AI decision making
-            const ballStyle = window.getComputedStyle(this.ball);
-            const ballLeft = parseFloat(ballStyle.left);
-            const ballTop = parseFloat(ballStyle.top);
-            const ballSize = parseFloat(ballStyle.width);
-            const ballCenterY = ballTop + ballSize / 2;
+        // Only update perception once per second as per requirements
+        if (currentTime - this.lastAIUpdateTime > this.aiReactionDelay) {
+            // Update AI's perception of the ball
+            this.aiPerceptionBallX = parseFloat(this.ball.style.left);
+            this.aiPerceptionBallY = parseFloat(this.ball.style.top);
+            this.aiPerceptionBallSpeedX = this.ballSpeedX;
+            this.aiPerceptionBallSpeedY = this.ballSpeedY;
             
             // Set difficulty parameters
             switch (this.aiDifficulty) {
                 case 'easy':
-                    this.aiPredictionAccuracy = 0.3; // 30% accuracy
-                    this.aiRandomOffset = 50; // Larger random offset
-                    this.paddle2Speed = this.paddleMaxSpeed * 0.4; // 40% speed
-                    this.aiTargetOffset = 30; // Intentionally miss more often
+                    this.aiMistakeChance = 0.35;
+                    this.aiErrorMargin = 0.35;
+                    this.aiReturnToMiddleSpeed = 0.05;
+                    this.aiCenteringProbability = 0.2;
+                    this.aiPredictionAccuracy = 0.5;
                     break;
                     
                 case 'medium':
-                    this.aiPredictionAccuracy = 0.6; // 60% accuracy
-                    this.aiRandomOffset = 20; // Medium random offset
-                    this.paddle2Speed = this.paddleMaxSpeed * 0.7; // 70% speed
-                    this.aiTargetOffset = 15; // Occasionally miss
+                    this.aiMistakeChance = 0.15;
+                    this.aiErrorMargin = 0.15;
+                    this.aiReturnToMiddleSpeed = 0.3;
+                    this.aiCenteringProbability = 0.6;
+                    this.aiPredictionAccuracy = 0.8;
                     break;
                     
                 case 'hard':
-                    this.aiPredictionAccuracy = 0.9; // 90% accuracy
-                    this.aiRandomOffset = 10; // Small random offset
-                    this.paddle2Speed = this.paddleMaxSpeed * 0.9; // 90% speed
-                    this.aiTargetOffset = 5; // Rarely miss
+                    this.aiMistakeChance = 0.05;
+                    this.aiErrorMargin = 0.05;
+                    this.aiReturnToMiddleSpeed = 0.7;
+                    this.aiCenteringProbability = 0.9;
+                    this.aiPredictionAccuracy = 0.95;
                     break;
             }
             
-            // Only calculate new target if ball is moving towards AI paddle
-            if (this.ballSpeedX > 0) {
-                // Predict where ball will be when it reaches the paddle
-                const distanceX = this.gameWidth - ballLeft - ballSize - this.paddleWidth;
-                
-                // Predict Y position
-                this.aiPredictedY = this.predictBallPosition(
-                    ballLeft, 
-                    ballTop, 
-                    this.ballSpeedX, 
-                    this.ballSpeedY, 
-                    distanceX
-                );
-                
-                // Add randomness based on difficulty
-                this.aiPredictedY += (Math.random() * 2 - 1) * this.aiRandomOffset;
-                
-                // Add intentional offset based on difficulty
-                if (Math.random() > this.aiPredictionAccuracy) {
-                    // Occasionally move away from the ball
-                    this.aiPredictedY += (Math.random() > 0.5 ? 1 : -1) * this.aiTargetOffset;
-                }
-                
-                // Store the calculated target position
-                this.aiTargetY = this.aiPredictedY - this.paddleHeight / 2;
-                
-                // Clamp target position to game boundaries
-                this.aiTargetY = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, this.aiTargetY));
-            } else {
-                // When ball is moving away, gradually return to center
-                this.aiTargetY = (this.gameHeight - this.paddleHeight) / 2;
+            // AI makes mistakes based on difficulty
+            if (Math.random() < this.aiMistakeChance) {
+                // Intentionally misjudge ball direction or speed (makes AI more human-like)
+                this.aiPerceptionBallSpeedY *= -0.8 + Math.random() * 0.4;
             }
             
             // Update last AI update time
             this.lastAIUpdateTime = currentTime;
         }
         
-        // Move paddle towards the target position (smooth movement)
-        if (this.aiTargetY !== undefined) {
-            const paddleCenterY = this.paddle2Y + this.paddleHeight / 2;
-            const targetCenterY = this.aiTargetY + this.paddleHeight / 2;
+        // Get the center position of the paddle
+        const paddleCenterY = this.paddle2Y + this.paddleHeight / 2;
+        const centerPosition = this.gameHeight / 2 - this.paddleHeight / 2;
+        const distanceFromCenter = Math.abs(paddleCenterY - this.gameHeight / 2);
+        
+        // AGGRESSIVE BEHAVIOR: Move to intercept the ball if it's coming toward the AI
+        if (this.aiPerceptionBallSpeedX > 0) {
+            // Calculate time until ball reaches paddle
+            const ballSize = parseFloat(this.ball.style.width);
+            const distanceToTravel = this.gameWidth - this.paddleWidth - ballSize - this.aiPerceptionBallX;
             
-            // Only move if the paddle is not very close to the target
-            if (Math.abs(paddleCenterY - targetCenterY) > this.paddleHeight / 10) {
-                // Move towards target at constant speed
-                if (paddleCenterY < targetCenterY) {
-                    // Move down
-                    this.paddle2Y += this.paddle2Speed * this.deltaTime * 60;
-                } else {
-                    // Move up
-                    this.paddle2Y -= this.paddle2Speed * this.deltaTime * 60;
-                }
-                
-                // Clamp position to game boundaries
-                this.paddle2Y = Math.max(0, Math.min(this.gameHeight - this.paddleHeight, this.paddle2Y));
+            // Predict where ball will be vertically
+            let predictedY = this.predictBallPosition(
+                this.aiPerceptionBallX, 
+                this.aiPerceptionBallY, 
+                this.aiPerceptionBallSpeedX, 
+                this.aiPerceptionBallSpeedY, 
+                distanceToTravel
+            );
+            
+            // Add prediction errors based on difficulty
+            if (Math.random() > this.aiPredictionAccuracy) {
+                const errorAmount = (1 - this.aiPredictionAccuracy) * this.gameHeight * 0.3;
+                predictedY += (Math.random() * 2 - 1) * errorAmount;
             }
             
-            // Update DOM
-            this.paddle2.style.top = `${this.paddle2Y}px`;
+            // Calculate dynamic error margin (smaller for hard difficulty)
+            const distanceFactor = Math.min(1, distanceToTravel / this.gameWidth);
+            const dynamicErrorMargin = this.paddleHeight * (this.aiErrorMargin * (0.3 + 0.7 * distanceFactor));
+            
+            // Calculate difference between predicted ball position and paddle position
+            const predictedBallCenter = predictedY + ballSize / 2;
+            const difference = predictedBallCenter - paddleCenterY;
+            
+            // Intercept the ball with higher precision for harder difficulties
+            if (Math.abs(difference) > dynamicErrorMargin) {
+                this.aiKeyState[difference > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+            }
+            
+            // Reset center flag when actively tracking ball
+            this.shouldReturnToCenter = false;
+        } 
+        // RETURN TO CENTER: After hitting ball or when ball is moving away
+        else if (this.aiPerceptionBallSpeedX < 0) {
+            // Decision to center based on difficulty setting
+            const shouldCenter = Math.random() < this.aiReturnToMiddleSpeed;
+            
+            // If we should center and we're not already centered
+            if (shouldCenter && distanceFromCenter > 10) {
+                this.aiKeyState[paddleCenterY > this.gameHeight / 2 ? 'ArrowUp' : 'ArrowDown'] = true;
+            }
         }
+        
+        // For medium/hard difficulty, occasionally predict and move based on expected return trajectory
+        if (this.aiPerceptionBallSpeedX < 0 && this.aiDifficulty !== 'easy') {
+            const proactiveChance = this.aiDifficulty === 'hard' ? 0.7 : 0.3;
+            
+            if (Math.random() < proactiveChance) {
+                // Try to predict where the ball might come back
+                const playerPaddleX = this.paddleWidth;
+                const bounceX = Math.max(playerPaddleX, this.aiPerceptionBallX - Math.abs(this.aiPerceptionBallSpeedX) * 15);
+                
+                // Simple prediction of return trajectory
+                const ballSize = parseFloat(this.ball.style.width);
+                let expectedReturnY = this.aiPerceptionBallY + (this.aiPerceptionBallSpeedY * 
+                                     (this.gameWidth / Math.max(1, Math.abs(this.aiPerceptionBallSpeedX))));
+                
+                // Keep within game bounds
+                expectedReturnY = Math.max(0, Math.min(this.gameHeight - ballSize, expectedReturnY));
+                
+                // Move slightly toward the expected return position
+                const returnDiff = (expectedReturnY + ballSize/2) - paddleCenterY;
+                
+                // Only move if we're far from the predicted position and not already moving
+                if (Math.abs(returnDiff) > this.gameHeight/4 && 
+                    !this.aiKeyState['ArrowUp'] && !this.aiKeyState['ArrowDown']) {
+                    this.aiKeyState[returnDiff > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+                }
+            }
+        }
+        
+        // Now apply the simulated key presses to move the paddle just like a human player would
+        if (this.aiKeyState['ArrowUp']) {
+            this.paddle2Speed -= this.paddleAcceleration;
+        } else if (this.aiKeyState['ArrowDown']) {
+            this.paddle2Speed += this.paddleAcceleration;
+        } else {
+            // Apply deceleration when no keys are pressed
+            if (this.paddle2Speed > 0) {
+                this.paddle2Speed = Math.max(0, this.paddle2Speed - this.paddleDeceleration);
+            } else if (this.paddle2Speed < 0) {
+                this.paddle2Speed = Math.min(0, this.paddle2Speed + this.paddleDeceleration);
+            }
+        }
+        
+        // Clamp paddle speed to maximum - same as for human players
+        this.paddle2Speed = Math.max(-this.paddleMaxSpeed, Math.min(this.paddleMaxSpeed, this.paddle2Speed));
+        
+        // The actual paddle movement and position update is handled in updatePaddle2
     }
     
     /**
