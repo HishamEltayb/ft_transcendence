@@ -36,8 +36,8 @@ class PongGame {
         
         // Game settings
         this.winScore = 3;
-        this.initialBallSpeedX = 5;
-        this.initialBallSpeedY = 2;
+        this.initialBallSpeedX = 1;
+        this.initialBallSpeedY = 1;
         this.ballSpeedX = this.initialBallSpeedX;
         this.ballSpeedY = this.initialBallSpeedY;
         this.ballSpeedMultiplier = 1.05;
@@ -121,6 +121,17 @@ class PongGame {
         this.paddleSound = document.getElementById('paddleSound');
         this.wallSound = document.getElementById('wallSound');
         this.lossSound = document.getElementById('lossSound');
+        
+        // I add code to hide and pause the video background by default
+        const videoBgInit = document.getElementById('videoBackground');
+        if (videoBgInit) {
+            videoBgInit.style.display = 'none';
+            videoBgInit.style.zIndex = '-1';
+            if (videoBgInit.pause) {
+                videoBgInit.pause();
+                videoBgInit.currentTime = 0;
+            }
+        }
         
         // Initialize game dimensions
         this.updateGameDimensions();
@@ -1333,10 +1344,15 @@ class PongGame {
         
         // Apply background setting
         const backgroundSelect = document.getElementById('backgroundSelect');
+        const videoBg = document.getElementById('videoBackground');
         if (backgroundSelect.value === 'video') {
-            document.getElementById('videoBackground').style.display = 'block';
+            videoBg.style.display = 'block';
+            videoBg.style.zIndex = '-1';
+            videoBg.play().catch(e => console.log('Error playing video background:', e));
         } else {
-            document.getElementById('videoBackground').style.display = 'none';
+            videoBg.pause();
+            videoBg.currentTime = 0;
+            videoBg.style.display = 'none';
         }
     }
     
