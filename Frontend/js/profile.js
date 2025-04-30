@@ -368,6 +368,7 @@ class Profile {
 
         const currentUser = app.getUsername();
         const history = app.state.user.matchHistory || [];
+        console.log('Match history:', history);
         const entries = utils.extractMatchData(history, currentUser);
 
         tableBody.innerHTML = '';
@@ -375,6 +376,7 @@ class Profile {
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No match history available</td></tr>`;
         } else {
             entries.forEach(entry => {
+                console.log('Entry:', entry);
                 const tr = document.createElement('tr');
                 if (entry.isTournament) tr.classList.add('table-warning');
                 tr.innerHTML = `
