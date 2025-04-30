@@ -1611,12 +1611,12 @@ class PongGame {
         }
         
         // If in multiplayer mode, apply team name overrides or retain current values
-        if (this.isMultiplayerMode) {
-            const team1Val = document.getElementById('team1NameInput').value;
-            const team2Val = document.getElementById('team2NameInput').value;
-            this.player1Name.textContent = team1Val || this.player1Name.textContent;
-            this.player2Name.textContent = team2Val || this.player2Name.textContent;
-        }
+        // if (this.isMultiplayerMode) {
+        //     const team1Val = document.getElementById('team1NameInput').value;
+        //     const team2Val = document.getElementById('team2NameInput').value;
+        //     this.player1Name.textContent = team1Val || this.player1Name.textContent;
+        //     this.player2Name.textContent = team2Val || this.player2Name.textContent;
+        // }
         
         // Apply background setting
         const backgroundSelect = document.getElementById('backgroundSelect');
