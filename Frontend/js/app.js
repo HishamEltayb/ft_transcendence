@@ -156,6 +156,11 @@ class App {
                 
                 try {
                     if (this.state.user) {
+                        // game.init(
+                        //     this.getUsername(),
+                        //     this.setMatch.bind(this),
+                        //     this.setTournament.bind(this)
+                        // );
                         pages.showPage('game');
                         login.updateUIAuthState();
                         return;
@@ -195,13 +200,14 @@ class App {
                 components.showSpinner();
                 
                 try {
-                    if (this.state.user) {
-                        pages.showPage('profile');
-                        login.updateUIAuthState();
-                        return;
-                    }
+                    // if (this.state.user) {
+                    //     pages.showPage('profile');
+                    //     login.updateUIAuthState();
+                    //     return;
+                    // }
                     
                     const result = await api.getUserData();
+                    console.log('result', result);
                     
                     if (result.success && result.userData) {
                         this.state.user = result.userData;

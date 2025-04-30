@@ -8,11 +8,11 @@ class MatchSerializer(serializers.ModelSerializer):
         # List all the fields from the Match model you want in the JSON output
         fields = [
             'id',
-            'player1_name',
-            'player2_name',
-            'player1_score',
-            'player2_score',
-            'match_type',
+            'player1Name',
+            'player2Name',
+            'player1Score',
+            'player2Score',
+            'matchType',
             'winner',
             'created_at',
             'updated_at',
