@@ -122,14 +122,29 @@ def save_tournament(tournament_name: str, matches: list):
     return t
     
 
-def get_tournaments(name: str):
+def get_tournaments(name: str) -> list:
     """
     Gets a tournament from the blockchain.
     :param name: Name of the tournament
-    :return: List of tournaments
+    :return: a list of match arrays
     """
     # Get the tournaments ralated to the tournament name
+    result = []
     contract = load_contract()
     tournaments = contract.functions.getTournaments(name).call()
-    # print("Tournaments:", tournaments)
-    return tournaments
+    for tournament in tournaments:
+        result.append(
+        {
+            "tournament_id": tournament[2],
+            "matches": [
+                {
+                    "matchType": "Tournament", 
+                    "Player1Name": match[0],
+                    "Player2Name": match[1],
+                    "Player1Score": match[2],
+                    "Player2Score": match[3],
+                    "Winner": match[4]
+                } for match in tournament[3] ]
+        }
+        )
+    return result
