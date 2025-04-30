@@ -211,7 +211,6 @@ class PongGame {
      * Set up event listeners for menu buttons and game controls
      */
     setupEventListeners() {
-        console.log('Setting up event listeners');
         // Bind event handlers to this instance
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -233,10 +232,8 @@ class PongGame {
         
         // Game mode buttons
         const pvpButton = document.getElementById('pvpButton');
-        console.log('setupEventListeners - pvpButton:', pvpButton);
         if (pvpButton) {
             pvpButton.addEventListener('click', () => {
-                console.log('PVP button clicked from setupEventListeners');
                 // On 1 VS 1, set Player 1's name to current user and Player 2's name to RANDOM
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'RANDOM';
@@ -247,10 +244,8 @@ class PongGame {
         }
         
         const pveButton = document.getElementById('pveButton');
-        console.log('setupEventListeners - pveButton:', pveButton);
         if (pveButton) {
             pveButton.addEventListener('click', () => {
-                console.log('PVE button clicked from setupEventListeners');
                 // On 1 VS AI, set Player 1's name to current user and Player 2's name to AI
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'AI';
@@ -261,10 +256,8 @@ class PongGame {
         }
         
         const multiplayerButton = document.getElementById('multiplayerButton');
-        console.log('setupEventListeners - multiplayerButton:', multiplayerButton);
         if (multiplayerButton) {
             multiplayerButton.addEventListener('click', () => {
-                console.log('Multiplayer button clicked from setupEventListeners');
                 this.player1Name.textContent = this.userName;
                 this.player2Name.textContent = 'Obs team';
                 this.setGameMode('multiplayer');
@@ -274,10 +267,8 @@ class PongGame {
         }
         
         const tournamentButton = document.getElementById('tournamentButton');
-        console.log('setupEventListeners - tournamentButton:', tournamentButton);
         if (tournamentButton) {
             tournamentButton.addEventListener('click', () => {
-                console.log('Tournament button clicked from setupEventListeners');
                 this.setGameMode('tournament');
             });
         } else {
@@ -530,21 +521,18 @@ class PongGame {
         switch (mode) {
             case 'pvp':
                 // Player vs Player mode
-                console.log('Setting PvP mode');
                 activeButton = document.getElementById('pvpButton');
                 break;
                 
             case 'ai':
                 // Player vs AI mode
                 this.isAIMode = true;
-                console.log('Setting AI mode - isAIMode set to', this.isAIMode);
                 activeButton = document.getElementById('pveButton');
                 break;
                 
             case 'multiplayer':
                 // 4 player mode
                 this.isMultiplayerMode = true;
-                console.log('Setting Multiplayer mode');
                 activeButton = document.getElementById('multiplayerButton');
                 // Determine team names: respect settings overrides or use defaults
                 const team1InputEl = document.getElementById('team1NameInput');
@@ -558,7 +546,6 @@ class PongGame {
             case 'tournament':
                 // Tournament mode
                 this.isTournamentMode = true;
-                console.log('Setting Tournament mode');
                 activeButton = document.getElementById('tournamentButton');
                 // Show tournament setup
                 document.getElementById('tournamentScreen').style.display = 'block';
@@ -633,9 +620,7 @@ class PongGame {
         // Start the game loop
         this.gameRunning = true;
         this.lastTime = performance.now();
-        this.animationFrameId = requestAnimationFrame(this.gameLoop);
-        
-        console.log('Game started');
+        this.animationFrameId = requestAnimationFrame(this.gameLoop);        
     }
     
     /**
@@ -1189,7 +1174,6 @@ class PongGame {
         
         // Capture this match data into matchObj
         this.fillMatchObj(winnerName);
-        console.log('Match result:', this.matchObj);
         
         // Tournament logic: record and show next match button
         if (this.isTournamentMode) {
@@ -1233,7 +1217,6 @@ class PongGame {
     }
 
     getMatchType() {
-        // console.log("this.isTournamentMode", this.isTournamentMode)
       switch (true) {
         case this.isTournamentMode:
           return 'tournament';
@@ -1263,19 +1246,19 @@ class PongGame {
             case 'paddle':
                 if (this.paddleSound) {
                     this.paddleSound.currentTime = 0;
-                    this.paddleSound.play().catch(e => console.log("Error playing sound:", e));
+                    this.paddleSound.play();
                 }
                 break;
             case 'wall':
                 if (this.wallSound) {
                     this.wallSound.currentTime = 0;
-                    this.wallSound.play().catch(e => console.log("Error playing sound:", e));
+                    this.wallSound.play();
                 }
                 break;
             case 'loss':
                 if (this.lossSound) {
                     this.lossSound.currentTime = 0;
-                    this.lossSound.play().catch(e => console.log("Error playing sound:", e));
+                    this.lossSound.play();
                 }
                 break;
         }
@@ -1631,22 +1614,37 @@ class PongGame {
         if (backgroundSelect.value === 'video') {
             // Create dark sparkle background effect
             this.gameArea.style.backgroundColor = '#000000'; // Solid black background
-            videoBg.style.display = 'block';
-            videoBg.style.zIndex = '1'; // Ensure it's above the base background
-            
-            // Remove semi-transparent overlay for now
-            const overlay = videoBg.querySelector('.video-overlay');
-            if (overlay) {
-                overlay.style.background = 'rgba(0, 0, 0, 0.3)'; // Completely opaque for now
+            if (videoBg) {
+                videoBg.style.display = 'block';
+                videoBg.style.zIndex = '1'; // Ensure it's above the base background
+                
+                // Remove semi-transparent overlay for now
+                const overlay = videoBg.querySelector('.video-overlay');
+                if (overlay) {
+                    overlay.style.background = 'rgba(0, 0, 0, 0.3)'; // Semi-transparent black
+                }
+                
+                // Play/restart the video when Sparkle mode is selected
+                const videoElement = videoBg.querySelector('video');
+                if (videoElement && typeof videoElement.play === 'function') {
+                    videoElement.currentTime = 0; // Reset to beginning
+                    videoElement.play().catch(e => console.log('Error playing video background:', e));
+                }
             }
-            
-            // For future video implementation, uncomment:
-            // videoBg.play().catch(e => console.log('Error playing video background:', e));
         } else {
-            videoBg.pause();
-            videoBg.currentTime = 0;
-            videoBg.style.display = 'none';
-            this.gameArea.style.backgroundColor = 'rgba(0, 0, 0, 1)'; // Reset to original style
+            // Classic mode - make sure we have a valid video element before trying to pause
+            if (videoBg) {
+                // Only try to pause if it's a video with pause method
+                const videoElement = videoBg.querySelector('video');
+                if (videoElement && typeof videoElement.pause === 'function') {
+                    videoElement.pause();
+                    videoElement.currentTime = 0;
+                }
+                videoBg.style.display = 'none';
+                videoBg.style.zIndex = '-1';
+            }
+            // Always set the background color to black for classic mode
+            this.gameArea.style.backgroundColor = '#000000'; // Solid black
         }
     }
     
