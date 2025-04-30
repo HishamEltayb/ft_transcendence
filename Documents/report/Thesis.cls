@@ -4,18 +4,11 @@
 %%
 %% Created by Steve R. Gunn, modified by Sunil Patel: www.sunilpatel.co.uk
 
-% ==============================
-% Thesis.cls - CLASS SETTINGS
-% ==============================
-% Require LaTeX2e, dated Dec 1996 or later
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-% Declare this as the Thesis class
 \ProvidesClass{Thesis}
               [2007/22/02 v1.0
    LaTeX document class]
-% Base this class on the standard 'book' class
 \def\baseclass{book}
-% Pass all options to 'book'
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{\baseclass}}
 \def\@checkoptions#1#2{
   \edef\@curroptions{\@ptionlist{\@currname.\@currext}}
@@ -26,12 +19,9 @@
   \let\@this\@empty
   \if@tempswa \else \PassOptionsToClass{#1}{\baseclass}\fi
 }
-% The next lines ensure that only one of 10pt, 11pt, or 12pt is set, defaulting to 11pt if not specified
 \@checkoptions{11pt}{{10pt}{11pt}{12pt}}
-% Set default paper size to A4
 \PassOptionsToClass{a4paper}{\baseclass}
 \ProcessOptions\relax
-% Load the base class
 \LoadClass{\baseclass}
 \newcommand\bhrule{\typeout{------------------------------------------------------------------------------}}
 
@@ -49,17 +39,14 @@
 }
 
 \newcommand\btypeout[1]{\bhrule\typeout{\space #1}\bhrule}
-% Redefine \today to print "Month Year"
 \def\today{\ifcase\month\or
   January\or February\or March\or April\or May\or June\or
   July\or August\or September\or October\or November\or December\fi
   \space \number\year}
-% Spacing and paragraph formatting
 \usepackage{setspace}
-\onehalfspacing                         % 1.5 line spacing
-\setlength{\parindent}{0pt}             % No paragraph indentation
-\setlength{\parskip}{2.0ex plus0.5ex minus0.2ex} % Paragraph spacing
-% Page margin settings
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.0ex plus0.5ex minus0.2ex}
 \usepackage{vmargin}
 \setmarginsrb           { .7in}  % left margin
                         { 0.6in}  % top margin
@@ -69,17 +56,16 @@
                         {0.25in}  % head sep
                         {   9pt}  % foot height
                         { 0.3in}  % foot sep
-% Penalties for line breaking, widows/orphans, etc.
-\raggedbottom                           % Don't stretch vertical spacing to fill page
+\raggedbottom
 \setlength{\topskip}{1\topskip \@plus 5\p@}
-\doublehyphendemerits=10000             % No consecutive hyphens
-\brokenpenalty=10000                    % No broken words across columns/pages
-\widowpenalty=9999                      % Almost no widows at bottom of page
-\clubpenalty=9999                       % Almost no orphans at top of page
-\interfootnotelinepenalty=9999          % Avoid breaking footnotes over pages
+\doublehyphendemerits=10000       % No consecutive line hyphens.
+\brokenpenalty=10000              % No broken words across columns/pages.
+\widowpenalty=9999                % Almost no widows at bottom of page.
+\clubpenalty=9999                 % Almost no orphans at top of page.
+\interfootnotelinepenalty=9999    % Almost never break footnotes.
 \usepackage{fancyhdr}
 \lhead[\rm\thepage]{\fancyplain{}{\sl{\rightmark}}}
-% \rhead[\fancyplain{}{\sl{\leftmark}}]{\rm\thepage}
+\rhead[\fancyplain{}{\sl{\leftmark}}]{\rm\thepage}
 \chead{}\lfoot{}\rfoot{}\cfoot{}
 \pagestyle{fancy}
 \renewcommand{\chaptermark}[1]{\btypeout{\thechapter\space #1}\markboth{\@chapapp\ \thechapter\ #1}{\@chapapp\ \thechapter\ #1}}
@@ -90,11 +76,7 @@
 \thispagestyle{empty}
 \newpage
 \if@twocolumn\hbox{}\newpage\fi\fi\fi}
-% ==============================
-% Theorem and Caption Styles
-% ==============================
 \usepackage{amsmath,amsfonts,amssymb,amscd,amsthm,xspace}
-% Define theorem, corollary, lemma, proposition, axiom, definition, remark environments
 \theoremstyle{plain}
 \newtheorem{example}{Example}[chapter]
 \newtheorem{theorem}{Theorem}[chapter]
@@ -106,54 +88,41 @@
 \newtheorem{definition}[theorem]{Definition}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
-% Caption formatting for figures and tables
 \usepackage[centerlast,small,sc]{caption}
 \setlength{\captionmargin}{20pt}
-% ==============================
-% Reference Shortcuts
-% ==============================
-\newcommand{\fref}[1]{Figure~\ref{#1}}    % Shortcut for Figure references
-\newcommand{\tref}[1]{Table~\ref{#1}}     % Table reference
-\newcommand{\eref}[1]{Equation~\ref{#1}}  % Equation reference
-\newcommand{\cref}[1]{Chapter~\ref{#1}}   % Chapter reference
-\newcommand{\sref}[1]{Section~\ref{#1}}   % Section reference
-\newcommand{\aref}[1]{Appendix~\ref{#1}}  % Appendix reference
-% ==============================
-% Float and Figure Settings
-% ==============================
-\renewcommand{\topfraction}{0.85}         % Allow up to 85% of page for floats at top
-\renewcommand{\bottomfraction}{.85}       % ... at bottom
-\renewcommand{\textfraction}{0.1}         % At least 10% of page for text
-\renewcommand{\dbltopfraction}{.85}       % For double-column floats
-\renewcommand{\floatpagefraction}{0.75}   % At least 75% of float page must be floats
+\newcommand{\fref}[1]{Figure~\ref{#1}}
+\newcommand{\tref}[1]{Table~\ref{#1}}
+\newcommand{\eref}[1]{Equation~\ref{#1}}
+\newcommand{\cref}[1]{Chapter~\ref{#1}}
+\newcommand{\sref}[1]{Section~\ref{#1}}
+\newcommand{\aref}[1]{Appendix~\ref{#1}}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\dbltopfraction}{.85}
+\renewcommand{\floatpagefraction}{0.75}
 \renewcommand{\dblfloatpagefraction}{.75}
-\setcounter{topnumber}{9}                 % Max floats at top
-\setcounter{bottomnumber}{9}              % Max at bottom
-\setcounter{totalnumber}{20}              % Max total floats
-\setcounter{dbltopnumber}{9}              % Max double-column floats
-% ==============================
-% Graphics and Listings
-% ==============================
-\usepackage{graphicx}                     % For including graphics
-\usepackage{epstopdf}                     % For EPS to PDF conversion
-\usepackage[scriptsize]{subfigure}        % For subfigures
-\usepackage{booktabs}                     % For better tables
-\usepackage{rotating}                     % For rotated tables/figures
-\usepackage{listings}                     % For code listings
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage[scriptsize]{subfigure}
+\usepackage{booktabs}
+\usepackage{rotating}
+\usepackage{listings}
 \usepackage{lstpatch}
 \lstset{captionpos=b,
         frame=tb,
         basicstyle=\scriptsize\ttfamily,
         showstringspaces=false,
-        keepspaces=true}                   % Set up code listing style
+        keepspaces=true}
 \lstdefinestyle{matlab} {
         language=Matlab,
         keywordstyle=\color{blue},
         commentstyle=\color[rgb]{0.13,0.55,0.13}\em,
-        stringstyle=\color[rgb]{0.7,0,0} } % MATLAB code style
-% ==============================
-% Hyperlinks and PDF Metadata
-% ==============================
+        stringstyle=\color[rgb]{0.7,0,0} }
 \usepackage[pdfpagemode={UseOutlines},bookmarks=true,bookmarksopen=true,
    bookmarksopenlevel=0,bookmarksnumbered=true,hypertexnames=false,
    colorlinks,linkcolor={blue},citecolor={blue},urlcolor={red},
@@ -161,10 +130,6 @@
 \pdfstringdefDisableCommands{
    \let\\\space
 }
-% ==============================
-% Title Page and Abstract
-% ==============================
-% Custom commands for supervisor, examiner, degree, authors, etc.
 \newcommand*{\supervisor}[1]{\def\supname{#1}}
 \newcommand*{\examiner}[1]{\def\examname{#1}}
 \newcommand*{\degree}[1]{\def\degreename{#1}}
@@ -191,7 +156,6 @@
 \addresses   {}
 \subject     {}
 \keywords    {}
-% Custom title page formatting
 \renewcommand\maketitle{
   \btypeout{Title Page}
   \hypersetup{pdftitle={\@title}}
@@ -250,7 +214,6 @@
   \global\let\and\relax
   \cleardoublepage
 }
-% Abstract environment
 \newenvironment{abstract}
 {
   \btypeout{Abstract Page}
@@ -280,35 +243,126 @@
   \vfil\vfil\vfil\null
   \cleardoublepage
 }
-% ==============================
-% Table of Contents and Lists
-% ==============================
 \addtocounter{secnumdepth}{1}
 \setcounter{tocdepth}{6}
 \newcounter{dummy}
-\newcommand\addtotoc[1]{...}
-\renewcommand\tableofcontents{...}
-\renewcommand\listoffigures{...}
-\renewcommand\listoftables{...}
+\newcommand\addtotoc[1]{
+\refstepcounter{dummy}
+\addcontentsline{toc}{chapter}{#1}}
+\renewcommand\tableofcontents{
+\btypeout{Table of Contents}
+\begin{spacing}{1}{
+    \setlength{\parskip}{1pt}
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\contentsname
+        \@mkboth{
+           \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}
+    \@starttoc{toc}
+    \if@restonecol\twocolumn\fi
+   \cleardoublepage
+}\end{spacing}
+}
+\renewcommand\listoffigures{
+\btypeout{List of Figures}
+\addtotoc{List of Figures}
+\begin{spacing}{1}{
+    \setlength{\parskip}{1pt}
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\listfigurename
+      \@mkboth{\MakeUppercase\listfigurename}
+              {\MakeUppercase\listfigurename}}
+    \@starttoc{lof}
+    \if@restonecol\twocolumn\fi
+    \cleardoublepage
+}\end{spacing}
+}
+\renewcommand\listoftables{
+\btypeout{List of Tables}
+\addtotoc{List of Tables}
+\begin{spacing}{1}{
+    \setlength{\parskip}{1pt}
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\listtablename
+      \@mkboth{
+          \MakeUppercase\listtablename}{\MakeUppercase\listtablename}}
+    \@starttoc{lot}
+    \if@restonecol\twocolumn\fi
+    \cleardoublepage
+}\end{spacing}
+}
 \newcommand\listsymbolname{Abbreviations}
 \usepackage{longtable}
 \usepackage{float}
-\newcommand\listofsymbols[2]{...}
+\newcommand\listofsymbols[2]{
+\btypeout{\listsymbolname}
+\addtotoc{\listsymbolname}
+    \chapter*{\listsymbolname
+      \@mkboth{
+          \MakeUppercase\listsymbolname}{\MakeUppercase\listsymbolname}}
+\begin{longtable}[c]{#1}#2\end{longtable}\par
+    \cleardoublepage
+}
 \newcommand\listconstants{Physical Constants}
 \usepackage{longtable}
-\newcommand\listofconstants[2]{...}
+\newcommand\listofconstants[2]{
+\btypeout{\listconstants}
+\addtotoc{\listconstants}
+    \chapter*{\listconstants
+      \@mkboth{
+          \MakeUppercase\listconstants}{\MakeUppercase\listconstants}}
+\begin{longtable}[c]{#1}#2\end{longtable}\par
+    \cleardoublepage
+}
 \newcommand\listnomenclature{Symbols}
 \usepackage{longtable}
-\newcommand\listofnomenclature[2]{...}
-% ==============================
-% Acknowledgements and Dedicatory
-% ==============================
-\newcommand\acknowledgements[1]{...}
-\newcommand\dedicatory[1]{...}
-% ==============================
-% Backmatter (for bibliography)
-% ==============================
-\renewcommand\backmatter{...}
+\newcommand\listofnomenclature[2]{
+\btypeout{\listnomenclature}
+\addtotoc{\listnomenclature}
+    \chapter*{\listnomenclature
+      \@mkboth{
+          \MakeUppercase\listnomenclature}{\MakeUppercase\listnomenclature}}
+\begin{longtable}[c]{#1}#2\end{longtable}\par
+    \cleardoublepage
+}
+\newcommand\acknowledgements[1]{
+\btypeout{Acknowledgements}
+\addtotoc{Acknowledgements}
+\thispagestyle{plain}
+\begin{center}{\huge{\textit{Acknowledgements}} \par}\end{center}
+{\normalsize #1}
+\vfil\vfil\null
+
+}
+\newcommand\dedicatory[1]{
+\btypeout{Dedicatory}
+\thispagestyle{plain}
+\null\vfil
+\vskip 60\p@
+\begin{center}{\Large \sl #1}\end{center}
+\vfil\null
+\cleardoublepage
+}
+\renewcommand\backmatter{
+  \if@openright
+    \cleardoublepage
+  \else
+    \clearpage
+  \fi
+  \addtotoc{\bibname}
+  \btypeout{\bibname}
+  \@mainmatterfalse}
 \endinput
 %%
 %% End of file Thesis.cls'.
