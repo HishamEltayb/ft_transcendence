@@ -156,13 +156,13 @@ class App {
                 
                 try {
                     if (this.state.user) {
-                        // game.init(
-                        //     this.getUsername(),
-                        //     this.setMatch.bind(this),
-                        //     this.setTournament.bind(this)
-                        // );
                         pages.showPage('game');
                         login.updateUIAuthState();
+                        game.init(
+                            this.getUsername(),
+                            this.setMatch.bind(this),
+                            this.setTournament.bind(this)
+                        );
                         return;
                     }
                     
