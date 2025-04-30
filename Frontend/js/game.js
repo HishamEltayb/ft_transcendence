@@ -205,6 +205,8 @@ class PongGame {
         
         // Check window size
         this.checkWindowSize();
+
+        this.resetGame();
     }
     
     /**
