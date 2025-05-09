@@ -1,10 +1,11 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   backend:
     build: ./Backend
     image: backend
     container_name: backend
+    pull_policy: never
     expose:
       - "8000"
     volumes:
@@ -26,6 +27,7 @@ services:
     build: ./Infrastructure/postgres
     image: postgres
     container_name: postgres
+    pull_policy: never
     expose:
       - "5432"
     volumes:
@@ -45,6 +47,7 @@ services:
     build: ./Infrastructure/Blockchain
     image: blockchain
     container_name: blockchain
+    pull_policy: never
     expose:
       - "8545"
     volumes:
@@ -54,9 +57,9 @@ services:
     networks:
       - transcendence
     healthcheck:
-      test: ["CMD", "ping", "-c", "1", "localhost:8545"]
-      interval: 30s
-      timeout: 30s
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8545"]
+      interval: 80s
+      timeout: 80s
       retries: 5
     restart: unless-stopped
 
@@ -64,6 +67,7 @@ services:
     build: ./Infrastructure/nginx
     image: nginx
     container_name: nginx
+    pull_policy: never
     ports:
       - "443:443"
     volumes:
@@ -79,6 +83,7 @@ services:
     build: ./Frontend
     image: frontend
     container_name: frontend
+    pull_policy: never
     expose:
       - "3000"
     volumes:
@@ -97,8 +102,9 @@ services:
     build: ./Infrastructure/elasticsearch
     image: elasticsearch
     container_name: elasticsearch
-    ports:
-      - "9200:9200"
+    pull_policy: never
+    expose:
+      - "9200"
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
     env_file:
@@ -118,6 +124,7 @@ services:
     build: ./Infrastructure/kibana
     image: kibana
     container_name: kibana
+    pull_policy: never
     expose:
       - "5601"
     volumes:
@@ -135,6 +142,7 @@ services:
     build: ./Infrastructure/logstash
     image: logstash
     container_name: logstash
+    pull_policy: never
     expose:
       - "5044"
     volumes:

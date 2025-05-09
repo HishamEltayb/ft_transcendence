@@ -4,7 +4,17 @@
        "homesteadBlock": 0,
        "eip150Block": 0,
        "eip155Block": 0,
-       "eip158Block": 0
+       "eip158Block": 0,
+       "byzantiumBlock": 0,
+       "constantinopleBlock": 0,
+       "petersburgBlock": 0,
+       "istanbulBlock": 0,
+       "berlinBlock": 0,
+       "londonBlock": 0,
+       "mergeForkBlock": 0,
+       "terminalTotalDifficultyPassed": true,
+       "terminalTotalDifficulty": 0,
+       "shanghaiTime": 0
     },
     "auth": false,
     "API": {
@@ -17,6 +27,10 @@
     },
     "difficulty": "0x40000",
     "gasLimit": "0x2fefd8",
-    "gasPrice": "0x0"
- }
- 
+    "gasPrice": "0x0",
+    "alloc": {
+        "5F9417e637c4560467D163cB41D89a8002ffabDc": {
+            "balance": "0xDE0B6B3A7640000"
+        }
+    }
+}

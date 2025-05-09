@@ -15,7 +15,7 @@ down:
 clean: 
 	-@docker compose down -v
 
-fclean:
+fclean: clean
 	-@yes | docker system prune -a
 	-@yes | docker image prune -a
 	-@yes | docker volume prune
