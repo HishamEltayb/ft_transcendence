@@ -172,33 +172,40 @@
     \vskip 60\p@
     \begin{center}
       \setlength{\parskip}{0pt}
-      {\large\textbf{\UNIVNAME}\par}
-      \vspace*{20pt}
-        \includegraphics[width = 4 in, height =1.5 in]{./Figures/42AD}
-      
-      \vfill
-      {\huge \bf \@title \par}
-      \vfill
-      \textit{ Team Members:}\par
-      \smallskip
-      {\Large
-      \begin{tabular}{rl@{\hspace{2em}}c@{\hspace{1em}}l}
-         1. & Deiaaeldin Hamad & - & \texttt{dehamad} \\
-         2. & Mohammed Mohammed & - & \texttt{mohammoh} \\
-         3. & Mohamed Nour & - & \texttt{mohamoha} \\
-         4. & Ahmed Ibrahim & - & \texttt{ahibrahi} \\
-         5. & Hisham Eltayb & - & \texttt{heltayb}
-      \end{tabular}
-      \par}
-      \bigskip
-      \smallskip
-      \smallskip
-      \textit{ Submission Date:}
-      {
-      May. 1st 2025
-      }
+      \fbox{\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule}
+      \begin{center}
+        \vspace{5em}
+        \includegraphics[width=0.4\textwidth]{./Figures/42AD}
+        \vspace{4em}
+        
+        \Large{Capstone Project: Ft\_Transcendence}
+        
+        \vspace{13em}
+        
+        \large{Group Members' Full Names:}
+        \vspace{0.5em}
+        Deiaaeldin Hamad, 
+
+        Mohammed Mohammed, Mohamed Nour, Ahmed Ibrahim, Hisham Eltayb
+        \vspace{2em}
+        
+        \large{Group Members' Intra Logins:}
+        \vspace{0.5em}
+        dehamad, 
+        
+        mohammoh, mohamoha, ahibrahi, heltayb
+        \vspace{3em}
+        
+        \large{Date of Submission:}
+        \vspace{1em}
+        
+        May 1st, 2025
+        
+        \vspace{2em}
     
-      
+      \end{center}
+      \vspace{1em}
+      \end{minipage}}
     \end{center}
   \end{titlepage}
   \setcounter{footnote}{0}%
