@@ -18,7 +18,7 @@ services:
       postgres:
         condition: service_healthy
       blockchain:
-        condition: service_healthy
+        condition: service_started
       elasticsearch:
         condition: service_healthy
     restart: unless-stopped
@@ -56,11 +56,11 @@ services:
       - password
     networks:
       - transcendence
-    healthcheck:
-      test: ["CMD", "nc", "-z", "127.0.0.1", "8545"]
-      interval: 80s
-      timeout: 80s
-      retries: 5
+    # healthcheck:
+    #   test: ["CMD", "ping", "-c", "1", "localhost:8545"]
+    #   interval: 30s
+    #   timeout: 30s
+    #   retries: 5
     restart: unless-stopped
 
   nginx:

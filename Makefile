@@ -1,7 +1,7 @@
+all: build up 
+
 all-log:
 	docker compose up --build
-
-all: up build
 
 up:
 	docker compose up -d
@@ -40,6 +40,6 @@ attach-database:
 attach-nginx:
 	docker exec -it nginx /bin/sh
 
-re: down all-log
+re: down all
 
 .PHONY: all down clean fclean logs re all-log attach-backend attach-frontend attach-database attach-nginx up build

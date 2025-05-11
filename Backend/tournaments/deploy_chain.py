@@ -1,5 +1,6 @@
 from web3 import Web3, HTTPProvider
 from web3.middleware import ExtraDataToPOAMiddleware
+import os
 import json
 
 
@@ -26,7 +27,15 @@ with open('/app/tools/Tournaments.json', 'r') as file:
 abi = contract_data['abi']
 bytecode = contract_data['bytecode']
 
-print("Contract compiled successfully.")
+try:
+    if os.path.exists('/app/tools/contract_address.json'):
+        with open('/app/tools/contract_address.json', 'r') as file:
+            contract_address = json.load(file)
+        if w3.eth.contract(address=contract_address, abi=abi).functions.getTournamentCount().call() >= 0:
+            print("Contract already deployed at:", contract_address)
+            exit(0)
+except Exception as e:
+    pass
 
 # ------------------------
 # 3. Deploy the contract
