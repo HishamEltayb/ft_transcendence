@@ -5,15 +5,84 @@
 The Software Development Life Cycle (SDLC) for this project followed a hybrid approach, combining the structured framework of the Waterfall model with Agile elements for flexibility. While Waterfall provided sequential stages (requirement analysis, design, implementation, testing), Agile practices like ongoing feedback and peer-reviewed GitHub pull requests (PRs) were integrated. This PR review process allowed team members to assess code, identify issues early, and ensure quality and consistency. This hybrid methodology balanced systematic progression with iterative refinement based on team collaboration and insights.
 
 \section{Gantt Chart}
-The Gantt Chart delineates the project timeline, outlining tasks, dependencies, and milestones, thereby mapping the project’s progression through each phase of the Software Development Life Cycle (SDLC), as follows:
 
-\begin{figure}[H]
-    \includegraphics[width=1\linewidth]{images/gantt-chart.png}
+% Force proper figure numbering once before the figure
+\renewcommand{\thefigure}{3.\arabic{figure}}
+
+% Full page figure with rotated image on a separate page
+\begin{figure}[p]
+    \centering
+    % Rotate the image 90 degrees 
+    \includegraphics[angle=90, width=1\textwidth, height=1\textheight, keepaspectratio]{images/gantt-chart.png}
     \caption{Gantt Chart}
     \label{fig:gantt-chart}
 \end{figure}
 
+
+\clearpage
+% Begin explanatory text on a new page
+The Gantt Chart (Figure \ref{fig:gantt-chart}) delineates the project timeline, outlining tasks, dependencies, and milestones, thereby mapping the project's progression through each phase of the Software Development Life Cycle (SDLC).
+
 This Gantt chart outlines the project timeline for \textbf{ft\_transcendence}, showing tasks, their durations, and assigned resources. It spans from August to October 2024, covering development milestones like setting up the \textbf{Docker environment} with \textbf{Docker-Compose}, designing user interfaces using \textbf{Bootstrap 5}, and implementing essential features such as user authentication (\textbf{Native Credentials, 42 OAuth, JWT, TOTP 2FA}). The project includes building the main Pong game modes (\textbf{1v1, vs AI, 4-player local, Tournaments}), integrating \textbf{Blockchain} for tournament storage, setting up the \textbf{ELK stack} for monitoring, and implementing user features like friend management, match history, and account settings. Key phases involve testing, debugging, and updating, with the planned submission date due by October 29, 2024. Various team members are responsible for specific tasks, ensuring collaborative progress throughout the timeline.
+
+\section{Risk Register and Risk Matrix}
+
+\subsection{Risk Register}
+To ensure project success, we identified and managed potential risks through a systematic risk assessment process. The Risk Register documents all identified risks, their impact, probability, and mitigation strategies.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{0.5cm}|p{3cm}|p{2.5cm}|p{2.5cm}|p{3cm}|p{2cm}|}
+\hline
+\rowcolor{gray!30}
+\textbf{ID} & \textbf{Risk Description} & \textbf{Probability} & \textbf{Impact} & \textbf{Mitigation Strategy} & \textbf{Owner} \\ \hline
+
+R1 & Technical complexity of integrating blockchain & Medium & High & Early research and prototyping; dedicated team member & Development Team \\ \hline
+
+R2 & Real-time gameplay latency issues & High & High & Implement efficient algorithms, stress testing, optimize network code & Game Dev Team \\ \hline
+
+R3 & Security vulnerabilities in authentication & Medium & Critical & Code reviews, security best practices, JWT token handling & Security Team \\ \hline
+
+R4 & Docker orchestration complexity & Medium & Medium & Early setup, documentation, pair programming & DevOps Team \\ \hline
+
+R5 & Scope creep due to additional game features & High & Medium & Clear requirements, regular reviews, prioritization & Project Manager \\ \hline
+
+R6 & Integration issues between frontend and backend & Medium & High & API specification first, mock endpoints, continuous integration & Integration Team \\ \hline
+
+R7 & Team member unavailability & Low & Medium & Cross-training, documentation, distributed knowledge & Team Lead \\ \hline
+
+R8 & Browser compatibility issues & Medium & Medium & Cross-browser testing, progressive enhancement & UI/UX Team \\ \hline
+
+R9 & Performance issues with ELK stack & Low & Low & Monitoring, resource allocation, performance tuning & DevOps Team \\ \hline
+
+R10 & Incomplete or changing requirements & Medium & High & Regular stakeholder reviews, agile approach & Project Manager \\ \hline
+\end{tabular}
+\caption{Risk Register for the ft\_transcendence Project}
+\label{table:risk-register}
+\end{table}
+
+\subsection{Risk Matrix}
+
+The Risk Matrix provides a visual representation of the risks based on their probability and impact, helping prioritize risk mitigation efforts.
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+\hline
+\multicolumn{6}{|c|}{\textbf{RISK MATRIX}} \\
+\hline
+\multirow{6}{*}{\rotatebox[origin=c]{90}{\textbf{Probability}}} & 
+\textbf{Very High} & Low Risk & Moderate Risk & \cellcolor{yellow!40}High Risk (R5) & \cellcolor{red!40}Critical Risk \\ \cline{2-6}
+& \textbf{High} & Low Risk & \cellcolor{yellow!40}Moderate Risk & \cellcolor{red!40}High Risk (R2) & \cellcolor{red!40}Critical Risk \\ \cline{2-6}
+& \textbf{Medium} & \cellcolor{green!30}Low Risk (R9) & \cellcolor{yellow!40}Moderate Risk (R4) & \cellcolor{yellow!40}High Risk (R1, R6, R10) & \cellcolor{red!40}Critical Risk (R3) \\ \cline{2-6}
+& \textbf{Low} & \cellcolor{green!30}Low Risk & \cellcolor{green!30}Low Risk (R7) & \cellcolor{yellow!40}Moderate Risk (R8) & \cellcolor{yellow!40}High Risk \\ \cline{2-6}
+& \textbf{Very Low} & \cellcolor{green!30}Low Risk & \cellcolor{green!30}Low Risk & \cellcolor{green!30}Low Risk & \cellcolor{yellow!40}Moderate Risk \\ \hline
+& & \textbf{Low} & \textbf{Medium} & \textbf{High} & \textbf{Critical} \\ \cline{2-6}
+& & \multicolumn{4}{c|}{\textbf{Impact}} \\ \hline
+\end{tabular}
+\caption{Risk Matrix showing probability vs. impact}
+\label{fig:risk-matrix}
+\end{figure}
 
 
 
@@ -232,7 +301,7 @@ The testing phase ensured the application's functionality, security, usability, 
     \item \textbf{Usability Testing:} Evaluating the user interface and experience for intuitiveness and accessibility. Testing responsiveness across different screen sizes (desktop, tablet, mobile) using Bootstrap, checking keyboard navigation, and verifying accessibility features for visually impaired users.
     \item \textbf{Compatibility Testing:} Ensuring consistent functionality across target browsers (latest Chrome and Firefox).
     \item \textbf{Security Testing:} Reviewing implementations for common web vulnerabilities (though specific penetration testing might not have been performed), verifying JWT handling, 2FA enforcement, and general adherence to security best practices mentioned in mitigation strategies.
-    \item \textbf{CI/CD Integration:} Using GitHub Actions (as implied by Figure \ref{fig:ci-cd}) to automate checks (e.g., linters, basic tests) to prevent merging failing code into the main branch.
+    \item \textbf{CI/CD Integration:} Using GitHub Actions to automate checks (e.g., linters, basic tests) to prevent merging failing code into the main branch.
 \end{itemize}
 
 \section{Evolution}
