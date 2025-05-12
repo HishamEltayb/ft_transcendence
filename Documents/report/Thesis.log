@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.4.30)  11 MAY 2025 10:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.4.30)  12 MAY 2025 17:19
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/heltayb/Music/goinfre/transcendence/Documents/report/Thesis.tex
-(/home/heltayb/Music/goinfre/transcendence/Documents/report/Thesis.tex
+**/mnt/sda-disk/transcendence/Documents/report/Thesis.tex
+(/mnt/sda-disk/transcendence/Documents/report/Thesis.tex
 LaTeX2e <2022-11-01> patch level 1
 L3 programming layer <2023-01-16> (./Thesis.cls
 Document Class: Thesis 2007/22/02 v1.0 LaTeX document class
@@ -633,7 +633,7 @@ Package hyperref Info: Link coloring ON on input line 30.
 ------------------------------------------------------------------------------
  Title Page
 ------------------------------------------------------------------------------
-<./Figures/42AD.png, id=261, 367.3725pt x 126.4725pt>
+<./Figures/42AD.png, id=418, 367.3725pt x 126.4725pt>
 File: ./Figures/42AD.png Graphic file (type png)
 <use ./Figures/42AD.png>
 Package pdftex.def Info: ./Figures/42AD.png  used on input line 45.
@@ -666,24 +666,24 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 
 
-])
+] [3])
 \tf@toc=\write4
 \openout4 = `Thesis.toc'.
 
- [3]
+ [4]
 ------------------------------------------------------------------------------
  List of Figures
 ------------------------------------------------------------------------------
-(./Thesis.lof)
+(./Thesis.lof [5
+
+
+
+
+])
 \tf@lof=\write5
 \openout5 = `Thesis.lof'.
 
- [4
-
-
-
-
-]
+ [6]
 ------------------------------------------------------------------------------
  List of Tables
 ------------------------------------------------------------------------------
@@ -691,12 +691,12 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \tf@lot=\write6
 \openout6 = `Thesis.lot'.
 
- [5
+ [7
 
 
 
 
-] [6
+] [8
 
 
 
@@ -744,17 +744,17 @@ Overfull \hbox (1.21887pt too wide) in paragraph at lines 68--69
  []
 
 [6]
-<Figures//images/workflow.png, id=409, 5337.9425pt x 5890.005pt>
-File: Figures//images/workflow.png Graphic file (type png)
-<use Figures//images/workflow.png>
-Package pdftex.def Info: Figures//images/workflow.png  used on input line 93.
+<Figures/images/workflow.png, id=686, 5337.9425pt x 5890.005pt>
+File: Figures/images/workflow.png Graphic file (type png)
+<use Figures/images/workflow.png>
+Package pdftex.def Info: Figures/images/workflow.png  used on input line 93.
 (pdftex.def)             Requested size: 475.28929pt x 524.41551pt.
- [7] [8 <./Figures//images/workflow.png>] [9] [10]) (./Chapters/Chapter3.tex [11]
+ [7] [8 <./Figures/images/workflow.png>] [9] [10]) (./Chapters/Chapter3.tex [11]
 Chapter 4.
-<Figures//images/gantt-chart.png, id=438, 3377.61874pt x 1566.85374pt>
-File: Figures//images/gantt-chart.png Graphic file (type png)
-<use Figures//images/gantt-chart.png>
-Package pdftex.def Info: Figures//images/gantt-chart.png  used on input line 16.
+<Figures/images/gantt-chart.png, id=716, 3377.61874pt x 1566.85374pt>
+File: Figures/images/gantt-chart.png Graphic file (type png)
+<use Figures/images/gantt-chart.png>
+Package pdftex.def Info: Figures/images/gantt-chart.png  used on input line 16.
 (pdftex.def)             Requested size: 3377.61055pt x 1566.84993pt.
 
 LaTeX Warning: Float too large for page by 21.97021pt on input line 19.
@@ -762,7 +762,7 @@ LaTeX Warning: Float too large for page by 21.97021pt on input line 19.
 [12
 
 
-] [13 <./Figures//images/gantt-chart.png>]
+] [13 <./Figures/images/gantt-chart.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 38--38
 []|\OT1/cmr/bx/n/10.95 Risk De-scrip-
  []
@@ -1009,27 +1009,221 @@ Overfull \hbox (3.83351pt too wide) in paragraph at lines 341--342
 
 ) (./Chapters/Chapter4.tex [26]
 Chapter 5.
+<Figures/images/new_images/LoginPage.png, id=814, 1491.5725pt x 1313.90875pt>
+File: Figures/images/new_images/LoginPage.png Graphic file (type png)
+<use Figures/images/new_images/LoginPage.png>
+Package pdftex.def Info: Figures/images/new_images/LoginPage.png  used on input line 15.
+(pdftex.def)             Requested size: 332.70105pt x 293.07054pt.
 [27
 
 
-] [28]) (./Chapters/Chapter5.tex [29]
+]
+<Figures/images/new_images/RegistrationPage.png, id=819, 1491.5725pt x 1313.90875pt>
+File: Figures/images/new_images/RegistrationPage.png Graphic file (type png)
+<use Figures/images/new_images/RegistrationPage.png>
+Package pdftex.def Info: Figures/images/new_images/RegistrationPage.png  used on input line 24.
+(pdftex.def)             Requested size: 332.70105pt x 293.07054pt.
+ [28 <./Figures/images/new_images/LoginPage.png>]
+<Figures/images/new_images/ErrorFillOutAllTheFields.png, id=826, 383.4325pt x 105.39375pt>
+File: Figures/images/new_images/ErrorFillOutAllTheFields.png Graphic file (type png)
+<use Figures/images/new_images/ErrorFillOutAllTheFields.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorFillOutAllTheFields.png  used on input line 33.
+(pdftex.def)             Requested size: 285.17647pt x 78.39058pt.
+<Figures/images/new_images/ErrorEmail.png, id=827, 383.4325pt x 105.39375pt>
+File: Figures/images/new_images/ErrorEmail.png Graphic file (type png)
+<use Figures/images/new_images/ErrorEmail.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorEmail.png  used on input line 42.
+(pdftex.def)             Requested size: 285.17647pt x 78.39058pt.
+<Figures/images/new_images/ErrorPassword.png, id=828, 383.4325pt x 105.39375pt>
+File: Figures/images/new_images/ErrorPassword.png Graphic file (type png)
+<use Figures/images/new_images/ErrorPassword.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorPassword.png  used on input line 51.
+(pdftex.def)             Requested size: 285.17647pt x 78.39058pt.
+ [29 <./Figures/images/new_images/RegistrationPage.png> <./Figures/images/new_images/ErrorFillOutAllTheFields.png> <./Figures/images/new_images/ErrorEmail.png>]
+<Figures/images/new_images/ErrorConfirmPassword.png, id=836, 374.39874pt x 113.42375pt>
+File: Figures/images/new_images/ErrorConfirmPassword.png Graphic file (type png)
+<use Figures/images/new_images/ErrorConfirmPassword.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorConfirmPassword.png  used on input line 60.
+(pdftex.def)             Requested size: 285.17647pt x 86.3985pt.
+<Figures/images/new_images/RegistrationSuccess.png, id=837, 427.5975pt x 162.6075pt>
+File: Figures/images/new_images/RegistrationSuccess.png Graphic file (type png)
+<use Figures/images/new_images/RegistrationSuccess.png>
+Package pdftex.def Info: Figures/images/new_images/RegistrationSuccess.png  used on input line 69.
+(pdftex.def)             Requested size: 285.17647pt x 108.44774pt.
+<Figures/images/new_images/42Login.png, id=838, 386.44376pt x 109.40875pt>
+File: Figures/images/new_images/42Login.png Graphic file (type png)
+<use Figures/images/new_images/42Login.png>
+Package pdftex.def Info: Figures/images/new_images/42Login.png  used on input line 78.
+(pdftex.def)             Requested size: 285.17647pt x 80.73915pt.
+<Figures/images/new_images/LoginSuccessfully.png, id=839, 379.4175pt x 115.43124pt>
+File: Figures/images/new_images/LoginSuccessfully.png Graphic file (type png)
+<use Figures/images/new_images/LoginSuccessfully.png>
+Package pdftex.def Info: Figures/images/new_images/LoginSuccessfully.png  used on input line 87.
+(pdftex.def)             Requested size: 285.17647pt x 86.76167pt.
+ [30 <./Figures/images/new_images/ErrorPassword.png> <./Figures/images/new_images/ErrorConfirmPassword.png> <./Figures/images/new_images/RegistrationSuccess.png> <./Figures/images/new_images/42Login.png>]
+<Figures/images/new_images/HomePage.png, id=848, 1491.5725pt x 1313.90875pt>
+File: Figures/images/new_images/HomePage.png Graphic file (type png)
+<use Figures/images/new_images/HomePage.png>
+Package pdftex.def Info: Figures/images/new_images/HomePage.png  used on input line 98.
+(pdftex.def)             Requested size: 332.70105pt x 293.07054pt.
+<Figures/images/new_images/MenuBar.png, id=849, 1418.29875pt x 180.675pt>
+File: Figures/images/new_images/MenuBar.png Graphic file (type png)
+<use Figures/images/new_images/MenuBar.png>
+Package pdftex.def Info: Figures/images/new_images/MenuBar.png  used on input line 107.
+(pdftex.def)             Requested size: 308.93513pt x 39.35439pt.
+ [31 <./Figures/images/new_images/LoginSuccessfully.png> <./Figures/images/new_images/HomePage.png>]
+<Figures/images/new_images/GamePage.png, id=856, 1228.59pt x 854.19125pt>
+File: Figures/images/new_images/GamePage.png Graphic file (type png)
+<use Figures/images/new_images/GamePage.png>
+Package pdftex.def Info: Figures/images/new_images/GamePage.png  used on input line 118.
+(pdftex.def)             Requested size: 332.70105pt x 231.31248pt.
+<Figures/images/new_images/Game1vs1.png, id=857, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/Game1vs1.png Graphic file (type png)
+<use Figures/images/new_images/Game1vs1.png>
+Package pdftex.def Info: Figures/images/new_images/Game1vs1.png  used on input line 131.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+ [32 <./Figures/images/new_images/MenuBar.png> <./Figures/images/new_images/GamePage.png>]
+<Figures/images/new_images/Game1vsAI.png, id=864, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/Game1vsAI.png Graphic file (type png)
+<use Figures/images/new_images/Game1vsAI.png>
+Package pdftex.def Info: Figures/images/new_images/Game1vsAI.png  used on input line 140.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+<Figures/images/new_images/GameMultiPlayer.png, id=865, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameMultiPlayer.png Graphic file (type png)
+<use Figures/images/new_images/GameMultiPlayer.png>
+Package pdftex.def Info: Figures/images/new_images/GameMultiPlayer.png  used on input line 149.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+ [33 <./Figures/images/new_images/Game1vs1.png> <./Figures/images/new_images/Game1vsAI.png>]
+<Figures/images/new_images/GameSettings.png, id=872, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameSettings.png Graphic file (type png)
+<use Figures/images/new_images/GameSettings.png>
+Package pdftex.def Info: Figures/images/new_images/GameSettings.png  used on input line 158.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+<Figures/images/new_images/GameResult.png, id=873, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameResult.png Graphic file (type png)
+<use Figures/images/new_images/GameResult.png>
+Package pdftex.def Info: Figures/images/new_images/GameResult.png  used on input line 167.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+ [34 <./Figures/images/new_images/GameMultiPlayer.png> <./Figures/images/new_images/GameSettings.png>]
+<Figures/images/new_images/GameTournament.png, id=881, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameTournament.png Graphic file (type png)
+<use Figures/images/new_images/GameTournament.png>
+Package pdftex.def Info: Figures/images/new_images/GameTournament.png  used on input line 180.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+ [35 <./Figures/images/new_images/GameResult.png> <./Figures/images/new_images/GameTournament.png>]
+<Figures/images/new_images/GameTournementSemiFinal1.png, id=888, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameTournementSemiFinal1.png Graphic file (type png)
+<use Figures/images/new_images/GameTournementSemiFinal1.png>
+Package pdftex.def Info: Figures/images/new_images/GameTournementSemiFinal1.png  used on input line 189.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+<Figures/images/new_images/GameTournementFinal.png, id=889, 1240.635pt x 788.9475pt>
+File: Figures/images/new_images/GameTournementFinal.png Graphic file (type png)
+<use Figures/images/new_images/GameTournementFinal.png>
+Package pdftex.def Info: Figures/images/new_images/GameTournementFinal.png  used on input line 198.
+(pdftex.def)             Requested size: 308.93513pt x 196.45389pt.
+ [36 <./Figures/images/new_images/GameTournementSemiFinal1.png> <./Figures/images/new_images/GameTournementFinal.png>]
+<Figures/images/new_images/ProfilePage.png, id=897, 1412.27625pt x 1320.935pt>
+File: Figures/images/new_images/ProfilePage.png Graphic file (type png)
+<use Figures/images/new_images/ProfilePage.png>
+Package pdftex.def Info: Figures/images/new_images/ProfilePage.png  used on input line 211.
+(pdftex.def)             Requested size: 308.93513pt x 288.95381pt.
+<Figures/images/new_images/History.png, id=898, 1115.16624pt x 185.69376pt>
+File: Figures/images/new_images/History.png Graphic file (type png)
+<use Figures/images/new_images/History.png>
+Package pdftex.def Info: Figures/images/new_images/History.png  used on input line 220.
+(pdftex.def)             Requested size: 308.93513pt x 51.44136pt.
+ [37 <./Figures/images/new_images/ProfilePage.png>]
+File: Figures/images/new_images/ProfilePage.png Graphic file (type png)
+<use Figures/images/new_images/ProfilePage.png>
+Package pdftex.def Info: Figures/images/new_images/ProfilePage.png  used on input line 229.
+(pdftex.def)             Requested size: 308.93513pt x 288.95381pt.
+File: Figures/images/new_images/ProfilePage.png Graphic file (type png)
+<use Figures/images/new_images/ProfilePage.png>
+Package pdftex.def Info: Figures/images/new_images/ProfilePage.png  used on input line 238.
+(pdftex.def)             Requested size: 308.93513pt x 288.95381pt.
+ [38 <./Figures/images/new_images/History.png>]
+<Figures/images/new_images/PlayerStatistics.png, id=909, 763.85374pt x 352.31625pt>
+File: Figures/images/new_images/PlayerStatistics.png Graphic file (type png)
+<use Figures/images/new_images/PlayerStatistics.png>
+Package pdftex.def Info: Figures/images/new_images/PlayerStatistics.png  used on input line 247.
+(pdftex.def)             Requested size: 308.93513pt x 142.48839pt.
+ [39 <./Figures/images/new_images/PlayerStatistics.png>]
+File: Figures/images/new_images/PlayerStatistics.png Graphic file (type png)
+<use Figures/images/new_images/PlayerStatistics.png>
+Package pdftex.def Info: Figures/images/new_images/PlayerStatistics.png  used on input line 256.
+(pdftex.def)             Requested size: 308.93513pt x 142.48839pt.
+<Figures/images/new_images/AccountInformation.png, id=915, 729.72626pt x 252.945pt>
+File: Figures/images/new_images/AccountInformation.png Graphic file (type png)
+<use Figures/images/new_images/AccountInformation.png>
+Package pdftex.def Info: Figures/images/new_images/AccountInformation.png  used on input line 269.
+(pdftex.def)             Requested size: 308.93513pt x 107.08528pt.
+ [40 <./Figures/images/new_images/AccountInformation.png>]
+<Figures/images/new_images/Enabling2FA.png, id=922, 408.52625pt x 863.225pt>
+File: Figures/images/new_images/Enabling2FA.png Graphic file (type png)
+<use Figures/images/new_images/Enabling2FA.png>
+Package pdftex.def Info: Figures/images/new_images/Enabling2FA.png  used on input line 278.
+(pdftex.def)             Requested size: 308.93513pt x 652.81758pt.
+ [41] [42 <./Figures/images/new_images/Enabling2FA.png>]
+<Figures/images/new_images/2FASuccessfullyEnabled.png, id=932, 364.36125pt x 116.435pt>
+File: Figures/images/new_images/2FASuccessfullyEnabled.png Graphic file (type png)
+<use Figures/images/new_images/2FASuccessfullyEnabled.png>
+Package pdftex.def Info: Figures/images/new_images/2FASuccessfullyEnabled.png  used on input line 287.
+(pdftex.def)             Requested size: 308.93513pt x 98.7268pt.
+File: Figures/images/new_images/HomePage.png Graphic file (type png)
+<use Figures/images/new_images/HomePage.png>
+Package pdftex.def Info: Figures/images/new_images/HomePage.png  used on input line 300.
+(pdftex.def)             Requested size: 308.93513pt x 272.11975pt.
+ [43 <./Figures/images/new_images/2FASuccessfullyEnabled.png>]
+File: Figures/images/new_images/MenuBar.png Graphic file (type png)
+<use Figures/images/new_images/MenuBar.png>
+Package pdftex.def Info: Figures/images/new_images/MenuBar.png  used on input line 309.
+(pdftex.def)             Requested size: 308.93513pt x 39.35439pt.
+<Figures/images/new_images/LogoutSuccessfully.png, id=938, 386.44376pt x 120.45pt>
+File: Figures/images/new_images/LogoutSuccessfully.png Graphic file (type png)
+<use Figures/images/new_images/LogoutSuccessfully.png>
+Package pdftex.def Info: Figures/images/new_images/LogoutSuccessfully.png  used on input line 322.
+(pdftex.def)             Requested size: 308.93513pt x 96.29211pt.
+ [44]
+File: Figures/images/new_images/ErrorFillOutAllTheFields.png Graphic file (type png)
+<use Figures/images/new_images/ErrorFillOutAllTheFields.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorFillOutAllTheFields.png  used on input line 337.
+(pdftex.def)             Requested size: 308.93513pt x 84.92139pt.
+File: Figures/images/new_images/ErrorEmail.png Graphic file (type png)
+<use Figures/images/new_images/ErrorEmail.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorEmail.png  used on input line 346.
+(pdftex.def)             Requested size: 308.93513pt x 84.92139pt.
+ [45 <./Figures/images/new_images/LogoutSuccessfully.png>]
+File: Figures/images/new_images/ErrorPassword.png Graphic file (type png)
+<use Figures/images/new_images/ErrorPassword.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorPassword.png  used on input line 355.
+(pdftex.def)             Requested size: 308.93513pt x 84.92139pt.
+File: Figures/images/new_images/ErrorConfirmPassword.png Graphic file (type png)
+<use Figures/images/new_images/ErrorConfirmPassword.png>
+Package pdftex.def Info: Figures/images/new_images/ErrorConfirmPassword.png  used on input line 364.
+(pdftex.def)             Requested size: 308.93513pt x 93.5965pt.
+
+Overfull \hbox (22.0421pt too wide) in paragraph at lines 371--372
+\OT1/cmr/m/n/10.95 The wire-frames pre-sented in this chap-ter il-lus-trate the com-plete user jour-ney through the ft[]transcendence
+ []
+
+) [46] (./Chapters/Chapter5.tex [47]
 Chapter 6.
 
 Overfull \hbox (33.33325pt too wide) in paragraph at lines 5--6
 \OT1/cmr/m/n/10.95 This chap-ter delves into the spe-cific im-ple-men-ta-tion de-tails of the core com-po-nents of the \OT1/cmr/bx/n/10.95 ft[]transcendence
  []
 
-[30
+[48
 
 
-] [31] [32]) (./Chapters/Chapter6.tex [33]
+] [49] [50]) (./Chapters/Chapter6.tex [51]
 Chapter 7.
-[34
+[52
 
 
-] [35] [36]) (./Chapters/Chapter7.tex [37]
+] [53] [54]) (./Chapters/Chapter7.tex [55]
 Chapter 8.
-[38
+[56
 
 
 ]
@@ -1052,42 +1246,42 @@ Overfull \hbox (23.92177pt too wide) in paragraph at lines 35--36
 []\OT1/cmr/bx/n/10.95 Events: \OT1/cmr/m/n/10.95 An event (e.g., \OT1/cmtt/m/n/10.95 event TournamentRecorded(uint256 indexed tournamentId, uint256
  []
 
-[39] [40]) (./Chapters/Chapter8.tex [41]
+[57] [58]) (./Chapters/Chapter8.tex [59]
 Chapter 9.
-[42
+[60
 
 
 ]
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 19.
- [43]) (./conclusion.tex [44]) (./appendix.tex [45
+ [61]) (./conclusion.tex [62]) (./appendix.tex [63
 
 
 ]
 Chapter 10.
-) (./references.tex [46
+) (./references.tex [64
 
 
-] [47
+] [65
 
 
-]) [48] (./Thesis.aux)
+]) [66] (./Thesis.aux)
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 628A2DCA854A480BC68C1AE1D271D555;12088.
+(rerunfilecheck)             Checksum: 9F2CF037485C817D4E442E88547DD151;21230.
  ) 
 Here is how much of TeX's memory you used:
- 15649 strings out of 476091
- 248593 string characters out of 5794081
+ 15991 strings out of 476091
+ 259726 string characters out of 5794081
  1871330 words of memory out of 5000000
- 35528 multiletter control sequences out of 15000+600000
+ 35761 multiletter control sequences out of 15000+600000
  521168 words of font info for 64 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 78i,14n,81p,2821b,643s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 78i,14n,81p,2807b,643s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1095.pfb>
-Output written on Thesis.pdf (55 pages, 1274407 bytes).
+Output written on Thesis.pdf (75 pages, 16239385 bytes).
 PDF statistics:
- 794 PDF objects out of 1000 (max. 8388607)
- 705 compressed objects within 8 object streams
- 213 named destinations out of 1000 (max. 500000)
- 528 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1206 PDF objects out of 1440 (max. 8388607)
+ 1040 compressed objects within 11 object streams
+ 294 named destinations out of 1000 (max. 500000)
+ 975 words of extra memory for PDF output out of 10000 (max. 10000000)
 

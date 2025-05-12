@@ -1,8 +1,8 @@
 \contentsline {chapter}{Abstract}{i}{dummy.1}%
 \vspace {1em}
-\contentsline {chapter}{List of Figures}{iv}{dummy.3}%
-\contentsline {chapter}{List of Tables}{v}{dummy.5}%
-\contentsline {chapter}{List of Abbreviations}{vi}{chapter*.7}%
+\contentsline {chapter}{List of Figures}{v}{dummy.3}%
+\contentsline {chapter}{List of Tables}{vii}{dummy.5}%
+\contentsline {chapter}{List of Abbreviations}{viii}{chapter*.7}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.8}%
 \contentsline {chapter}{\numberline {2}Project Goals and Requirements}{3}{chapter.9}%
 \contentsline {chapter}{\numberline {3}Software Development Life Cycle (SDLC)}{5}{chapter.10}%
@@ -25,42 +25,81 @@
 \contentsline {section}{\numberline {4.9}Evolution}{25}{section.69}%
 \contentsline {chapter}{\numberline {5}User Interface and Features}{27}{chapter.75}%
 \contentsline {section}{\numberline {5.1}Wireframes and User Journey}{27}{section.76}%
-\contentsline {chapter}{\numberline {6}Detailed System Design and Implementation}{30}{chapter.91}%
-\contentsline {section}{\numberline {6.1}Backend Implementation (Django)}{30}{section.92}%
-\contentsline {subsection}{\numberline {6.1.1}Project Structure}{30}{subsection.93}%
-\contentsline {subsection}{\numberline {6.1.2}API Design (DRF)}{31}{subsection.94}%
-\contentsline {subsection}{\numberline {6.1.3}Authentication and Authorization}{31}{subsection.95}%
-\contentsline {section}{\numberline {6.2}Frontend Implementation (Vanilla JS)}{31}{section.96}%
-\contentsline {subsection}{\numberline {6.2.1}SPA Architecture}{31}{subsection.97}%
-\contentsline {subsection}{\numberline {6.2.2}Rendering}{32}{subsection.98}%
-\contentsline {subsection}{\numberline {6.2.3}API Interaction}{32}{subsection.99}%
-\contentsline {section}{\numberline {6.3}Database Implementation}{32}{section.100}%
-\contentsline {subsection}{\numberline {6.3.1}PostgreSQL}{32}{subsection.101}%
-\contentsline {subsection}{\numberline {6.3.2}Ethereum Sidechain}{32}{subsection.102}%
-\contentsline {section}{\numberline {6.4}Real-time Communication}{32}{section.103}%
-\contentsline {section}{\numberline {6.5}DevOps and Containerization (Docker)}{33}{section.104}%
-\contentsline {chapter}{\numberline {7}Testing and Evaluation}{34}{chapter.105}%
-\contentsline {section}{\numberline {7.1}Testing Strategy}{34}{section.106}%
-\contentsline {section}{\numberline {7.2}Unit Testing}{34}{section.107}%
-\contentsline {section}{\numberline {7.3}Integration Testing}{35}{section.108}%
-\contentsline {section}{\numberline {7.4}End-to-End (E2E) Testing}{35}{section.109}%
-\contentsline {section}{\numberline {7.5}Security Testing}{36}{section.110}%
-\contentsline {section}{\numberline {7.6}Usability and Accessibility Testing}{36}{section.111}%
-\contentsline {section}{\numberline {7.7}Evaluation}{36}{section.112}%
-\contentsline {chapter}{\numberline {8}Blockchain Integration for Tournament Records}{38}{chapter.113}%
-\contentsline {section}{\numberline {8.1}Rationale for Blockchain Integration}{38}{section.114}%
-\contentsline {section}{\numberline {8.2}Technology Choices}{39}{section.115}%
-\contentsline {section}{\numberline {8.3}Smart Contract Design}{39}{section.116}%
-\contentsline {section}{\numberline {8.4}Backend Interaction (Django)}{40}{section.117}%
-\contentsline {section}{\numberline {8.5}Security Considerations}{40}{section.124}%
-\contentsline {section}{\numberline {8.6}Limitations and Alternatives}{41}{section.125}%
-\contentsline {chapter}{\numberline {9}Deployment and Operations}{42}{chapter.126}%
-\contentsline {section}{\numberline {9.1}Deployment Strategy}{42}{section.127}%
-\contentsline {section}{\numberline {9.2}Environment Configuration}{43}{section.128}%
-\contentsline {section}{\numberline {9.3}Web Server and Reverse Proxy (Nginx)}{43}{section.129}%
-\contentsline {section}{\numberline {9.4}Monitoring and Logging (ELK Stack)}{44}{section.130}%
-\contentsline {section}{\numberline {9.5}Maintenance Considerations}{44}{section.131}%
+\contentsline {subsection}{\numberline {5.1.1}Beginning the Journey: Registration and Authentication}{27}{subsection.77}%
+\contentsline {subsubsection}{\numberline {5.1.1.1}Path 1: Creating a New Account}{28}{subsubsection.79}%
+\contentsline {subsubsection}{\numberline {5.1.1.2}Path 2: OAuth with 42 Intra}{30}{subsubsection.86}%
+\contentsline {paragraph}{Successful Login}{31}{section*.88}%
+\contentsline {subsection}{\numberline {5.1.2}Exploring the Platform: Home Page and Navigation}{31}{subsection.90}%
+\contentsline {subsection}{\numberline {5.1.3}Selecting a Game Mode}{32}{subsection.93}%
+\contentsline {subsection}{\numberline {5.1.4}Playing the Game: Exploring Different Game Modes}{32}{subsection.95}%
+\contentsline {subsubsection}{\numberline {5.1.4.1}1vs1 Matches}{32}{subsubsection.96}%
+\contentsline {subsubsection}{\numberline {5.1.4.2}Practice with AI}{33}{subsubsection.98}%
+\contentsline {subsubsection}{\numberline {5.1.4.3}Local Multiplayer}{33}{subsubsection.100}%
+\contentsline {subsubsection}{\numberline {5.1.4.4}Customizing the Experience}{34}{subsubsection.102}%
+\contentsline {subsubsection}{\numberline {5.1.4.5}End of Match}{34}{subsubsection.104}%
+\contentsline {subsection}{\numberline {5.1.5}Competing in Tournaments}{35}{subsection.106}%
+\contentsline {subsubsection}{\numberline {5.1.5.1}Joining a Tournament}{35}{subsubsection.107}%
+\contentsline {subsubsection}{\numberline {5.1.5.2}Advancing Through Rounds}{36}{subsubsection.109}%
+\contentsline {subsubsection}{\numberline {5.1.5.3}Championship}{36}{subsubsection.111}%
+\contentsline {subsection}{\numberline {5.1.6}Managing Your Profile and Tracking Progress}{37}{subsection.113}%
+\contentsline {subsubsection}{\numberline {5.1.6.1}Viewing Your Profile}{37}{subsubsection.114}%
+\contentsline {subsubsection}{\numberline {5.1.6.2}Reviewing Game History}{37}{subsubsection.116}%
+\contentsline {subsubsection}{\numberline {5.1.6.3}Personalizing Your Profile}{38}{subsubsection.118}%
+\contentsline {subsubsection}{\numberline {5.1.6.4}Viewing Other Players}{38}{subsubsection.120}%
+\contentsline {subsubsection}{\numberline {5.1.6.5}Tracking Performance}{39}{subsubsection.122}%
+\contentsline {subsubsection}{\numberline {5.1.6.6}Detailed Performance Analytics}{40}{subsubsection.124}%
+\contentsline {subsection}{\numberline {5.1.7}Managing Your Account and Security}{40}{subsection.126}%
+\contentsline {subsubsection}{\numberline {5.1.7.1}Adjusting Settings}{40}{subsubsection.127}%
+\contentsline {subsubsection}{\numberline {5.1.7.2}Enhancing Security}{41}{subsubsection.129}%
+\contentsline {subsubsection}{\numberline {5.1.7.3}Security Confirmation}{43}{subsubsection.131}%
+\contentsline {subsection}{\numberline {5.1.8}Social Features: Friends and Interactions}{43}{subsection.133}%
+\contentsline {subsubsection}{\numberline {5.1.8.1}Managing Your Friends}{43}{subsubsection.134}%
+\contentsline {subsubsection}{\numberline {5.1.8.2}Chat and Communication}{44}{subsubsection.136}%
+\contentsline {subsection}{\numberline {5.1.9}Ending Your Session: Logout}{44}{subsection.138}%
+\contentsline {subsubsection}{\numberline {5.1.9.1}Logout Process}{44}{subsubsection.139}%
+\contentsline {subsubsection}{\numberline {5.1.9.2}Journey Completion}{45}{subsubsection.141}%
+\contentsline {subsection}{\numberline {5.1.10}Form Validation Throughout the Journey}{45}{subsection.142}%
+\contentsline {subsubsection}{\numberline {5.1.10.1}Empty Field Validation}{45}{subsubsection.143}%
+\contentsline {subsubsection}{\numberline {5.1.10.2}Email Format Validation}{45}{subsubsection.145}%
+\contentsline {subsubsection}{\numberline {5.1.10.3}Password Requirements}{46}{subsubsection.147}%
+\contentsline {subsubsection}{\numberline {5.1.10.4}Password Matching}{46}{subsubsection.149}%
+\contentsline {subsection}{\numberline {5.1.11}Journey Conclusion}{46}{subsection.151}%
+\contentsline {chapter}{\numberline {6}Detailed System Design and Implementation}{48}{chapter.152}%
+\contentsline {section}{\numberline {6.1}Backend Implementation (Django)}{48}{section.153}%
+\contentsline {subsection}{\numberline {6.1.1}Project Structure}{48}{subsection.154}%
+\contentsline {subsection}{\numberline {6.1.2}API Design (DRF)}{49}{subsection.155}%
+\contentsline {subsection}{\numberline {6.1.3}Authentication and Authorization}{49}{subsection.156}%
+\contentsline {section}{\numberline {6.2}Frontend Implementation (Vanilla JS)}{49}{section.157}%
+\contentsline {subsection}{\numberline {6.2.1}SPA Architecture}{49}{subsection.158}%
+\contentsline {subsection}{\numberline {6.2.2}Rendering}{50}{subsection.159}%
+\contentsline {subsection}{\numberline {6.2.3}API Interaction}{50}{subsection.160}%
+\contentsline {section}{\numberline {6.3}Database Implementation}{50}{section.161}%
+\contentsline {subsection}{\numberline {6.3.1}PostgreSQL}{50}{subsection.162}%
+\contentsline {subsection}{\numberline {6.3.2}Ethereum Sidechain}{50}{subsection.163}%
+\contentsline {section}{\numberline {6.4}Real-time Communication}{50}{section.164}%
+\contentsline {section}{\numberline {6.5}DevOps and Containerization (Docker)}{51}{section.165}%
+\contentsline {chapter}{\numberline {7}Testing and Evaluation}{52}{chapter.166}%
+\contentsline {section}{\numberline {7.1}Testing Strategy}{52}{section.167}%
+\contentsline {section}{\numberline {7.2}Unit Testing}{52}{section.168}%
+\contentsline {section}{\numberline {7.3}Integration Testing}{53}{section.169}%
+\contentsline {section}{\numberline {7.4}End-to-End (E2E) Testing}{53}{section.170}%
+\contentsline {section}{\numberline {7.5}Security Testing}{54}{section.171}%
+\contentsline {section}{\numberline {7.6}Usability and Accessibility Testing}{54}{section.172}%
+\contentsline {section}{\numberline {7.7}Evaluation}{54}{section.173}%
+\contentsline {chapter}{\numberline {8}Blockchain Integration for Tournament Records}{56}{chapter.174}%
+\contentsline {section}{\numberline {8.1}Rationale for Blockchain Integration}{56}{section.175}%
+\contentsline {section}{\numberline {8.2}Technology Choices}{57}{section.176}%
+\contentsline {section}{\numberline {8.3}Smart Contract Design}{57}{section.177}%
+\contentsline {section}{\numberline {8.4}Backend Interaction (Django)}{58}{section.178}%
+\contentsline {section}{\numberline {8.5}Security Considerations}{58}{section.185}%
+\contentsline {section}{\numberline {8.6}Limitations and Alternatives}{59}{section.186}%
+\contentsline {chapter}{\numberline {9}Deployment and Operations}{60}{chapter.187}%
+\contentsline {section}{\numberline {9.1}Deployment Strategy}{60}{section.188}%
+\contentsline {section}{\numberline {9.2}Environment Configuration}{61}{section.189}%
+\contentsline {section}{\numberline {9.3}Web Server and Reverse Proxy (Nginx)}{61}{section.190}%
+\contentsline {section}{\numberline {9.4}Monitoring and Logging (ELK Stack)}{62}{section.191}%
+\contentsline {section}{\numberline {9.5}Maintenance Considerations}{62}{section.192}%
 \vspace {2em}
-\contentsline {chapter}{Conclusion}{45}{chapter*.132}%
-\contentsline {chapter}{\numberline {10}Appendix}{46}{chapter.133}%
-\contentsline {section}{References}{46}{figure.caption.136}%
+\contentsline {chapter}{Conclusion}{63}{chapter*.193}%
+\contentsline {chapter}{\numberline {10}Appendix}{64}{chapter.194}%
+\contentsline {section}{References}{64}{figure.caption.197}%
