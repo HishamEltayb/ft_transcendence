@@ -11,18 +11,16 @@ The backend is built using the Django framework (version 5), leveraging its robu
 \subsection{Project Structure}
 The Django project follows a standard layout, organized into distinct apps for modularity:
 \begin{itemize}
-    \item \texttt{users}: Handles user registration, authentication (native credentials, 42 OAuth), profile management, and friend relationships.
+    \item \texttt{users}: Handles user registration, authentication (native credentials, 42 OAuth), and basic profile information.
     \item \texttt{game}: Contains the logic for Pong gameplay, including game state management, rules enforcement, and matchmaking (for 1v1 online).
     \item \texttt{tournaments}: Manages the creation, progression, and recording of tournament brackets.
-    \item \texttt{chat}: (If implemented) Would handle real-time chat functionalities.
 \end{itemize}
 
 \subsection{API Design (DRF)}
 The API provides endpoints for frontend interaction. DRF's ViewSets and Serializers are used to handle data validation, database interaction, and JSON response generation. Key endpoints likely include:
 \begin{itemize}
     \item User authentication and registration.
-    \item Profile viewing and editing (including avatar upload).
-    \item Friend request management.
+    \item User profile information access.
     \item Game initiation and state updates.
     \item Tournament creation and status retrieval.
     \item Match history access.
@@ -58,14 +56,14 @@ The frontend communicates with the Django backend via asynchronous JavaScript (e
 Data persistence relies on two distinct systems:
 
 \subsection{PostgreSQL}
-A PostgreSQL (version 15) relational database serves as the primary datastore for user accounts, profiles, friend relationships, game settings, and detailed match history. Django's ORM (Object-Relational Mapper) facilitates interaction with the database.
+A PostgreSQL (version 15) relational database serves as the primary datastore for user accounts, basic profile information, game settings, and detailed match history. Django's ORM (Object-Relational Mapper) facilitates interaction with the database.
 
 \subsection{Ethereum Sidechain}
 For tournament results, an Ethereum-compatible sidechain (potentially using Proof of Authority) is employed to ensure immutable and verifiable record-keeping. The Django backend interacts with a deployed smart contract via the \texttt{Web3.py} library to record the winners and potentially other key tournament data.
 
 \section{Real-time Communication}
 \label{sec:realtime_impl}
-Real-time functionality, crucial for interactive gameplay and potentially chat, is likely implemented using \textbf{WebSockets}. Django Channels is the probable framework used within Django to handle WebSocket connections, allowing bidirectional communication between the server and connected clients for instant game state synchronization and message passing.
+Real-time functionality, crucial for interactive gameplay, is implemented using \textbf{WebSockets}. Django Channels is the framework used within Django to handle WebSocket connections, allowing bidirectional communication between the server and connected clients for instant game state synchronization.
 
 \section{DevOps and Containerization (Docker)}
 \label{sec:devops_impl}
