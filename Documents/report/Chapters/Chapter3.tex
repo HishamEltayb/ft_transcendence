@@ -155,8 +155,7 @@ Based on the risk matrix analysis, the following risks were identified as high p
 \begin{enumerate}
     \item \textbf{High latency affecting multiplayer game experience (16):} The real-time nature of Pong makes it particularly susceptible to latency issues. The team implemented client-side prediction techniques to smooth gameplay even when network conditions were suboptimal. Additionally, network packet size was optimized to minimize transmission delays.
     
-    \item \textbf{WebSocket connection issues affecting real-time game play (15):} To address this risk, the application was designed with robust connection handling, including automatic reconnection attempts and graceful degradation when WebSocket connections could not be established or were interrupted.
-    
+
     \item \textbf{42 OAuth integration failure (12):} As a key authentication mechanism, issues with the 42 OAuth integration could severely impact user access. Comprehensive error handling was implemented along with detailed logs to quickly identify and address integration issues.
     
     \item \textbf{Canvas rendering performance problems (12):} Performance optimization techniques were applied to ensure smooth gameplay across a range of devices. This included implementing a consistent frame rate cap and optimizing render cycles.
@@ -372,7 +371,7 @@ The implementation phase involved developing the actual code and functionality b
 \begin{itemize}
     \item \textbf{Backend Development:} Core functionality was built using Django and Django Rest Framework (DRF), providing a secure RESTful API. This included managing user data (PostgreSQL), handling authentication (Native, 42 OAuth, JWT, 2FA), supporting multiple Pong game modes, and ensuring security against common vulnerabilities like SQL injection and XSS through Django's built-in features.
     \item \textbf{Frontend Development:} A responsive Single-Page Application (SPA) interface was built using Vanilla JavaScript, HTML5, and CSS3, leveraging Bootstrap 5 for layout and components. Accessibility features like high-contrast themes and keyboard navigation were incorporated. The frontend interacts with the backend API and uses the HTML5 Canvas for rendering the Pong game dynamically.
-    \item \textbf{Game Development:} Pong game mechanics were implemented using JavaScript and Canvas, including ball/paddle physics, scoring, and real-time updates (potentially via WebSockets, although not explicitly detailed in prior context). Game modes (1v1, vs AI, 4-player local, Tournament) were developed.
+    \item \textbf{Game Development:} Pong game mechanics were implemented using JavaScript and Canvas, including ball/paddle physics, scoring, and real-time updates. Game modes (1v1, vs AI, 4-player local, Tournament) were developed.
     \item \textbf{Blockchain Integration:} Smart contracts (Solidity) were developed and deployed to a local Ethereum sidechain (Geth) to immutably record tournament results. Backend interaction was handled using Web3.py.
     \item \textbf{User History and Statistics:} A system was integrated to track and display user match history and statistics (wins/losses), stored primarily in PostgreSQL.
     \item \textbf{User Management and Authentication:} Secure user registration, login (Native, 42 OAuth), profile management (display name, avatar), friends list, and TOTP 2FA were implemented. JWTs, managed via secure HttpOnly cookies, were used for session management.
