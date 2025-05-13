@@ -85,20 +85,20 @@
 \contentsline {section}{\numberline {7.7}Evaluation}{55}{section.177}%
 \contentsline {chapter}{\numberline {8}Blockchain Integration for Tournament Records}{57}{chapter.178}%
 \contentsline {section}{\numberline {8.1}Rationale for Blockchain Integration}{57}{section.179}%
-\contentsline {section}{\numberline {8.2}Technology Choices}{58}{section.180}%
-\contentsline {section}{\numberline {8.3}Smart Contract Design}{58}{section.181}%
-\contentsline {section}{\numberline {8.4}Backend Interaction (Django)}{59}{section.182}%
-\contentsline {section}{\numberline {8.5}Security Considerations}{59}{section.189}%
-\contentsline {section}{\numberline {8.6}Limitations and Alternatives}{60}{section.190}%
-\contentsline {chapter}{\numberline {9}Deployment and Operations}{61}{chapter.191}%
-\contentsline {section}{\numberline {9.1}Deployment Strategy}{61}{section.192}%
-\contentsline {section}{\numberline {9.2}Environment Configuration}{62}{section.193}%
-\contentsline {section}{\numberline {9.3}Web Server and Reverse Proxy (Nginx)}{62}{section.194}%
-\contentsline {section}{\numberline {9.4}Monitoring and Logging (ELK Stack)}{63}{section.195}%
-\contentsline {section}{\numberline {9.5}Maintenance Considerations}{63}{section.196}%
+\contentsline {section}{\numberline {8.2}Technology Implementation}{57}{section.180}%
+\contentsline {section}{\numberline {8.3}Tournament Data Structure}{58}{section.181}%
+\contentsline {section}{\numberline {8.4}Backend Integration}{58}{section.182}%
+\contentsline {section}{\numberline {8.5}Security Considerations}{59}{section.187}%
+\contentsline {section}{\numberline {8.6}Limitations and Alternatives}{59}{section.188}%
+\contentsline {chapter}{\numberline {9}Deployment and Operations}{60}{chapter.189}%
+\contentsline {section}{\numberline {9.1}Deployment Strategy}{60}{section.190}%
+\contentsline {section}{\numberline {9.2}Environment Configuration}{61}{section.191}%
+\contentsline {section}{\numberline {9.3}Web Server and Reverse Proxy (Nginx)}{61}{section.192}%
+\contentsline {section}{\numberline {9.4}Monitoring and Logging (ELK Stack)}{62}{section.193}%
+\contentsline {section}{\numberline {9.5}Maintenance Considerations}{62}{section.194}%
 \vspace {2em}
-\contentsline {chapter}{Conclusion}{64}{chapter*.197}%
-\contentsline {chapter}{\numberline {10}Appendix}{65}{chapter.198}%
-\contentsline {section}{\numberline {.1}Admin Interface and Backend Management}{65}{section.199}%
-\contentsline {section}{\numberline {.2}Monitoring and Logging System}{67}{section.205}%
-\contentsline {section}{References}{68}{figure.caption.207}%
+\contentsline {chapter}{Conclusion}{64}{chapter*.195}%
+\contentsline {chapter}{\numberline {10}Appendix}{65}{chapter.196}%
+\contentsline {section}{\numberline {.1}Admin Interface and Backend Management}{65}{section.197}%
+\contentsline {section}{\numberline {.2}Monitoring and Logging System}{67}{section.203}%
+\contentsline {section}{References}{68}{figure.caption.205}%

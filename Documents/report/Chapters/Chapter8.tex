@@ -14,12 +14,20 @@ Deployment typically involves cloning the repository onto the target server, con
 
 \section{Environment Configuration}
 \label{sec:env_config}
-Managing configuration, especially sensitive data like API keys, database passwords, and the backend's blockchain wallet private key, is crucial for security. This is typically handled through environment variables, often sourced from a \texttt{.env} file located in the project root.
+Managing configuration, especially sensitive data like secret keys and database credentials, is crucial for security. The project uses environment variables, sourced from a \texttt{.env} file located in the project root, to handle these configurations securely.
 \begin{itemize}
-    \item \textbf{\texttt{.env} File:} This file (which should be included in \texttt{.gitignore} and never committed to version control) stores key-value pairs for settings like \texttt{SECRET\_KEY}, \texttt{POSTGRES\_PASSWORD}, \texttt{ETH\_NODE\_URL}, \texttt{BACKEND\_WALLET\_PK}, etc.
-    \item \textbf{Docker Compose Integration:} The \texttt{docker-compose.yml} file is configured to load variables from the \texttt{.env} file and inject them into the respective service containers' environments at runtime.
+    \item \textbf{\texttt{.env} File:} This file (excluded from version control via \texttt{.gitignore}) stores key-value pairs organized into logical groups:
+    \begin{itemize}
+        \item \textbf{Django Settings:} Core configuration including \texttt{DJANGO\_SECRET\_KEY}, \texttt{DJANGO\_DEBUG}, and \texttt{DJANGO\_ALLOWED\_HOSTS}
+        \item \textbf{Django Superuser:} Administrative account credentials including username, email, and password
+        \item \textbf{Database Settings:} PostgreSQL connection parameters (\texttt{POSTGRES\_DB}, \texttt{POSTGRES\_USER}, \texttt{POSTGRES\_PASSWORD}, \texttt{POSTGRES\_HOST}, \texttt{POSTGRES\_PORT})
+        \item \textbf{OAuth Settings:} Configuration for 42 OAuth authentication (\texttt{FT\_CLIENT\_ID}, \texttt{FT\_CLIENT\_SECRET}, \texttt{FT\_REDIRECT\_URI})
+        \item \textbf{Frontend Settings:} URL configuration with \texttt{FRONTEND\_URL} and \texttt{CORS\_ALLOWED\_ORIGINS}
+        \item \textbf{Elasticsearch Settings:} ELK stack configuration parameters for logging and monitoring
+    \end{itemize}
+    \item \textbf{Docker Compose Integration:} The \texttt{docker-compose.yml} file loads these variables from the \texttt{.env} file and injects them into the appropriate service containers at runtime.
 \end{itemize}
-This approach keeps sensitive information separate from the codebase.
+This approach maintains a clear separation between sensitive configuration data and the application codebase, enhancing security and simplifying deployment across different environments.
 
 \section{Web Server and Reverse Proxy (Nginx)}
 \label{sec:nginx_config}
