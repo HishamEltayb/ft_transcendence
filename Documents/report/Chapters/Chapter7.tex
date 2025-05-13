@@ -1,68 +1,77 @@
 \chapter{Blockchain Integration for Tournament Records}
 \label{ch:blockchain}
 
-An innovative feature of the \textbf{ft\_transcendence} project is the integration of blockchain technology to immutably record the outcomes of official Pong tournaments. This chapter details the rationale, design, and implementation of this integration.
+An innovative feature of the \textbf{ft\_transcendence} project is the integration of blockchain technology to immutably record Pong tournament data. This chapter explains the implementation approach and how it enhances the application.
 
 \section{Rationale for Blockchain Integration}
 \label{sec:blockchain_rationale}
-While the primary database (PostgreSQL) stores comprehensive match and tournament data, utilizing blockchain offers distinct advantages for tournament results:
+While the primary PostgreSQL database stores comprehensive match data, blockchain integration offers distinct advantages for tournament records:
 \begin{itemize}
-    \item \textbf{Immutability:} Once recorded on the blockchain, tournament results become extremely difficult to alter or delete, providing a tamper-proof historical record.
-    \item \textbf{Verifiability:} Anyone with access to the blockchain network (even if it's a private or consortium sidechain) can potentially verify the recorded results independently, enhancing transparency.
-    \item \textbf{Decentralization (Conceptual):} Although potentially deployed on a controlled sidechain, it introduces the concept of decentralized record-keeping, contrasting with the centralized nature of the primary database.
+    \item \textbf{Immutability:} Tournament results become tamper-proof once recorded on the blockchain, providing a verifiable historical record.
+    \item \textbf{Transparency:} Records can be independently verified by anyone with access to the blockchain network.
+    \item \textbf{Educational Value:} Implementing blockchain serves as a technical showcase of modern decentralized technologies.
 \end{itemize}
-This serves as both a technical showcase and a method to guarantee the integrity of high-stakes tournament outcomes within the game's ecosystem.
 
-\section{Technology Choices}
+\section{Technology Implementation}
 \label{sec:blockchain_tech}
 \begin{itemize}
-    \item \textbf{Ethereum Sidechain:} An Ethereum-compatible sidechain was chosen rather than the mainnet, likely due to cost (gas fees) and performance considerations. A Proof of Authority (PoA) consensus mechanism might be used for controlled environments, offering faster transaction times and lower energy consumption compared to Proof of Work.
-    \item \textbf{Smart Contract (Solidity):} The logic for recording and potentially retrieving tournament data is encapsulated in a smart contract written in Solidity, the standard language for Ethereum-based development.
-    \item \textbf{Web3.py:} The Django backend interacts with the deployed smart contract on the sidechain using the Python library \texttt{Web3.py}. This library allows the backend to connect to an Ethereum node, load the contract's Application Binary Interface (ABI), and call its functions.
+    \item \textbf{Ethereum Development Environment:} A local Ethereum blockchain is configured using a custom genesis block with appropriate settings for development purposes.
+    \item \textbf{Web3.py Integration:} The Python Web3 library connects the Django backend to the Ethereum blockchain node, facilitating interaction with smart contracts.
+    \item \textbf{Docker Integration:} The blockchain node runs in a dedicated Docker container within the application's overall containerized architecture.
 \end{itemize}
 
-\section{Smart Contract Design}
-\label{sec:smart_contract}
-The smart contract is designed to be simple yet effective for its specific purpose. Key aspects include:
+\section{Tournament Data Structure}
+\label{sec:data_structure}
+The implementation uses two primary data structures:
 \begin{itemize}
-    \item \textbf{State Variables:} Stores essential information, likely mapping a tournament identifier to the winner's user ID and perhaps a timestamp. Example: \texttt{mapping(uint256 => TournamentResult) public tournamentResults;}
-    \item \textbf{Structs:} A struct (e.g., \texttt{TournamentResult}) might be used to group related data: \texttt{struct TournamentResult { uint256 winnerUserId; uint256 timestamp; }}
-    \item \textbf{Functions:}
+    \item \textbf{Match:} Represents individual match data with the following properties:
         \begin{itemize}
-            \item \texttt{recordTournament(uint256 tournamentId, uint256 winnerUserId)}: A function callable only by an authorized address (likely the backend server's wallet) to record the outcome of a completed tournament. It would populate the state variables.
-            \item \texttt{getTournamentWinner(uint256 tournamentId) returns (uint256)}: A public view function to retrieve the winner of a specific tournament ID from the stored data.
+            \item Player1Name and Player2Name: Identifiers for match participants
+            \item Player1Score and Player2Score: Final scores recorded for each player
+            \item Winner: Identifier of the match winner
         \end{itemize}
-    \item \textbf{Events:} An event (e.g., \texttt{event TournamentRecorded(uint256 indexed tournamentId, uint256 indexed winnerUserId);}) is likely emitted when a tournament is recorded, allowing off-chain applications or indexers to easily track new records.
+    \item \textbf{Tournament:} Encapsulates a collection of matches with additional metadata:
+        \begin{itemize}
+            \item tournament\_name: Descriptive name of the tournament
+            \item tournament\_id: Unique identifier assigned to the tournament
+            \item matches: List of Match objects representing all games in the tournament
+        \end{itemize}
 \end{itemize}
 
-\section{Backend Interaction (Django)}
-\label{sec:backend_interaction}
-The Django backend orchestrates the interaction with the smart contract:
+\section{Backend Integration}
+\label{sec:backend_integration}
+The Django backend interacts with the blockchain through several key functions:
+\begin{itemize}
+    \item \textbf{init\_account():} Establishes connection to the blockchain node, sets up the default account, and verifies connectivity.
+    \item \textbf{load\_contract():} Loads the deployed smart contract interface using its ABI and address from configuration files.
+    \item \textbf{save\_tournament():} Records tournament data to the blockchain by calling the smart contract's createTournament function with tournament name and match data.
+    \item \textbf{get\_tournaments():} Retrieves tournament records from the blockchain by name, returning structured data including match details and tournament metadata.
+\end{itemize}
+
+This integration follows a straightforward workflow:
 \begin{enumerate}
-    \item \textbf{Connection Setup:} Using \texttt{Web3.py}, the backend connects to an accessible node of the Ethereum sidechain (specified via its RPC URL).
-    \item \textbf{Contract Loading:} The backend loads the smart contract's ABI and address.
-    \item \textbf{Transaction Trigger:} Upon the confirmed conclusion of a tournament within the application logic, the backend prepares to call the \texttt{recordTournament} function.
-    \item \textbf{Signing and Sending:} The backend uses its configured private key to sign the transaction and sends it to the sidechain network via \texttt{Web3.py}. This requires the backend's wallet address to have sufficient funds (native sidechain currency) to cover any transaction gas fees, even if minimal on a PoA chain.
-    \item \textbf{Confirmation Handling:} The backend might wait for transaction confirmation or handle it asynchronously, potentially updating the local PostgreSQL database status once the blockchain record is confirmed.
-    \item \textbf{Reading Data (Optional):} The backend could also use \texttt{Web3.py} to call view functions like \texttt{getTournamentWinner} if needed, though primary data retrieval likely still relies on PostgreSQL for efficiency.
+    \item Blockchain connection is established using HTTP connection to the node running in Docker.
+    \item When a tournament concludes, match details are formatted and submitted to the blockchain.
+    \item Transaction receipt is awaited to ensure data is properly recorded.
+    \item Tournament records can be retrieved by name for display in the application's user interface.
 \end{enumerate}
 
 \section{Security Considerations}
 \label{sec:blockchain_security}
-Implementing blockchain integration requires careful security management:
+Several security aspects are addressed in the implementation:
 \begin{itemize}
-    \item \textbf{Smart Contract Security:} The Solidity code needs auditing for common vulnerabilities (e.g., reentrancy, integer overflow/underflow), although the contract's simplicity reduces the attack surface. Access control on functions like \texttt{recordTournament} is critical, ensuring only the authorized backend wallet can call it.
-    \item \textbf{Private Key Management:} The private key for the backend's wallet, used to sign transactions, must be stored securely (e.g., using environment variables or a secrets management system) and never exposed in the codebase. Compromise of this key would allow fraudulent tournament records.
-    \item \textbf{Node Access:} Secure communication (e.g., HTTPS or WSS) with the sidechain node is necessary.
-    \item \textbf{Gas Management:} While likely low on a sidechain, the backend must handle potential gas costs and ensure its wallet maintains a sufficient balance.
+    \item \textbf{Account Management:} The application uses a predefined Ethereum account for blockchain interaction.
+    \item \textbf{Network Isolation:} The blockchain node operates within the Docker network, limiting exposure to external access.
+    \item \textbf{Configuration Security:} Blockchain configuration parameters are stored securely in dedicated configuration files.
 \end{itemize}
 
 \section{Limitations and Alternatives}
 \label{sec:blockchain_limits}
 \begin{itemize}
-    \item \textbf{Complexity:} Adds significant technical complexity compared to solely using PostgreSQL.
-    \item \textbf{Cost:} While sidechains reduce costs, there are still infrastructure and maintenance overheads associated with running or connecting to the sidechain node.
-    \item \textbf{Speed:} Blockchain transactions are inherently slower than direct database writes.
-    \item \textbf{Alternatives:} A cryptographically signed log stored in a conventional database or distributed file system could offer some degree of tamper evidence without the full overhead of a blockchain.
+    \item \textbf{Development Focus:} The current implementation is primarily designed for educational and demonstration purposes rather than production-grade security.
+    \item \textbf{Performance Considerations:} Blockchain transactions introduce latency compared to traditional database operations.
+    \item \textbf{Simplified Model:} The implementation uses a straightforward data model optimized for the specific requirements of Pong tournaments.
+    \item \textbf{Alternatives:} For production environments, alternatives might include distributed ledger technologies with better performance characteristics or cryptographically signed logs in conventional databases.
 \end{itemize}
-Despite the limitations, the blockchain integration serves as a valuable demonstration of applying this technology to ensure the integrity of specific, high-value data points within the application.
+
+Despite these limitations, the blockchain integration successfully demonstrates how decentralized technologies can complement traditional databases to provide additional verification and immutability for critical application data.

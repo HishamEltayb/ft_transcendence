@@ -5,44 +5,44 @@
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Gantt Chart\relax }}{13}{figure.caption.31}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Login Page.\relax }}{31}{figure.caption.87}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Registration Page.\relax }}{32}{figure.caption.89}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Account Registration Process.\relax }}{32}{figure.caption.90}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Empty Fields Error.\relax }}{33}{figure.caption.91}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Username Validation.\relax }}{33}{figure.caption.92}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Email Validation.\relax }}{33}{figure.caption.93}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Password Validation.\relax }}{33}{figure.caption.94}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Password Confirmation.\relax }}{34}{figure.caption.95}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Registration Success.\relax }}{34}{figure.caption.96}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces 42 Authentication.\relax }}{34}{figure.caption.98}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces 42 Authentication Process.\relax }}{35}{figure.caption.99}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces Login Success.\relax }}{35}{figure.caption.101}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces Login With Registered Account.\relax }}{36}{figure.caption.102}%
-\contentsline {figure}{\numberline {3.14}{\ignorespaces Home Page.\relax }}{37}{figure.caption.104}%
-\contentsline {figure}{\numberline {3.15}{\ignorespaces Menu Bar.\relax }}{37}{figure.caption.105}%
-\contentsline {figure}{\numberline {3.16}{\ignorespaces Game Selection.\relax }}{38}{figure.caption.107}%
-\contentsline {figure}{\numberline {3.17}{\ignorespaces 1vs1 Game.\relax }}{39}{figure.caption.110}%
-\contentsline {figure}{\numberline {3.18}{\ignorespaces 1vs AI Game.\relax }}{39}{figure.caption.112}%
-\contentsline {figure}{\numberline {3.19}{\ignorespaces Multiplayer Mode.\relax }}{40}{figure.caption.114}%
-\contentsline {figure}{\numberline {3.20}{\ignorespaces Game Settings.\relax }}{40}{figure.caption.116}%
-\contentsline {figure}{\numberline {3.21}{\ignorespaces Game Results.\relax }}{41}{figure.caption.118}%
-\contentsline {figure}{\numberline {3.22}{\ignorespaces Tournament Bracket.\relax }}{41}{figure.caption.121}%
-\contentsline {figure}{\numberline {3.23}{\ignorespaces Semi-Final Match.\relax }}{42}{figure.caption.123}%
-\contentsline {figure}{\numberline {3.24}{\ignorespaces Tournament Final.\relax }}{42}{figure.caption.125}%
-\contentsline {figure}{\numberline {3.25}{\ignorespaces User Profile.\relax }}{43}{figure.caption.128}%
-\contentsline {figure}{\numberline {3.26}{\ignorespaces Match History.\relax }}{44}{figure.caption.130}%
-\contentsline {figure}{\numberline {3.27}{\ignorespaces Recent Matches with Data.\relax }}{44}{figure.caption.131}%
-\contentsline {figure}{\numberline {3.28}{\ignorespaces Player Statistics.\relax }}{44}{figure.caption.133}%
-\contentsline {figure}{\numberline {3.29}{\ignorespaces Account Information.\relax }}{45}{figure.caption.136}%
-\contentsline {figure}{\numberline {3.30}{\ignorespaces Two-Factor Setup.\relax }}{46}{figure.caption.138}%
-\contentsline {figure}{\numberline {3.31}{\ignorespaces Security Confirmation.\relax }}{46}{figure.caption.140}%
-\contentsline {figure}{\numberline {3.32}{\ignorespaces 2FA Enabled Status.\relax }}{47}{figure.caption.142}%
-\contentsline {figure}{\numberline {3.33}{\ignorespaces 2FA Disabled Status.\relax }}{47}{figure.caption.143}%
-\contentsline {figure}{\numberline {3.34}{\ignorespaces Logout Confirmation.\relax }}{47}{figure.caption.146}%
-\contentsline {figure}{\numberline {3.35}{\ignorespaces Empty Fields Alert.\relax }}{48}{figure.caption.150}%
-\contentsline {figure}{\numberline {3.36}{\ignorespaces Email Format Alert.\relax }}{48}{figure.caption.152}%
-\contentsline {figure}{\numberline {3.37}{\ignorespaces Password Strength Alert.\relax }}{49}{figure.caption.154}%
-\contentsline {figure}{\numberline {3.38}{\ignorespaces Password Mismatch Alert.\relax }}{49}{figure.caption.156}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Login Page.\relax }}{30}{figure.caption.86}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Registration Page.\relax }}{31}{figure.caption.88}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Account Registration Process.\relax }}{31}{figure.caption.89}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Empty Fields Error.\relax }}{32}{figure.caption.90}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Username Validation.\relax }}{32}{figure.caption.91}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Email Validation.\relax }}{32}{figure.caption.92}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Password Validation.\relax }}{32}{figure.caption.93}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Password Confirmation.\relax }}{33}{figure.caption.94}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Registration Success.\relax }}{33}{figure.caption.95}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces 42 Authentication.\relax }}{33}{figure.caption.97}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces 42 Authentication Process.\relax }}{34}{figure.caption.98}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Login Success.\relax }}{34}{figure.caption.100}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Login With Registered Account.\relax }}{35}{figure.caption.101}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Home Page.\relax }}{36}{figure.caption.103}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Menu Bar.\relax }}{36}{figure.caption.104}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Game Selection.\relax }}{37}{figure.caption.106}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces 1vs1 Game.\relax }}{38}{figure.caption.109}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces 1vs AI Game.\relax }}{38}{figure.caption.111}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces Multiplayer Mode.\relax }}{39}{figure.caption.113}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces Game Settings.\relax }}{39}{figure.caption.115}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces Game Results.\relax }}{40}{figure.caption.117}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces Tournament Bracket.\relax }}{40}{figure.caption.120}%
+\contentsline {figure}{\numberline {3.23}{\ignorespaces Semi-Final Match.\relax }}{41}{figure.caption.122}%
+\contentsline {figure}{\numberline {3.24}{\ignorespaces Tournament Final.\relax }}{41}{figure.caption.124}%
+\contentsline {figure}{\numberline {3.25}{\ignorespaces User Profile.\relax }}{42}{figure.caption.127}%
+\contentsline {figure}{\numberline {3.26}{\ignorespaces Match History.\relax }}{43}{figure.caption.129}%
+\contentsline {figure}{\numberline {3.27}{\ignorespaces Recent Matches with Data.\relax }}{43}{figure.caption.130}%
+\contentsline {figure}{\numberline {3.28}{\ignorespaces Player Statistics.\relax }}{43}{figure.caption.132}%
+\contentsline {figure}{\numberline {3.29}{\ignorespaces Account Information.\relax }}{44}{figure.caption.135}%
+\contentsline {figure}{\numberline {3.30}{\ignorespaces Two-Factor Setup.\relax }}{45}{figure.caption.137}%
+\contentsline {figure}{\numberline {3.31}{\ignorespaces Security Confirmation.\relax }}{45}{figure.caption.139}%
+\contentsline {figure}{\numberline {3.32}{\ignorespaces 2FA Enabled Status.\relax }}{46}{figure.caption.141}%
+\contentsline {figure}{\numberline {3.33}{\ignorespaces 2FA Disabled Status.\relax }}{46}{figure.caption.142}%
+\contentsline {figure}{\numberline {3.34}{\ignorespaces Logout Confirmation.\relax }}{46}{figure.caption.145}%
+\contentsline {figure}{\numberline {3.35}{\ignorespaces Empty Fields Alert.\relax }}{47}{figure.caption.149}%
+\contentsline {figure}{\numberline {3.36}{\ignorespaces Email Format Alert.\relax }}{47}{figure.caption.151}%
+\contentsline {figure}{\numberline {3.37}{\ignorespaces Password Strength Alert.\relax }}{48}{figure.caption.153}%
+\contentsline {figure}{\numberline {3.38}{\ignorespaces Password Mismatch Alert.\relax }}{48}{figure.caption.155}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
