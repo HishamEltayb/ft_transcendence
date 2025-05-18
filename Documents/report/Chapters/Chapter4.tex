@@ -1,10 +1,135 @@
 \chapter{User Interface and Features}
 % \label{ch:ui}
 
-\section{Wireframes and User Journey}
+\section{Wireframes}
 
-Wireframes provide a visual outline of the project's user interface structure and play a key role in mapping the user journey. They enable early visualization of layout and user interactions, offering insight into user navigation within the system well before the detailed design and coding phases.\\
-The following wireframes tell the story of a user's journey through the \textbf{ft\_transcendence} platform, from their first interaction to gameplay and beyond.
+Wireframes are visual guides in which designers propose elements for screens and webpages and show how experimental solutions would flow for users. Wire-framing is invaluable early in the interaction design process for design teams to explore how concepts accommodate user needs. Good wireframes are skeletons for powerful prototypes and delightful designs.
+
+In our Wireframes we show how our game considers Human Computer Interaction (HCI) / User Experience (UX) / User Interface (UI) principles. The following wireframes illustrate the structural foundation of our platform's interface, emphasizing layout, navigation patterns, and interaction points rather than detailed visual design.
+
+\subsection{Authentication Flow Wireframe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/LoginPage.png}
+    \caption{Authentication wireframe showing login options and registration}
+    \label{fig:wireframe-auth}
+\end{figure}
+
+Our authentication flow wireframe demonstrates key HCI principles through:
+\begin{itemize}
+    \item Multiple access options (regular login, and 42 OAuth) providing user flexibility
+    \item Clear input validation patterns with immediate feedback
+    \item Minimalist design focusing on essential information only
+    \item Visual hierarchy that guides users through the authentication process
+\end{itemize}
+
+\subsection{Game Selection Wireframe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GamePage.png}
+    \caption{Game selection wireframe showing different game modes}
+    \label{fig:wireframe-game-selection}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameSettings.png}
+    \caption{Game configuration wireframe showing customizable game options}
+    \label{fig:wireframe-game-config}
+\end{figure}
+
+The game selection wireframe incorporates UX principles through:
+\begin{itemize}
+    \item Consistent layout with easily distinguishable game modes
+    \item Progressive disclosure - showing only needed options at each decision point
+    \item Accessibility considerations through clear structure
+    \item Visual affordances indicating interactive components
+\end{itemize}
+
+\subsection{Pong Game Interface Wireframe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GamePage.png}
+    \caption{Pong game selection interface showing multiplayer options}
+    \label{fig:wireframe-game-interface}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameHowToPlay.png}
+    \caption{Pong game rules and controls wireframe}
+    \label{fig:wireframe-game-rules}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/RecentMatchesWithData.png}
+    \caption{Match history wireframe showing game results and statistics}
+    \label{fig:wireframe-game-results}
+\end{figure}
+
+The game interface wireframes demonstrate UI design principles through:
+\begin{itemize}
+    \item Clear player identification and controls
+    \item Prominent score display and match history visualization
+    \item Accessible navigation options with clear exit functionality to leave the game
+    \item Balanced visual layout focusing on gameplay elements and statistical information
+\end{itemize}
+
+\subsection{Accessibility Mode Wireframe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameTournament.png}
+    \caption{Game tournament wireframe displaying accessibility-friendly layout and navigation}
+    \label{fig:wireframe-accessibility-tournament}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameSettings.png}
+    \caption{Game settings wireframe showing adjustable options for accessibility customization}
+    \label{fig:wireframe-accessibility-settings}
+\end{figure}
+
+The accessibility mode wireframe demonstrates inclusive design principles through:
+\begin{itemize}
+    \item High-contrast elements for better visibility
+    \item Enlarged text and controls
+    \item Simplified interface focusing on essential elements
+    \item Consistent layout with standard mode for easy transition
+\end{itemize}
+
+\subsection{Profile and Statistics Wireframe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/ProfilePage.png}
+    \caption{Profile wireframe showing user information and account management options}
+    \label{fig:wireframe-profile}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/PlayerStatisticsWithData.png}
+    \caption{Player statistics wireframe displaying game performance metrics}
+    \label{fig:wireframe-statistics}
+\end{figure}
+
+The profile wireframe applies information architecture principles through:
+\begin{itemize}
+    \item Hierarchical presentation of user data
+    \item Visual grouping of related information
+    \item Clear statistics display with appropriate data visualization
+    \item Actionable interface elements for profile management
+\end{itemize}
+
+\section{User Journey Implementation}
+
+Based on the wireframes above, we implemented a comprehensive user interface. The following screens document the complete user journey through the ft\_transcendence application:
 
 \subsection{Beginning the Journey: Registration and Authentication}
 
