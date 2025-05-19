@@ -1,10 +1,89 @@
 \chapter{User Interface and Features}
 % \label{ch:ui}
 
-\section{Wireframes and User Journey}
+\section{Wireframes}
 
-Wireframes provide a visual outline of the project's user interface structure and play a key role in mapping the user journey. They enable early visualization of layout and user interactions, offering insight into user navigation within the system well before the detailed design and coding phases.\\
-The following wireframes tell the story of a user's journey through the \textbf{ft\_transcendence} platform, from their first interaction to gameplay and beyond.
+Wireframes are visual guides in which designers propose elements for screens and webpages and show how experimental solutions would flow for users. Wire-framing is invaluable early in the interaction design process for design teams to explore how concepts accommodate user needs. Good wireframes are skeletons for powerful prototypes and delightful designs.
+
+In our Wireframes we show how our game considers Human Computer Interaction (HCI) / User Experience (UX) / User Interface (UI) principles. The following wireframes illustrate the user journey through our platform, emphasizing flow patterns, interaction points, and the overall user experience rather than just individual screens.
+
+\subsection{Authentication and Registration Flow}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/1.png}
+    \caption{Authentication and registration wireframe flow showing the complete user journey from initial landing to account creation and login processes}
+    \label{fig:wireframe-auth-flow}
+\end{figure}
+
+Our authentication flow wireframe demonstrates key HCI principles through:
+\begin{itemize}
+    \item Sequential and logical progression of interaction steps
+    \item Multiple access options (regular login and 42 OAuth) providing user flexibility
+    \item Clear input validation patterns with immediate feedback through highlighted error states
+    \item Visual hierarchy that guides users through the authentication process with a coherent journey
+    \item Contextual hints and feedback at each decision point
+\end{itemize}
+
+\subsection{Game Settings and Configuration Flow}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/2.png}
+    \caption{Game settings wireframe flow showing the progression from home screen to game configuration and play modes}
+    \label{fig:wireframe-game-settings}
+\end{figure}
+
+The game settings wireframe incorporates UX principles through:
+\begin{itemize}
+    \item Progressive disclosure - revealing options in a logical sequence
+    \item Consistent layout with easily distinguishable game modes and settings
+    \item Clear visual feedback for selections and configuration changes
+    \item Accessibility considerations through structured navigation paths
+    \item Save functionality that acknowledges user preferences and reduces future input needs
+\end{itemize}
+
+\subsection{Game Selection and Tournament Mode Flow}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/3.png}
+    \caption{Game and profile wireframe flow showing tournament structure, gameplay screens, and player statistics integration}
+    \label{fig:wireframe-game-tournament}
+\end{figure}
+
+The game interface wireframes demonstrate UI design principles through:
+\begin{itemize}
+    \item Visual representation of tournament brackets enhancing understanding of game progression
+    \item Clear player identification and match-up visualization
+    \item Consistent game environment across different match types
+    \item Seamless integration between game modes and player statistics
+    \item Balanced visual layout focusing on gameplay elements and competitive information
+\end{itemize}
+
+\subsection{Security Features and Profile Management Flow}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/4.png}
+    \caption{Two-factor authentication and logout wireframe flow showing security features and session management}
+    \label{fig:wireframe-security}
+\end{figure}
+
+The security and profile management wireframe demonstrates advanced UX principles through:
+\begin{itemize}
+    \item Multi-layered security implementation with two-factor authentication
+    \item Clear visual cues for secure states and actions
+    \item Contextual instruction for security features (QR code scanning)
+    \item Consistent feedback for successful actions (login/logout confirmations)
+    \item Accessible security features from multiple entry points in the application
+\end{itemize}
+
+These comprehensive wireframe flows showcase not just individual screens but the complete user journey through our application. By presenting interconnected screens with navigation paths, we demonstrate our attention to the entire user experience rather than isolated interface components. This approach aligns with modern HCI principles of viewing interfaces as journeys rather than destinations, allowing us to identify potential friction points and optimize the overall user experience.
+
+\section{User Journey Implementation}
+
+Based on the wireframes above, we implemented a comprehensive user interface. The following screens document the complete user journey through the ft\_transcendence application:
 
 \subsection{Beginning the Journey: Registration and Authentication}
 
