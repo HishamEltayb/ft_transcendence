@@ -5,127 +5,81 @@
 
 Wireframes are visual guides in which designers propose elements for screens and webpages and show how experimental solutions would flow for users. Wire-framing is invaluable early in the interaction design process for design teams to explore how concepts accommodate user needs. Good wireframes are skeletons for powerful prototypes and delightful designs.
 
-In our Wireframes we show how our game considers Human Computer Interaction (HCI) / User Experience (UX) / User Interface (UI) principles. The following wireframes illustrate the structural foundation of our platform's interface, emphasizing layout, navigation patterns, and interaction points rather than detailed visual design.
+In our Wireframes we show how our game considers Human Computer Interaction (HCI) / User Experience (UX) / User Interface (UI) principles. The following wireframes illustrate the user journey through our platform, emphasizing flow patterns, interaction points, and the overall user experience rather than just individual screens.
 
-\subsection{Authentication Flow Wireframe}
+\subsection{Authentication and Registration Flow}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/LoginPage.png}
-    \caption{Authentication wireframe showing login options and registration}
-    \label{fig:wireframe-auth}
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/1.png}
+    \caption{Authentication and registration wireframe flow showing the complete user journey from initial landing to account creation and login processes}
+    \label{fig:wireframe-auth-flow}
 \end{figure}
 
 Our authentication flow wireframe demonstrates key HCI principles through:
 \begin{itemize}
-    \item Multiple access options (regular login, and 42 OAuth) providing user flexibility
-    \item Clear input validation patterns with immediate feedback
-    \item Minimalist design focusing on essential information only
-    \item Visual hierarchy that guides users through the authentication process
+    \item Sequential and logical progression of interaction steps
+    \item Multiple access options (regular login and 42 OAuth) providing user flexibility
+    \item Clear input validation patterns with immediate feedback through highlighted error states
+    \item Visual hierarchy that guides users through the authentication process with a coherent journey
+    \item Contextual hints and feedback at each decision point
 \end{itemize}
 
-\subsection{Game Selection Wireframe}
+\subsection{Game Settings and Configuration Flow}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GamePage.png}
-    \caption{Game selection wireframe showing different game modes}
-    \label{fig:wireframe-game-selection}
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/2.png}
+    \caption{Game settings wireframe flow showing the progression from home screen to game configuration and play modes}
+    \label{fig:wireframe-game-settings}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameSettings.png}
-    \caption{Game configuration wireframe showing customizable game options}
-    \label{fig:wireframe-game-config}
-\end{figure}
-
-The game selection wireframe incorporates UX principles through:
+The game settings wireframe incorporates UX principles through:
 \begin{itemize}
-    \item Consistent layout with easily distinguishable game modes
-    \item Progressive disclosure - showing only needed options at each decision point
-    \item Accessibility considerations through clear structure
-    \item Visual affordances indicating interactive components
+    \item Progressive disclosure - revealing options in a logical sequence
+    \item Consistent layout with easily distinguishable game modes and settings
+    \item Clear visual feedback for selections and configuration changes
+    \item Accessibility considerations through structured navigation paths
+    \item Save functionality that acknowledges user preferences and reduces future input needs
 \end{itemize}
 
-\subsection{Pong Game Interface Wireframe}
+\subsection{Game Selection and Tournament Mode Flow}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GamePage.png}
-    \caption{Pong game selection interface showing multiplayer options}
-    \label{fig:wireframe-game-interface}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameHowToPlay.png}
-    \caption{Pong game rules and controls wireframe}
-    \label{fig:wireframe-game-rules}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/RecentMatchesWithData.png}
-    \caption{Match history wireframe showing game results and statistics}
-    \label{fig:wireframe-game-results}
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/3.png}
+    \caption{Game and profile wireframe flow showing tournament structure, gameplay screens, and player statistics integration}
+    \label{fig:wireframe-game-tournament}
 \end{figure}
 
 The game interface wireframes demonstrate UI design principles through:
 \begin{itemize}
-    \item Clear player identification and controls
-    \item Prominent score display and match history visualization
-    \item Accessible navigation options with clear exit functionality to leave the game
-    \item Balanced visual layout focusing on gameplay elements and statistical information
+    \item Visual representation of tournament brackets enhancing understanding of game progression
+    \item Clear player identification and match-up visualization
+    \item Consistent game environment across different match types
+    \item Seamless integration between game modes and player statistics
+    \item Balanced visual layout focusing on gameplay elements and competitive information
 \end{itemize}
 
-\subsection{Accessibility Mode Wireframe}
+\subsection{Security Features and Profile Management Flow}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameTournament.png}
-    \caption{Game tournament wireframe displaying accessibility-friendly layout and navigation}
-    \label{fig:wireframe-accessibility-tournament}
+    \includegraphics[width=0.9\linewidth]{Figures/images/wireframes/4.png}
+    \caption{Two-factor authentication and logout wireframe flow showing security features and session management}
+    \label{fig:wireframe-security}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/GameSettings.png}
-    \caption{Game settings wireframe showing adjustable options for accessibility customization}
-    \label{fig:wireframe-accessibility-settings}
-\end{figure}
-
-The accessibility mode wireframe demonstrates inclusive design principles through:
+The security and profile management wireframe demonstrates advanced UX principles through:
 \begin{itemize}
-    \item High-contrast elements for better visibility
-    \item Enlarged text and controls
-    \item Simplified interface focusing on essential elements
-    \item Consistent layout with standard mode for easy transition
+    \item Multi-layered security implementation with two-factor authentication
+    \item Clear visual cues for secure states and actions
+    \item Contextual instruction for security features (QR code scanning)
+    \item Consistent feedback for successful actions (login/logout confirmations)
+    \item Accessible security features from multiple entry points in the application
 \end{itemize}
 
-\subsection{Profile and Statistics Wireframe}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/ProfilePage.png}
-    \caption{Profile wireframe showing user information and account management options}
-    \label{fig:wireframe-profile}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Figures/images/new_images/PlayerStatisticsWithData.png}
-    \caption{Player statistics wireframe displaying game performance metrics}
-    \label{fig:wireframe-statistics}
-\end{figure}
-
-The profile wireframe applies information architecture principles through:
-\begin{itemize}
-    \item Hierarchical presentation of user data
-    \item Visual grouping of related information
-    \item Clear statistics display with appropriate data visualization
-    \item Actionable interface elements for profile management
-\end{itemize}
+These comprehensive wireframe flows showcase not just individual screens but the complete user journey through our application. By presenting interconnected screens with navigation paths, we demonstrate our attention to the entire user experience rather than isolated interface components. This approach aligns with modern HCI principles of viewing interfaces as journeys rather than destinations, allowing us to identify potential friction points and optimize the overall user experience.
 
 \section{User Journey Implementation}
 
