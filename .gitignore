@@ -1,7 +1,6 @@
 .DS_Store
 .windsurfrules
 # Environments
-.env
 .venv
 env/
 venv/
