@@ -1,0 +1,86 @@
+\chapter{Testing and Evaluation}
+\label{ch:testing}
+
+Ensuring the quality, reliability, and security of the \textbf{ft\_transcendence} application is paramount. This chapter details the testing strategies employed throughout the development lifecycle and provides an evaluation of the project against its initial objectives.
+
+\section{Testing Strategy}
+\label{sec:testing_strategy}
+A multi-layered testing approach was adopted to verify different aspects of the application:
+\begin{itemize}
+    \item \textbf{Unit Testing:} Focused on verifying the correctness of individual components (functions, classes) in isolation.
+    \item \textbf{Integration Testing:} Examined the interactions between different modules and services (e.g., backend API with database, frontend with backend).
+    \item \textbf{End-to-End (E2E) Testing:} Validated complete user workflows from the user's perspective.
+    \item \textbf{Security Testing:} Assessed the application's resilience against common web vulnerabilities and ensured security features function correctly.
+    \item \textbf{Usability and Accessibility Testing:} Evaluated the user-friendliness of the interface and the effectiveness of accessibility features.
+\end{itemize}
+
+\section{Unit Testing}
+\label{sec:unit_testing}
+Unit tests formed the foundation of the testing pyramid, providing rapid feedback on code changes.
+\begin{itemize}
+    \item \textbf{Backend (Django):} Django's built-in testing framework was likely utilized to write tests for models (database logic), views (API endpoint logic), serializers (data validation), and utility functions. Mocking was used where necessary to isolate units from external dependencies like the database or external APIs (e.g., 42 OAuth during testing).
+    \item \textbf{Frontend (Vanilla JS):} Unit testing vanilla JavaScript can be challenging. While specific tools might not have been mandated, critical utility functions or logic components might have been tested using a framework like Jest or through manual verification during development.
+\end{itemize}
+
+\section{Integration Testing}
+\label{sec:integration_testing}
+Integration tests focused on verifying the correct communication and data flow between different parts of the system.
+\begin{itemize}
+    \item \textbf{API Level:} Tests were conducted to ensure that frontend requests to the Django REST Framework API endpoints resulted in the correct backend actions (e.g., database updates) and generated the expected responses (status codes, data formats).
+    \item \textbf{Database Interaction:} Verified that the Django ORM correctly interacted with the PostgreSQL database, ensuring data integrity and correct query execution.
+    \item \textbf{Blockchain Interaction:} Tested the backend's ability to correctly interact with the Ethereum sidechain smart contract via Web3.py for recording tournament results.
+\end{itemize}
+
+\section{End-to-End (E2E) Testing}
+\label{sec:e2e_testing}
+E2E tests simulated real user scenarios across the entire application stack. Due to the complexity of setting up automated browser tests, particularly for canvas-based games, E2E testing likely relied heavily on structured \textbf{manual testing}. Key workflows tested included:
+\begin{itemize}
+    \item User registration (native and 42 OAuth) and login.
+    \item Navigating the SPA and accessing different sections.
+    \item Initiating and completing various Pong game modes (1v1, vs AI, 4-player).
+    \item Participating in and completing a tournament.
+    \item Managing profile information and avatar uploads.
+    \item Adding and accepting friend requests.
+    \item Enabling and using 2FA.
+\end{itemize}
+
+\section{Security Testing}
+\label{sec:security_testing}
+Given the focus on security, specific tests and checks were performed:
+\begin{itemize}
+    \item \textbf{Authentication/Authorization:} Verified that only authenticated users could access protected endpoints and that authorization rules (e.g., editing own profile) were enforced. Tested JWT handling (cookie security, expiration) and 2FA logic.
+    \item \textbf{Input Validation:} Checked for proper handling of user inputs to prevent common vulnerabilities like Cross-Site Scripting (XSS) and SQL Injection. Django's ORM and DRF serializers provide significant built-in protection.
+    \item \textbf{Dependency Scanning:} Tools might have been used to scan project dependencies for known vulnerabilities.
+    \item \textbf{HTTPS Enforcement:} Verified that Nginx correctly enforces HTTPS connections.
+\end{itemize}
+
+\section{Usability and Accessibility Testing}
+\label{sec:usability_testing}
+\begin{itemize}
+    \item \textbf{Usability:} Informal usability testing was likely conducted throughout development, gathering feedback on the ease of navigation, clarity of instructions, and overall user experience.
+    \item \textbf{Accessibility:} The visual impairment mode was specifically tested to ensure it provided sufficient contrast and visibility improvements for users with visual challenges. General accessibility principles (e.g., keyboard navigation, semantic HTML where applicable outside the canvas) were considered.
+\end{itemize}
+
+\section{Evaluation}
+\label{sec:evaluation}
+Evaluating the ft\_transcendence project against the goals defined in Chapter \ref{ch:goals}:\\
+\textbf{Successes:}
+\begin{itemize}
+    \item The core goal of delivering a functional Pong game as an SPA was achieved.
+    \item Secure user management with native credentials, 42 OAuth, and 2FA was successfully implemented.
+    \item Multiple game modes (1v1, vs AI, 4-player, Tournaments) were developed.
+    \item Data persistence using both PostgreSQL and an Ethereum sidechain was realized.
+    \item A RESTful API using DRF was exposed.
+    \item Production-grade DevOps practices using Docker, Nginx, and ELK were implemented, demonstrating containerization and monitoring capabilities.
+    \item Key features like profiles, friends list, and match history enhance user engagement.
+    \item Accessibility considerations were included.
+\end{itemize}
+
+\textbf{Potential Areas for Improvement/Future Work:}
+\begin{itemize}
+    \item Implementation of automated E2E testing for more comprehensive regression testing.
+    \item More extensive performance testing under load.
+    \item Potential addition of features like real-time chat (if not fully implemented).
+    \item Further refinement of the AI opponent's difficulty levels or strategies.
+\end{itemize}
+Overall, the project successfully demonstrates the integration of diverse technologies to create a modern, secure, and feature-rich web application, fulfilling the primary requirements outlined.
